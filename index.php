@@ -8,21 +8,45 @@ include 'includes/header.php';
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right">
-                <h1 class="hero-title">Professional Web Development & Agentic AI Solutions</h1>
-                <p class="hero-subtitle">Custom Web Design Services at Affordable Pricing for Small Businesses</p>
-                <ul class="hero-features">
-                    <li><i class="fas fa-check-circle"></i> Responsive Design</li>
-                    <li><i class="fas fa-check-circle"></i> SEO-Optimized</li>
-                    <li><i class="fas fa-check-circle"></i> Fast Loading Speed</li>
-                    <li><i class="fas fa-check-circle"></i> Agentic AI Integration</li>
-                    <li><i class="fas fa-check-circle"></i> E-Commerce Solutions</li>
-                    <li><i class="fas fa-check-circle"></i> 24/7 Support</li>
-                </ul>
-                <a href="contact.php" class="btn btn-primary btn-lg mt-3">Have a Query?</a>
+                <h1 class="hero-title">Website Design and Development Company in Kolkata, India</h1>
+                <p class="hero-subtitle">Custom Web Design Services at Affordable Pricing</p>
+                <div class="row mt-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Responsive Design</span>
+                        </div>
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>SEO-Optimized</span>
+                        </div>
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Fast Loading Speed</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Content Management System</span>
+                        </div>
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>E-Commerce Integration</span>
+                        </div>
+                        <div class="hero-feature-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Secure & Scalable Solutions</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="contact.php" class="btn btn-dark btn-lg mt-3">
+                    Have a Query? <i class="fas fa-external-link-alt ms-2"></i>
+                </a>
             </div>
             <div class="col-lg-6" data-aos="fade-left">
-                <div class="hero-image">
-                    <img src="https://cdn.pixabay.com/photo/2016/11/19/14/00/code-1839406_1280.jpg" alt="Web Development" class="img-fluid rounded">
+                <div class="hero-illustration">
+                    <img src="https://cdn.pixabay.com/photo/2019/10/09/07/28/development-4536630_1280.png" alt="Web Development Illustration" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -82,65 +106,170 @@ include 'includes/header.php';
             <h2>Our Featured Services</h2>
             <p>Elevate Your Online Presence with Our Expertise – You Dream It, We Build It</p>
         </div>
-        <div class="row">
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-laptop-code"></i>
+        <div id="servicesCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-laptop-code"></i>
+                                </div>
+                                <h4>Website Design</h4>
+                                <p>Faster loading secured website designing service.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <h4>Ecommerce Website</h4>
+                                <p>Premium Quality E-Commerce Development Services.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <h4>Web Development</h4>
+                                <p>Web portal development with the latest technology.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
                     </div>
-                    <h4>Website Design</h4>
-                    <p>Faster loading secured website designing service.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                </div>
+                <div class="carousel-item">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h4>Agentic AI Solutions</h4>
+                                <p>Intelligent AI agents to automate your business processes.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>Digital Marketing</h4>
+                                <p>Result-oriented digital marketing services.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4>SEO</h4>
+                                <p>SEO services to rank higher in search engines.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h4>Ecommerce Website</h4>
-                    <p>Premium Quality E-Commerce Development Services.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="technology-section py-5 bg-light">
+    <div class="container">
+        <div class="section-title text-center mb-5" data-aos="fade-up">
+            <h2>Technology We Use to Build Secure Website & Application</h2>
+            <p>We use latest technologies & tools to build secure & updated website & Application</p>
+        </div>
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="tech-logo">
+                    <i class="fab fa-html5 fa-4x" style="color: #E34F26;"></i>
+                    <p class="tech-name mt-2">HTML5</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h4>Web Development</h4>
-                    <p>Web portal development with the latest technology.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
+                <div class="tech-logo">
+                    <i class="fab fa-css3-alt fa-4x" style="color: #1572B6;"></i>
+                    <p class="tech-name mt-2">CSS3</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <h4>Agentic AI Solutions</h4>
-                    <p>Intelligent AI agents to automate your business processes.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="tech-logo">
+                    <i class="fab fa-js-square fa-4x" style="color: #F7DF1E;"></i>
+                    <p class="tech-name mt-2">JavaScript</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h4>Digital Marketing</h4>
-                    <p>Result-oriented digital marketing services.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+                <div class="tech-logo">
+                    <i class="fab fa-react fa-4x" style="color: #61DAFB;"></i>
+                    <p class="tech-name mt-2">React</p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h4>SEO</h4>
-                    <p>SEO services to rank higher in search engines.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="tech-logo">
+                    <i class="fab fa-node-js fa-4x" style="color: #339933;"></i>
+                    <p class="tech-name mt-2">Node.js</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+                <div class="tech-logo">
+                    <i class="fab fa-python fa-4x" style="color: #3776AB;"></i>
+                    <p class="tech-name mt-2">Python</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="tech-logo">
+                    <i class="fab fa-php fa-4x" style="color: #777BB4;"></i>
+                    <p class="tech-name mt-2">PHP</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
+                <div class="tech-logo">
+                    <i class="fab fa-wordpress fa-4x" style="color: #21759B;"></i>
+                    <p class="tech-name mt-2">WordPress</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="tech-logo">
+                    <i class="fab fa-bootstrap fa-4x" style="color: #7952B3;"></i>
+                    <p class="tech-name mt-2">Bootstrap</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+                <div class="tech-logo">
+                    <i class="fab fa-aws fa-4x" style="color: #FF9900;"></i>
+                    <p class="tech-name mt-2">AWS</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="tech-logo">
+                    <i class="fab fa-docker fa-4x" style="color: #2496ED;"></i>
+                    <p class="tech-name mt-2">Docker</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+                <div class="tech-logo">
+                    <i class="fab fa-git-alt fa-4x" style="color: #F05032;"></i>
+                    <p class="tech-name mt-2">Git</p>
                 </div>
             </div>
         </div>
