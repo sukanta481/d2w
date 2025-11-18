@@ -49,16 +49,39 @@ $email_content .= "Phone: $phone\n";
 $email_content .= "Service: $service\n\n";
 $email_content .= "Message:\n$message\n";
 
-$headers = "From: $name <$email>\r\n";
-$headers .= "Reply-To: $email\r\n";
+$headers = "From: Dawn To Web Contact Form <noreply@dawntoweb.com>\r\n";
+$headers .= "Reply-To: $name <$email>\r\n";
 $headers .= "X-Mailer: PHP/" . phpversion();
 
-$contact_file = __DIR__ . '/../contacts.txt';
-$log_entry = date('Y-m-d H:i:s') . " - Name: $name, Email: $email, Phone: $phone, Service: $service, Message: $message\n";
-file_put_contents($contact_file, $log_entry, FILE_APPEND);
+$mail_sent = mail($to, $subject, $email_content, $headers);
 
-echo json_encode([
-    'success' => true,
-    'message' => 'Thank you for contacting us! We will get back to you soon.'
-]);
+$contact_file = __DIR__ . '/../contacts.txt';
+
+if ($mail_sent) {
+    $log_entry = date('Y-m-d H:i:s') . " - SENT\n";
+    $log_entry .= "  Name: $name\n";
+    $log_entry .= "  Email: $email\n";
+    $log_entry .= "  Phone: $phone\n";
+    $log_entry .= "  Service: $service\n";
+    $log_entry .= "  Message: $message\n\n";
+    file_put_contents($contact_file, $log_entry, FILE_APPEND);
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Thank you for contacting us! We will get back to you soon.'
+    ]);
+} else {
+    $log_entry = date('Y-m-d H:i:s') . " - FAILED TO SEND\n";
+    $log_entry .= "  Name: $name\n";
+    $log_entry .= "  Email: $email\n";
+    $log_entry .= "  Phone: $phone\n";
+    $log_entry .= "  Service: $service\n";
+    $log_entry .= "  Message: $message\n\n";
+    file_put_contents($contact_file, $log_entry, FILE_APPEND);
+    
+    echo json_encode([
+        'success' => false,
+        'message' => 'Sorry, there was an error sending your message. Please try again or contact us directly at info@dawntoweb.com.'
+    ]);
+}
 ?>
