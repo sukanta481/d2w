@@ -34,13 +34,15 @@ Professional digital marketing agency website built with Bootstrap 5, HTML, CSS,
 
 ## Features
 1. **Responsive Design**: Mobile-first approach with Bootstrap 5
-2. **Hero Section**: Gradient background with feature highlights
-3. **Animated Counters**: Stats that count up on scroll
-4. **Portfolio Filter**: JavaScript-based project filtering
-5. **Contact Form**: PHP email handler with validation
-6. **Smooth Scrolling**: Enhanced UX with animations
-7. **Skill Bars**: Animated progress bars on About page
-8. **Newsletter**: Footer subscription form
+2. **Hero Section**: Clean, professional layout with two-column design and floating illustration
+3. **Services Carousel**: Sliding showcase of featured services with navigation controls
+4. **Technology Stack Section**: Display of 12+ technologies with interactive hover effects
+5. **Animated Counters**: Stats that count up on scroll
+6. **Portfolio Filter**: JavaScript-based project filtering
+7. **Contact Form**: PHP email handler with validation
+8. **Smooth Scrolling**: Enhanced UX with animations
+9. **Skill Bars**: Animated progress bars on About page
+10. **Newsletter**: Footer subscription form
 
 ## Current Deployment
 - **Server**: PHP Built-in Development Server
@@ -140,6 +142,11 @@ YYYY-MM-DD HH:MM:SS - [SENT/FAILED] - Name, Email, Phone, Service
 - Minified CSS/JS in production
 - Lazy loading for images
 - AOS animations for smooth UX
+
+## Recent Updates (November 2025)
+1. **Hero Section Redesign**: Updated with light background, Kolkata location, and professional illustration
+2. **Services Carousel**: Converted static grid to interactive Bootstrap carousel with 2 slides
+3. **Technology Stack Section**: Added dedicated section showcasing 12 technologies (HTML5, CSS3, JavaScript, React, Node.js, Python, PHP, WordPress, Bootstrap, AWS, Docker, Git)
 
 ## Future Enhancements
 - Blog CMS with database
