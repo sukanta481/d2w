@@ -7,44 +7,50 @@ include 'includes/header.php';
 <section class="hero-section">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6" data-aos="fade-right">
-                <h1 class="hero-title">Website Design and Development Company in Kolkata, India</h1>
-                <p class="hero-subtitle">Custom Web Design Services at Affordable Pricing</p>
-                <div class="row mt-4">
-                    <div class="col-md-6 mb-3">
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>Responsive Design</span>
-                        </div>
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>SEO-Optimized</span>
-                        </div>
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>Fast Loading Speed</span>
+            <div class="col-lg-6 col-md-12" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1 class="hero-title">Website Design and Development Company</h1>
+                    <p class="hero-subtitle">Custom Web Design Services at Affordable Pricing</p>
+
+                    <div class="hero-features">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Responsive Design</span>
+                                </div>
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>SEO-Optimized</span>
+                                </div>
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Fast Loading Speed</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Content Management System</span>
+                                </div>
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>E-Commerce Integration</span>
+                                </div>
+                                <div class="hero-feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Secure & Scalable Solutions</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>Content Management System</span>
-                        </div>
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>E-Commerce Integration</span>
-                        </div>
-                        <div class="hero-feature-item">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <span>Secure & Scalable Solutions</span>
-                        </div>
-                    </div>
+
+                    <a href="contact.php" class="btn-hero">
+                        Have a Query? <i class="fas fa-external-link-alt"></i>
+                    </a>
                 </div>
-                <a href="contact.php" class="btn btn-dark btn-lg mt-3">
-                    Have a Query? <i class="fas fa-external-link-alt ms-2"></i>
-                </a>
             </div>
-            <div class="col-lg-6" data-aos="fade-left">
+            <div class="col-lg-6 col-md-12" data-aos="fade-left">
                 <div class="hero-illustration">
                     <img src="https://cdn.pixabay.com/photo/2019/10/09/07/28/development-4536630_1280.png" alt="Web Development Illustration" class="img-fluid">
                 </div>
@@ -218,24 +224,24 @@ include 'includes/header.php';
                     <p class="tech-name mt-2">JavaScript</p>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
                 <div class="tech-logo">
                     <i class="fab fa-react fa-4x" style="color: #61DAFB;"></i>
                     <p class="tech-name mt-2">React</p>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            </div> -->
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="tech-logo">
                     <i class="fab fa-node-js fa-4x" style="color: #339933;"></i>
                     <p class="tech-name mt-2">Node.js</p>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+            </div> -->
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
                 <div class="tech-logo">
                     <i class="fab fa-python fa-4x" style="color: #3776AB;"></i>
                     <p class="tech-name mt-2">Python</p>
                 </div>
-            </div>
+            </div> -->
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="tech-logo">
                     <i class="fab fa-php fa-4x" style="color: #777BB4;"></i>
@@ -254,22 +260,28 @@ include 'includes/header.php';
                     <p class="tech-name mt-2">Bootstrap</p>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
                 <div class="tech-logo">
                     <i class="fab fa-aws fa-4x" style="color: #FF9900;"></i>
                     <p class="tech-name mt-2">AWS</p>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+            </div> -->
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="tech-logo">
                     <i class="fab fa-docker fa-4x" style="color: #2496ED;"></i>
                     <p class="tech-name mt-2">Docker</p>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+            </div> -->
+            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
                 <div class="tech-logo">
                     <i class="fab fa-git-alt fa-4x" style="color: #F05032;"></i>
                     <p class="tech-name mt-2">Git</p>
+                </div>
+            </div> -->
+                        <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+                <div class="tech-logo">
+                    <i class="fab fa-shopify fa-4x" style="color: #96bf48;"></i>
+                    <p class="tech-name mt-2">Shopify</p>
                 </div>
             </div>
         </div>
