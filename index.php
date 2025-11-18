@@ -114,9 +114,10 @@ include 'includes/header.php';
         </div>
         <div id="servicesCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
+                <!-- Slide 1 - Desktop: 3 cards, Mobile: 2 cards -->
                 <div class="carousel-item active">
                     <div class="row justify-content-center">
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 col-6 mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-laptop-code"></i>
@@ -126,7 +127,7 @@ include 'includes/header.php';
                                 <a href="services.php" class="btn btn-outline-primary">Learn More</a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 col-6 mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-shopping-cart"></i>
@@ -136,7 +137,7 @@ include 'includes/header.php';
                                 <a href="services.php" class="btn btn-outline-primary">Learn More</a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-code"></i>
@@ -148,9 +149,10 @@ include 'includes/header.php';
                         </div>
                     </div>
                 </div>
+                <!-- Slide 2 - Desktop: 3 cards, Mobile: 2 cards -->
                 <div class="carousel-item">
                     <div class="row justify-content-center">
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-robot"></i>
@@ -160,7 +162,7 @@ include 'includes/header.php';
                                 <a href="services.php" class="btn btn-outline-primary">Learn More</a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-chart-line"></i>
@@ -170,7 +172,53 @@ include 'includes/header.php';
                                 <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4>SEO</h4>
+                                <p>SEO services to rank higher in search engines.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
+                        <!-- Mobile only cards -->
+                        <div class="col-6 d-lg-none mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <h4>Web Development</h4>
+                                <p>Web portal development with the latest technology.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="col-6 d-lg-none mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h4>Agentic AI Solutions</h4>
+                                <p>Intelligent AI agents to automate your business processes.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slide 3 - Mobile only -->
+                <div class="carousel-item d-lg-none">
+                    <div class="row justify-content-center">
+                        <div class="col-6 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>Digital Marketing</h4>
+                                <p>Result-oriented digital marketing services.</p>
+                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="fas fa-search"></i>
@@ -194,6 +242,7 @@ include 'includes/header.php';
             <div class="carousel-indicators">
                 <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                 <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="2" class="d-lg-none" aria-label="Slide 3"></button>
             </div>
         </div>
     </div>

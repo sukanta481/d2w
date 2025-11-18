@@ -29,8 +29,8 @@ include 'includes/header.php';
                         <i class="fas fa-phone"></i>
                     </div>
                     <h4>Call Us</h4>
-                    <p>Phone: <a href="tel:+1234567890">+1 (234) 567-890</a><br>
-                    Toll Free: <a href="tel:+1800123456">+1 (800) 123-456</a></p>
+                    <p>Phone: <a href="tel:+1234567890">+91 94332 15443</a><br>
+                    Toll Free: <a href="tel:+1800123456">+91 89610 90050</a></p>
                 </div>
             </div>
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
@@ -40,7 +40,7 @@ include 'includes/header.php';
                     </div>
                     <h4>Email Us</h4>
                     <p>General: <a href="mailto:info@dawntoweb.com">info@dawntoweb.com</a><br>
-                    Support: <a href="mailto:support@dawntoweb.com">support@dawntoweb.com</a></p>
+                    Support: <a href="mailto:support@dawntoweb.com">info.dawntoweb@gmail.com</a></p>
                 </div>
             </div>
         </div>

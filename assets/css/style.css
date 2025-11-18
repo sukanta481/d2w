@@ -990,6 +990,36 @@ body {
     .hero-features .col-md-6 {
         margin-bottom: 0;
     }
+
+    /* Service Cards for Small Devices */
+    .service-card {
+        padding: 25px 15px;
+    }
+
+    .service-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .service-card p {
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+
+    .service-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+    }
+
+    .service-icon i {
+        font-size: 1.5rem;
+    }
+
+    .service-card .btn {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1043,6 +1073,48 @@ body {
         display: block;
         width: 100%;
         margin: 5px 0;
+    }
+
+    /* Service Cards Extra Optimization */
+    .service-card {
+        padding: 20px 12px;
+        margin-bottom: 15px;
+    }
+
+    .service-card h4 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .service-card p {
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+    .service-icon {
+        width: 55px;
+        height: 55px;
+        margin-bottom: 12px;
+    }
+
+    .service-icon i {
+        font-size: 1.3rem;
+    }
+
+    .service-card .btn {
+        font-size: 0.8rem;
+        padding: 7px 14px;
+    }
+
+    #servicesCarousel .carousel-control-prev,
+    #servicesCarousel .carousel-control-next {
+        width: 8%;
+    }
+
+    #servicesCarousel .carousel-control-prev-icon,
+    #servicesCarousel .carousel-control-next-icon {
+        padding: 15px;
     }
 }
 

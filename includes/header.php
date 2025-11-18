@@ -19,7 +19,7 @@
                 <div class="col-md-6">
                     <div class="top-info">
                         <i class="fas fa-envelope"></i> info@dawntoweb.com
-                        <span class="ms-4"><i class="fas fa-phone"></i> Call: +1-XXX-XXX-XXXX</span>
+                        <span class="ms-4"><i class="fas fa-phone"></i> Call: +91 94332 15443</span>
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
