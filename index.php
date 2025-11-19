@@ -293,43 +293,43 @@ include 'includes/header.php';
             </div> -->
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="tech-logo">
-                    <i class="fab fa-php fa-4x" style="color: #777BB4;"></i>
+                    <i class="fab fa-php" style="color: #777BB4;"></i>
                     <p class="tech-name mt-2">PHP</p>
                 </div>
             </div>
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
                 <div class="tech-logo">
-                    <i class="fab fa-wordpress fa-4x" style="color: #21759B;"></i>
+                    <i class="fab fa-wordpress" style="color: #21759B;"></i>
                     <p class="tech-name mt-2">WordPress</p>
                 </div>
             </div>
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="tech-logo">
-                    <i class="fab fa-bootstrap fa-4x" style="color: #7952B3;"></i>
+                    <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
                     <p class="tech-name mt-2">Bootstrap</p>
                 </div>
             </div>
             <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
                 <div class="tech-logo">
-                    <i class="fab fa-aws fa-4x" style="color: #FF9900;"></i>
+                    <i class="fab fa-aws" style="color: #FF9900;"></i>
                     <p class="tech-name mt-2">AWS</p>
                 </div>
             </div> -->
             <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="tech-logo">
-                    <i class="fab fa-docker fa-4x" style="color: #2496ED;"></i>
+                    <i class="fab fa-docker" style="color: #2496ED;"></i>
                     <p class="tech-name mt-2">Docker</p>
                 </div>
             </div> -->
             <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
                 <div class="tech-logo">
-                    <i class="fab fa-git-alt fa-4x" style="color: #F05032;"></i>
+                    <i class="fab fa-git-alt" style="color: #F05032;"></i>
                     <p class="tech-name mt-2">Git</p>
                 </div>
             </div> -->
                         <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
                 <div class="tech-logo">
-                    <i class="fab fa-shopify fa-4x" style="color: #96bf48;"></i>
+                    <i class="fab fa-shopify" style="color: #96bf48;"></i>
                     <p class="tech-name mt-2">Shopify</p>
                 </div>
             </div>
