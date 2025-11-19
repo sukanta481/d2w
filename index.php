@@ -257,19 +257,19 @@ include 'includes/header.php';
         <div class="row justify-content-center align-items-center">
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="tech-logo">
-                    <i class="fab fa-html5 fa-4x" style="color: #E34F26;"></i>
+                    <i class="fab fa-html5" style="color: #E34F26;"></i>
                     <p class="tech-name mt-2">HTML5</p>
                 </div>
             </div>
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
                 <div class="tech-logo">
-                    <i class="fab fa-css3-alt fa-4x" style="color: #1572B6;"></i>
+                    <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
                     <p class="tech-name mt-2">CSS3</p>
                 </div>
             </div>
             <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="tech-logo">
-                    <i class="fab fa-js-square fa-4x" style="color: #F7DF1E;"></i>
+                    <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
                     <p class="tech-name mt-2">JavaScript</p>
                 </div>
             </div>
@@ -343,7 +343,9 @@ include 'includes/header.php';
             <h2>What Our Clients Say</h2>
             <p>Trusted by businesses worldwide</p>
         </div>
-        <div class="row">
+
+        <!-- Desktop View: Static 3 columns -->
+        <div class="row d-none d-lg-flex">
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="testimonial-card">
                     <div class="testimonial-text">
@@ -376,6 +378,58 @@ include 'includes/header.php';
                         <span>Owner, Local Bistro</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Mobile/Tablet View: Carousel Slider -->
+        <div id="testimonialsCarousel" class="carousel slide d-lg-none" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Dawn To Web transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <h5>John Smith</h5>
+                            <span>CEO, TechStart Inc.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <h5>Sarah Johnson</h5>
+                            <span>Founder, Fashion Hub</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            <p>"Professional, dedicated, and responsive. Dawn To Web created a beautiful website for our business that truly represents our brand."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <h5>Michael Chen</h5>
+                            <span>Owner, Local Bistro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
             </div>
         </div>
     </div>
