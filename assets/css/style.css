@@ -173,32 +173,6 @@ html {
     display: flex;
     align-items: center;
     gap: 12px;
-    opacity: 0;
-    animation: fadeInLeft 0.6s ease-out forwards;
-}
-
-.hero-feature-item:nth-child(1) {
-    animation-delay: 0.5s;
-}
-
-.hero-feature-item:nth-child(2) {
-    animation-delay: 0.6s;
-}
-
-.hero-feature-item:nth-child(3) {
-    animation-delay: 0.7s;
-}
-
-.hero-feature-item:nth-child(4) {
-    animation-delay: 0.8s;
-}
-
-.hero-feature-item:nth-child(5) {
-    animation-delay: 0.9s;
-}
-
-.hero-feature-item:nth-child(6) {
-    animation-delay: 1s;
 }
 
 .hero-feature-item i {
@@ -1871,24 +1845,6 @@ html {
     animation: shake 0.5s ease;
 }
 
-/* Scroll Reveal Animations */
-.service-card,
-.stat-box,
-.tech-logo,
-.testimonial-card {
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.service-card:nth-child(1) { animation-delay: 0.1s; }
-.service-card:nth-child(2) { animation-delay: 0.2s; }
-.service-card:nth-child(3) { animation-delay: 0.3s; }
-
-.stat-box:nth-child(1) { animation-delay: 0.1s; }
-.stat-box:nth-child(2) { animation-delay: 0.2s; }
-.stat-box:nth-child(3) { animation-delay: 0.3s; }
-.stat-box:nth-child(4) { animation-delay: 0.4s; }
-
 /* Navigation Enhancement */
 .navbar {
     backdrop-filter: blur(10px);
@@ -2196,4 +2152,327 @@ a, button, .btn, input, textarea, select {
 .form-select:hover {
     border-color: var(--primary-color);
     box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
+}
+
+/* Section Fade-in Animation (controlled by JS IntersectionObserver) */
+.fade-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Fallback: ensure content is visible if JS fails or takes time */
+@media (prefers-reduced-motion: reduce) {
+    .fade-section {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Force sections to be visible after page load (no-JS fallback) */
+body.loaded .fade-section {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========================================
+   Project Detail Page Styles
+   ======================================== */
+
+/* Breadcrumb styling */
+.page-header .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.page-header .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.page-header .breadcrumb-item a:hover {
+    color: #fff;
+}
+
+.page-header .breadcrumb-item.active {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.page-header .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Project Detail Section */
+.project-detail-section {
+    background: #fff;
+}
+
+.project-main-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.project-description {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.project-description h2 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+}
+
+.project-description .description-content {
+    color: #555;
+    line-height: 1.8;
+}
+
+/* Technologies */
+.project-technologies h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tech-tag {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tech-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+/* Project Info Card */
+.project-info-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee;
+}
+
+.project-info-card h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.project-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.project-info-list li {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.project-info-list li:last-child {
+    border-bottom: none;
+}
+
+.project-info-list i {
+    width: 40px;
+    height: 40px;
+    background: rgba(13, 110, 253, 0.1);
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.project-info-list .info-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.project-info-list .info-value {
+    display: block;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+/* Client Testimonial Card */
+.client-testimonial-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee;
+}
+
+.client-testimonial-card h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--success-color);
+}
+
+.testimonial-content {
+    position: relative;
+}
+
+.testimonial-content .quote-icon {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    font-size: 3rem;
+    color: rgba(13, 110, 253, 0.1);
+    line-height: 1;
+}
+
+.testimonial-text {
+    font-style: italic;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    padding-left: 20px;
+}
+
+.testimonial-rating {
+    margin-bottom: 1rem;
+    padding-left: 20px;
+}
+
+.testimonial-rating i {
+    color: #ffc107;
+    font-size: 0.9rem;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.testimonial-author .author-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.testimonial-author .author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.testimonial-author .author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.testimonial-author .author-info strong {
+    color: var(--dark-color);
+    font-size: 0.95rem;
+}
+
+.testimonial-author .author-info span {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* Project CTA Card */
+.project-cta-card {
+    background: linear-gradient(135deg, var(--dark-color) 0%, #1a252f 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    color: #fff;
+}
+
+.project-cta-card h4 {
+    margin-bottom: 0.5rem;
+}
+
+.project-cta-card p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.project-cta-card .btn-outline-primary {
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+}
+
+.project-cta-card .btn-outline-primary:hover {
+    background: #fff;
+    color: var(--dark-color);
+}
+
+/* Related Projects */
+.related-projects-section h2 {
+    color: var(--dark-color);
+    font-family: var(--font-heading);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .project-info-card,
+    .client-testimonial-card,
+    .project-cta-card {
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .project-description {
+        padding: 1.5rem;
+    }
+
+    .tech-tag {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
 }

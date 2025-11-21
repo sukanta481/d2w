@@ -1,7 +1,18 @@
-<?php 
+<?php
 $currentPage = 'about';
 $pageTitle = 'About Us';
-include 'includes/header.php'; 
+
+// Include database helper
+include_once 'includes/db_config.php';
+$settings = getAllSettings();
+
+// Get stats from settings
+$statYears = $settings['stat_years'] ?? '5';
+$statProjects = $settings['stat_projects'] ?? '150';
+$statClients = $settings['stat_clients'] ?? '120';
+$statCountries = $settings['stat_countries'] ?? '15';
+
+include 'includes/header.php';
 ?>
 
 <section class="page-header">
@@ -29,28 +40,28 @@ include 'includes/header.php';
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-box-large">
                     <i class="fas fa-smile"></i>
-                    <h3 class="stat-number" data-count="120">0</h3>
+                    <h3 class="stat-number" data-count="<?php echo $statClients; ?>">0</h3>
                     <p>Happy Clients</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="stat-box-large">
                     <i class="fas fa-calendar-alt"></i>
-                    <h3 class="stat-number" data-count="5">0</h3>
+                    <h3 class="stat-number" data-count="<?php echo $statYears; ?>">0</h3>
                     <p>Years In Business</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="stat-box-large">
                     <i class="fas fa-project-diagram"></i>
-                    <h3 class="stat-number" data-count="150">0</h3>
+                    <h3 class="stat-number" data-count="<?php echo $statProjects; ?>">0</h3>
                     <p>Projects Done</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
                 <div class="stat-box-large">
                     <i class="fas fa-globe"></i>
-                    <h3 class="stat-number" data-count="15">0</h3>
+                    <h3 class="stat-number" data-count="<?php echo $statCountries; ?>">0</h3>
                     <p>Countries Served</p>
                 </div>
             </div>

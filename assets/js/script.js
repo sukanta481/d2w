@@ -229,27 +229,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Intersection Observer for fade-in animations
-    const observerOptions = {
+    const fadeObserverOptions = {
         threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
+        rootMargin: '0px 0px -50px 0px'
     };
 
     const fadeInObserver = new IntersectionObserver(function(entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('visible');
+                fadeInObserver.unobserve(entry.target);
             }
         });
-    }, observerOptions);
+    }, fadeObserverOptions);
 
-    // Apply fade-in to sections
+    // Apply fade-in to sections - use CSS class instead of inline styles
     const sections = document.querySelectorAll('.about-section, .services-section, .technology-section, .testimonials-section');
     sections.forEach(section => {
-        section.style.opacity = '0';
-        section.style.transform = 'translateY(50px)';
-        section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-        fadeInObserver.observe(section);
+        section.classList.add('fade-section');
+        // Check if already in viewport immediately
+        const rect = section.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom >= 0) {
+            section.classList.add('visible');
+        } else {
+            fadeInObserver.observe(section);
+        }
     });
 
     // Cursor trail effect (optional - can be enabled)

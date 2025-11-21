@@ -1,7 +1,15 @@
-<?php 
+<?php
 $currentPage = 'contact';
 $pageTitle = 'Contact Us';
-include 'includes/header.php'; 
+
+// Include database helper
+include_once 'includes/db_config.php';
+$settings = getAllSettings();
+$contactEmail = $settings['contact_email'] ?? 'info@dawntoweb.com';
+$contactPhone = $settings['contact_phone'] ?? '+91 94332 15443';
+$contactAddress = $settings['contact_address'] ?? '123 Business Avenue, Suite 100, New York, NY 10001';
+
+include 'includes/header.php';
 ?>
 
 <section class="page-header">
@@ -20,7 +28,7 @@ include 'includes/header.php';
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <h4>Our Office Address</h4>
-                    <p>123 Business Avenue, Suite 100<br>New York, NY 10001<br>United States</p>
+                    <p><?php echo nl2br(htmlspecialchars($contactAddress)); ?></p>
                 </div>
             </div>
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
@@ -29,8 +37,7 @@ include 'includes/header.php';
                         <i class="fas fa-phone"></i>
                     </div>
                     <h4>Call Us</h4>
-                    <p>Phone: <a href="tel:+1234567890">+91 94332 15443</a><br>
-                    Toll Free: <a href="tel:+1800123456">+91 89610 90050</a></p>
+                    <p>Phone: <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $contactPhone); ?>"><?php echo htmlspecialchars($contactPhone); ?></a></p>
                 </div>
             </div>
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
@@ -39,8 +46,7 @@ include 'includes/header.php';
                         <i class="fas fa-envelope"></i>
                     </div>
                     <h4>Email Us</h4>
-                    <p>General: <a href="mailto:info@dawntoweb.com">info@dawntoweb.com</a><br>
-                    Support: <a href="mailto:support@dawntoweb.com">info.dawntoweb@gmail.com</a></p>
+                    <p><a href="mailto:<?php echo htmlspecialchars($contactEmail); ?>"><?php echo htmlspecialchars($contactEmail); ?></a></p>
                 </div>
             </div>
         </div>

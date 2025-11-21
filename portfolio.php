@@ -1,7 +1,23 @@
-<?php 
+<?php
 $currentPage = 'portfolio';
 $pageTitle = 'Portfolio';
-include 'includes/header.php'; 
+
+// Include database helper
+include_once 'includes/db_config.php';
+$projects = getProjects();
+$settings = getAllSettings();
+
+// Get unique categories from projects for filter buttons
+$categories = [];
+if (!empty($projects)) {
+    foreach ($projects as $project) {
+        if (!empty($project['category']) && !in_array($project['category'], $categories)) {
+            $categories[] = $project['category'];
+        }
+    }
+}
+
+include 'includes/header.php';
 ?>
 
 <section class="page-header">
@@ -20,157 +36,74 @@ include 'includes/header.php';
 
         <div class="portfolio-filters text-center mb-5" data-aos="fade-up">
             <button class="filter-btn active" data-filter="all">Show All</button>
-            <button class="filter-btn" data-filter="website">Website</button>
-            <button class="filter-btn" data-filter="ecommerce">E-Commerce</button>
-            <button class="filter-btn" data-filter="webportal">Web Portal</button>
-            <button class="filter-btn" data-filter="ai">AI Solutions</button>
-            <button class="filter-btn" data-filter="marketing">Digital Marketing</button>
+            <?php if (!empty($categories)): ?>
+                <?php foreach ($categories as $category): ?>
+                <button class="filter-btn" data-filter="<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $category))); ?>"><?php echo htmlspecialchars(ucwords($category)); ?></button>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <button class="filter-btn" data-filter="website">Website</button>
+                <button class="filter-btn" data-filter="ecommerce">E-Commerce</button>
+                <button class="filter-btn" data-filter="webportal">Web Portal</button>
+                <button class="filter-btn" data-filter="ai">AI Solutions</button>
+            <?php endif; ?>
         </div>
 
         <div class="row portfolio-grid">
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="website" data-aos="fade-up">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="Restaurant Website">
-                        <div class="portfolio-overlay">
-                            <h4>Modern Restaurant Website</h4>
-                            <p>Website Design</p>
+            <?php if (!empty($projects)): ?>
+                <?php $delay = 0; foreach ($projects as $project): ?>
+                <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $project['category'] ?? 'website'))); ?>" data-aos="fade-up" <?php echo $delay > 0 ? 'data-aos-delay="' . $delay . '"' : ''; ?>>
+                    <div class="portfolio-card">
+                        <div class="portfolio-image">
+                            <?php if (!empty($project['image_url'])): ?>
+                            <img src="<?php echo htmlspecialchars($project['image_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <?php else: ?>
+                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <?php endif; ?>
+                            <div class="portfolio-overlay">
+                                <h4><?php echo htmlspecialchars($project['title']); ?></h4>
+                                <p><?php echo htmlspecialchars($project['category'] ?? 'Web Project'); ?></p>
+                                <a href="project.php?id=<?php echo $project['id']; ?>" class="btn btn-sm btn-light mt-2">View Details</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ecommerce" data-aos="fade-up" data-aos-delay="100">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2016/11/29/13/14/attractive-1869761_1280.jpg" alt="Fashion E-commerce">
-                        <div class="portfolio-overlay">
-                            <h4>Fashion E-Commerce Store</h4>
-                            <p>E-Commerce Development</p>
+                <?php $delay = $delay >= 200 ? 0 : $delay + 100; endforeach; ?>
+            <?php else: ?>
+                <!-- Fallback static portfolio items -->
+                <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="website" data-aos="fade-up">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image">
+                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="Restaurant Website">
+                            <div class="portfolio-overlay">
+                                <h4>Modern Restaurant Website</h4>
+                                <p>Website Design</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ai" data-aos="fade-up" data-aos-delay="200">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2023/01/26/22/12/ai-generated-7747180_1280.jpg" alt="AI Chatbot">
-                        <div class="portfolio-overlay">
-                            <h4>Customer Service AI Bot</h4>
-                            <p>Agentic AI Solution</p>
+                <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ecommerce" data-aos="fade-up" data-aos-delay="100">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image">
+                            <img src="https://cdn.pixabay.com/photo/2016/11/29/13/14/attractive-1869761_1280.jpg" alt="Fashion E-commerce">
+                            <div class="portfolio-overlay">
+                                <h4>Fashion E-Commerce Store</h4>
+                                <p>E-Commerce Development</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="webportal" data-aos="fade-up">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2016/11/23/14/45/coding-1853305_1280.jpg" alt="Learning Portal">
-                        <div class="portfolio-overlay">
-                            <h4>E-Learning Platform</h4>
-                            <p>Web Portal</p>
+                <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ai" data-aos="fade-up" data-aos-delay="200">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image">
+                            <img src="https://cdn.pixabay.com/photo/2023/01/26/22/12/ai-generated-7747180_1280.jpg" alt="AI Chatbot">
+                            <div class="portfolio-overlay">
+                                <h4>Customer Service AI Bot</h4>
+                                <p>Agentic AI Solution</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="website" data-aos="fade-up" data-aos-delay="100">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2017/08/10/08/47/laptop-2619564_1280.jpg" alt="Corporate Website">
-                        <div class="portfolio-overlay">
-                            <h4>Corporate Business Website</h4>
-                            <p>Website Design</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ecommerce" data-aos="fade-up" data-aos-delay="200">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2017/03/13/17/26/ecommerce-2140604_1280.jpg" alt="Electronics Store">
-                        <div class="portfolio-overlay">
-                            <h4>Electronics E-Store</h4>
-                            <p>E-Commerce Development</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="marketing" data-aos="fade-up">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2017/01/14/10/56/people-1979261_1280.jpg" alt="Marketing Campaign">
-                        <div class="portfolio-overlay">
-                            <h4>Social Media Campaign</h4>
-                            <p>Digital Marketing</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ai" data-aos="fade-up" data-aos-delay="100">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2023/06/29/11/18/ai-generated-8096304_1280.jpg" alt="AI Analytics">
-                        <div class="portfolio-overlay">
-                            <h4>AI-Powered Analytics Dashboard</h4>
-                            <p>Agentic AI Solution</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="website" data-aos="fade-up" data-aos-delay="200">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2016/11/19/15/32/laptop-1839876_1280.jpg" alt="NGO Website">
-                        <div class="portfolio-overlay">
-                            <h4>Non-Profit Organization Site</h4>
-                            <p>Website Design</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="webportal" data-aos="fade-up">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2018/03/10/12/00/paper-3213924_1280.jpg" alt="HR Portal">
-                        <div class="portfolio-overlay">
-                            <h4>HR Management Portal</h4>
-                            <p>Web Portal</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ecommerce" data-aos="fade-up" data-aos-delay="100">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2016/03/02/20/13/grocery-1232944_1280.jpg" alt="Grocery Store">
-                        <div class="portfolio-overlay">
-                            <h4>Online Grocery Store</h4>
-                            <p>E-Commerce Development</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="marketing" data-aos="fade-up" data-aos-delay="200">
-                <div class="portfolio-card">
-                    <div class="portfolio-image">
-                        <img src="https://cdn.pixabay.com/photo/2018/03/22/02/37/email-3249062_1280.png" alt="Email Campaign">
-                        <div class="portfolio-overlay">
-                            <h4>Email Marketing Campaign</h4>
-                            <p>Digital Marketing</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

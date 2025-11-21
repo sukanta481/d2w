@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: application/json');
 
+// Include database helper
+include_once __DIR__ . '/../includes/db_config.php';
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
@@ -41,7 +44,26 @@ if (!empty($errors)) {
     exit;
 }
 
-$to = 'info@dawntoweb.com';
+// Save lead to database
+$leadSaved = false;
+try {
+    $leadSaved = saveLead([
+        'name' => $name,
+        'email' => $email,
+        'phone' => $phone,
+        'service_type' => $service,
+        'message' => $message,
+        'source' => 'contact_form'
+    ]);
+} catch (Exception $e) {
+    // Log error but continue with email sending
+    error_log('Failed to save lead: ' . $e->getMessage());
+}
+
+// Get admin email from settings
+$settings = getAllSettings();
+$to = $settings['contact_email'] ?? 'info@dawntoweb.com';
+
 $subject = 'New Contact Form Submission from ' . $name;
 $email_content = "Name: $name\n";
 $email_content .= "Email: $email\n";
@@ -53,32 +75,33 @@ $headers = "From: Dawn To Web Contact Form <noreply@dawntoweb.com>\r\n";
 $headers .= "Reply-To: $name <$email>\r\n";
 $headers .= "X-Mailer: PHP/" . phpversion();
 
-$mail_sent = mail($to, $subject, $email_content, $headers);
+$mail_sent = @mail($to, $subject, $email_content, $headers);
 
 $contact_file = __DIR__ . '/../contacts.txt';
 
-if ($mail_sent) {
-    $log_entry = date('Y-m-d H:i:s') . " - SENT\n";
+// Always consider successful if lead was saved to database (even if email fails)
+if ($leadSaved || $mail_sent) {
+    $log_entry = date('Y-m-d H:i:s') . " - SUCCESS (DB: " . ($leadSaved ? 'YES' : 'NO') . ", Email: " . ($mail_sent ? 'YES' : 'NO') . ")\n";
     $log_entry .= "  Name: $name\n";
     $log_entry .= "  Email: $email\n";
     $log_entry .= "  Phone: $phone\n";
     $log_entry .= "  Service: $service\n";
     $log_entry .= "  Message: $message\n\n";
     file_put_contents($contact_file, $log_entry, FILE_APPEND);
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'Thank you for contacting us! We will get back to you soon.'
     ]);
 } else {
-    $log_entry = date('Y-m-d H:i:s') . " - FAILED TO SEND\n";
+    $log_entry = date('Y-m-d H:i:s') . " - FAILED\n";
     $log_entry .= "  Name: $name\n";
     $log_entry .= "  Email: $email\n";
     $log_entry .= "  Phone: $phone\n";
     $log_entry .= "  Service: $service\n";
     $log_entry .= "  Message: $message\n\n";
     file_put_contents($contact_file, $log_entry, FILE_APPEND);
-    
+
     echo json_encode([
         'success' => false,
         'message' => 'Sorry, there was an error sending your message. Please try again or contact us directly at info@dawntoweb.com.'

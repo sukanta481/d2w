@@ -1,3 +1,14 @@
+<?php
+// Get settings for footer if not already loaded
+if (!isset($settings)) {
+    include_once __DIR__ . '/db_config.php';
+    $settings = getAllSettings();
+}
+$facebook = $settings['social_facebook'] ?? '#';
+$twitter = $settings['social_twitter'] ?? '#';
+$linkedin = $settings['social_linkedin'] ?? '#';
+$instagram = $settings['social_instagram'] ?? '#';
+?>
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -5,10 +16,10 @@
                     <h5 class="footer-title">About Dawn To Web</h5>
                     <p class="footer-text">We specialize in web development, agentic AI solutions, and comprehensive digital marketing services designed specifically for small businesses. Let us help you grow your digital presence.</p>
                     <div class="social-links mt-3">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <?php if ($facebook && $facebook !== '#'): ?><a href="<?php echo htmlspecialchars($facebook); ?>" target="_blank"><i class="fab fa-facebook"></i></a><?php endif; ?>
+                        <?php if ($twitter && $twitter !== '#'): ?><a href="<?php echo htmlspecialchars($twitter); ?>" target="_blank"><i class="fab fa-twitter"></i></a><?php endif; ?>
+                        <?php if ($linkedin && $linkedin !== '#'): ?><a href="<?php echo htmlspecialchars($linkedin); ?>" target="_blank"><i class="fab fa-linkedin"></i></a><?php endif; ?>
+                        <?php if ($instagram && $instagram !== '#'): ?><a href="<?php echo htmlspecialchars($instagram); ?>" target="_blank"><i class="fab fa-instagram"></i></a><?php endif; ?>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">

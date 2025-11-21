@@ -1,7 +1,24 @@
-<?php 
+<?php
 $currentPage = 'home';
 $pageTitle = 'Home';
-include 'includes/header.php'; 
+
+// Include database helper
+include_once 'includes/db_config.php';
+
+// Get data from database
+$settings = getAllSettings();
+$services = getServices();
+$testimonials = getTestimonials();
+
+// Fallback values if database not available
+$heroTitle = $settings['hero_title'] ?? 'Website Design and Development Company';
+$heroSubtitle = $settings['hero_subtitle'] ?? 'Custom Web Design Services at Affordable Pricing';
+$statYears = $settings['stat_years'] ?? '5';
+$statProjects = $settings['stat_projects'] ?? '150';
+$statClients = $settings['stat_clients'] ?? '120';
+$statCountries = $settings['stat_countries'] ?? '15';
+
+include 'includes/header.php';
 ?>
 
 <section class="hero-section">
@@ -9,8 +26,8 @@ include 'includes/header.php';
         <div class="row align-items-center">
             <div class="col-lg-6 col-md-12" data-aos="fade-right">
                 <div class="hero-content">
-                    <h1 class="hero-title">Website Design and Development Company</h1>
-                    <p class="hero-subtitle">Custom Web Design Services at Affordable Pricing</p>
+                    <h1 class="hero-title"><?php echo htmlspecialchars($heroTitle); ?></h1>
+                    <p class="hero-subtitle"><?php echo htmlspecialchars($heroSubtitle); ?></p>
 
                     <div class="hero-features">
                         <div class="row">
@@ -75,28 +92,28 @@ include 'includes/header.php';
                     <div class="col-6 mb-3">
                         <div class="stat-box">
                             <i class="fas fa-briefcase stat-icon"></i>
-                            <h3 class="stat-number" data-count="5">0</h3>
+                            <h3 class="stat-number" data-count="<?php echo $statYears; ?>">0</h3>
                             <p class="stat-label">Years of Experience</p>
                         </div>
                     </div>
                     <div class="col-6 mb-3">
                         <div class="stat-box">
                             <i class="fas fa-project-diagram stat-icon"></i>
-                            <h3 class="stat-number" data-count="150">0</h3>
+                            <h3 class="stat-number" data-count="<?php echo $statProjects; ?>">0</h3>
                             <p class="stat-label">Projects Done</p>
                         </div>
                     </div>
                     <div class="col-6 mb-3">
                         <div class="stat-box">
                             <i class="fas fa-smile stat-icon"></i>
-                            <h3 class="stat-number" data-count="120">0</h3>
+                            <h3 class="stat-number" data-count="<?php echo $statClients; ?>">0</h3>
                             <p class="stat-label">Satisfied Clients</p>
                         </div>
                     </div>
                     <div class="col-6 mb-3">
                         <div class="stat-box">
                             <i class="fas fa-globe stat-icon"></i>
-                            <h3 class="stat-number" data-count="15">0</h3>
+                            <h3 class="stat-number" data-count="<?php echo $statCountries; ?>">0</h3>
                             <p class="stat-label">Countries Served</p>
                         </div>
                     </div>
@@ -112,125 +129,41 @@ include 'includes/header.php';
             <h2>Our Featured Services</h2>
             <p>Elevate Your Online Presence with Our Expertise – You Dream It, We Build It</p>
         </div>
+        <?php if (!empty($services)): ?>
+        <?php
+        // Calculate slides needed
+        $totalServices = count($services);
+        $desktopPerSlide = 3;
+        $mobilePerSlide = 2;
+        $desktopSlides = ceil($totalServices / $desktopPerSlide);
+        $mobileSlides = ceil($totalServices / $mobilePerSlide);
+        ?>
         <div id="servicesCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
-                <!-- Slide 1 - Desktop: 3 cards, Mobile: 2 cards -->
-                <div class="carousel-item active">
+                <?php for ($slide = 0; $slide < $desktopSlides; $slide++): ?>
+                <div class="carousel-item <?php echo $slide === 0 ? 'active' : ''; ?>">
                     <div class="row justify-content-center">
-                        <div class="col-lg-4 col-md-6 col-6 mb-4">
+                        <?php for ($i = 0; $i < $desktopPerSlide; $i++):
+                            $index = $slide * $desktopPerSlide + $i;
+                            if ($index >= $totalServices) break;
+                            $service = $services[$index];
+                        ?>
+                        <div class="col-lg-4 col-md-6 <?php echo $i >= $mobilePerSlide ? 'd-none d-lg-block' : 'col-6'; ?> mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
-                                    <i class="fas fa-laptop-code"></i>
+                                    <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
                                 </div>
-                                <h4>Website Design</h4>
-                                <p>Faster loading secured website designing service.</p>
+                                <h4><?php echo htmlspecialchars($service['title']); ?></h4>
+                                <p><?php echo htmlspecialchars($service['short_description']); ?></p>
                                 <a href="services.php" class="btn btn-outline-primary">Learn More</a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 col-6 mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </div>
-                                <h4>Ecommerce Website</h4>
-                                <p>Premium Quality E-Commerce Development Services.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-code"></i>
-                                </div>
-                                <h4>Web Development</h4>
-                                <p>Web portal development with the latest technology.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
+                        <?php endfor; ?>
                     </div>
                 </div>
-                <!-- Slide 2 - Desktop: 3 cards, Mobile: 2 cards -->
-                <div class="carousel-item">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <h4>Agentic AI Solutions</h4>
-                                <p>Intelligent AI agents to automate your business processes.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <h4>Digital Marketing</h4>
-                                <p>Result-oriented digital marketing services.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h4>SEO</h4>
-                                <p>SEO services to rank higher in search engines.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
-                        <!-- Mobile only cards -->
-                        <div class="col-6 d-lg-none mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-code"></i>
-                                </div>
-                                <h4>Web Development</h4>
-                                <p>Web portal development with the latest technology.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
-                        <div class="col-6 d-lg-none mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <h4>Agentic AI Solutions</h4>
-                                <p>Intelligent AI agents to automate your business processes.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Slide 3 - Mobile only -->
-                <div class="carousel-item d-lg-none">
-                    <div class="row justify-content-center">
-                        <div class="col-6 mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <h4>Digital Marketing</h4>
-                                <p>Result-oriented digital marketing services.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
-                        <div class="col-6 mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h4>SEO</h4>
-                                <p>SEO services to rank higher in search engines.</p>
-                                <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php endfor; ?>
             </div>
+            <?php if ($desktopSlides > 1): ?>
             <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
@@ -240,11 +173,41 @@ include 'includes/header.php';
                 <span class="visually-hidden">Next</span>
             </button>
             <div class="carousel-indicators">
-                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="2" class="d-lg-none" aria-label="Slide 3"></button>
+                <?php for ($s = 0; $s < $desktopSlides; $s++): ?>
+                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
+                <?php endfor; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php else: ?>
+        <!-- Fallback static services if database unavailable -->
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 col-6 mb-4">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-laptop-code"></i></div>
+                    <h4>Website Design</h4>
+                    <p>Faster loading secured website designing service.</p>
+                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-6 mb-4">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h4>Ecommerce Website</h4>
+                    <p>Premium Quality E-Commerce Development Services.</p>
+                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
+                <div class="service-card">
+                    <div class="service-icon"><i class="fas fa-code"></i></div>
+                    <h4>Web Development</h4>
+                    <p>Web portal development with the latest technology.</p>
+                    <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
+                </div>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -344,7 +307,69 @@ include 'includes/header.php';
             <p>Trusted by businesses worldwide</p>
         </div>
 
+        <?php if (!empty($testimonials)): ?>
         <!-- Desktop View: Static 3 columns -->
+        <div class="row d-none d-lg-flex">
+            <?php $delay = 100; foreach (array_slice($testimonials, 0, 3) as $testimonial): ?>
+            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating mb-2">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
+                        <?php endfor; ?>
+                    </div>
+                    <div class="testimonial-text">
+                        <p>"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
+                        <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
+                    </div>
+                </div>
+            </div>
+            <?php $delay += 100; endforeach; ?>
+        </div>
+
+        <!-- Mobile/Tablet View: Carousel Slider -->
+        <div id="testimonialsCarousel" class="carousel slide d-lg-none" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <?php $first = true; foreach ($testimonials as $testimonial): ?>
+                <div class="carousel-item <?php echo $first ? 'active' : ''; ?>">
+                    <div class="testimonial-card">
+                        <div class="testimonial-rating mb-2">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <div class="testimonial-text">
+                            <p>"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
+                            <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php $first = false; endforeach; ?>
+            </div>
+            <?php if (count($testimonials) > 1): ?>
+            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            <div class="carousel-indicators">
+                <?php for ($t = 0; $t < count($testimonials); $t++): ?>
+                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="<?php echo $t; ?>" <?php echo $t === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $t + 1; ?>"></button>
+                <?php endfor; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php else: ?>
+        <!-- Fallback static testimonials if database unavailable -->
         <div class="row d-none d-lg-flex">
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="testimonial-card">
@@ -380,58 +405,7 @@ include 'includes/header.php';
                 </div>
             </div>
         </div>
-
-        <!-- Mobile/Tablet View: Carousel Slider -->
-        <div id="testimonialsCarousel" class="carousel slide d-lg-none" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            <p>"Dawn To Web transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <h5>John Smith</h5>
-                            <span>CEO, TechStart Inc.</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            <p>"Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch."</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <h5>Sarah Johnson</h5>
-                            <span>Founder, Fashion Hub</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            <p>"Professional, dedicated, and responsive. Dawn To Web created a beautiful website for our business that truly represents our brand."</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <h5>Michael Chen</h5>
-                            <span>Owner, Local Bistro</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            <div class="carousel-indicators">
-                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-            </div>
-        </div>
+        <?php endif; ?>
     </div>
 </section>
 
