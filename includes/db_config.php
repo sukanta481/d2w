@@ -149,6 +149,50 @@ function getBlogPosts($limit = null) {
     }
 }
 
+// Get single blog post by slug
+function getBlogPost($slug) {
+    $db = getDBConnection();
+    if (!$db) return null;
+
+    try {
+        $stmt = $db->prepare("SELECT bp.*, au.full_name as author_name
+                              FROM blog_posts bp
+                              LEFT JOIN admin_users au ON bp.author_id = au.id
+                              WHERE bp.slug = :slug AND bp.status = 'published'");
+        $stmt->execute([':slug' => $slug]);
+        $post = $stmt->fetch();
+
+        // Increment views
+        if ($post) {
+            $updateStmt = $db->prepare("UPDATE blog_posts SET views = views + 1 WHERE id = :id");
+            $updateStmt->execute([':id' => $post['id']]);
+        }
+
+        return $post;
+    } catch(PDOException $e) {
+        return null;
+    }
+}
+
+// Get related blog posts (same category, exclude current)
+function getRelatedBlogPosts($postId, $category, $limit = 3) {
+    $db = getDBConnection();
+    if (!$db) return [];
+
+    try {
+        $stmt = $db->prepare("SELECT * FROM blog_posts
+                              WHERE status = 'published'
+                              AND category = :category
+                              AND id != :id
+                              ORDER BY published_at DESC
+                              LIMIT " . (int)$limit);
+        $stmt->execute([':category' => $category, ':id' => $postId]);
+        return $stmt->fetchAll();
+    } catch(PDOException $e) {
+        return [];
+    }
+}
+
 // Get single project by ID
 function getProject($id) {
     $db = getDBConnection();

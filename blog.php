@@ -26,7 +26,14 @@ include 'includes/header.php';
                     <article class="blog-card">
                         <div class="blog-image">
                             <?php if (!empty($post['featured_image'])): ?>
-                            <img src="<?php echo htmlspecialchars($post['featured_image']); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>">
+                            <?php
+                            // Handle both local uploads and external URLs
+                            $imgSrc = $post['featured_image'];
+                            if (strpos($imgSrc, 'http') !== 0 && strpos($imgSrc, '//') !== 0) {
+                                $imgSrc = $imgSrc; // Local path - use as is
+                            }
+                            ?>
+                            <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>">
                             <?php else: ?>
                             <img src="https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg" alt="<?php echo htmlspecialchars($post['title']); ?>">
                             <?php endif; ?>
