@@ -133,6 +133,19 @@ function getAIAgents() {
     }
 }
 
+// Get active technologies/tools
+function getTechnologies() {
+    $db = getDBConnection();
+    if (!$db) return [];
+
+    try {
+        $stmt = $db->query("SELECT * FROM technologies WHERE status = 'active' ORDER BY display_order ASC, id ASC");
+        return $stmt->fetchAll();
+    } catch(PDOException $e) {
+        return [];
+    }
+}
+
 // Get published blog posts
 function getBlogPosts($limit = null) {
     $db = getDBConnection();
@@ -219,6 +232,23 @@ function getTestimonialByClient($clientName) {
                               AND (client_company LIKE :name OR client_name LIKE :name2)
                               LIMIT 1");
         $stmt->execute([':name' => '%' . $clientName . '%', ':name2' => '%' . $clientName . '%']);
+        return $stmt->fetch();
+    } catch(PDOException $e) {
+        return null;
+    }
+}
+
+// Get testimonial linked to a specific project by project_id
+function getTestimonialByProject($projectId) {
+    $db = getDBConnection();
+    if (!$db) return null;
+
+    try {
+        $stmt = $db->prepare("SELECT * FROM testimonials
+                              WHERE status = 'active'
+                              AND project_id = :project_id
+                              LIMIT 1");
+        $stmt->execute([':project_id' => $projectId]);
         return $stmt->fetch();
     } catch(PDOException $e) {
         return null;

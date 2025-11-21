@@ -5,6 +5,7 @@ $pageTitle = 'Our Services';
 // Include database helper
 include_once 'includes/db_config.php';
 $services = getServices();
+$technologies = getTechnologies();
 $settings = getAllSettings();
 
 include 'includes/header.php';
@@ -104,54 +105,66 @@ include 'includes/header.php';
             <p>We use the latest technologies & tools to build secure & updated websites & applications</p>
         </div>
         <div class="row text-center">
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
-                <div class="tech-item">
-                    <i class="fab fa-html5"></i>
-                    <p>HTML5</p>
+            <?php if (!empty($technologies)): ?>
+                <?php
+                $delay = 100;
+                foreach ($technologies as $tech):
+                ?>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="tech-item">
+                        <i class="<?php echo htmlspecialchars($tech['icon']); ?>" style="color: <?php echo htmlspecialchars($tech['color']); ?>;"></i>
+                        <p><?php echo htmlspecialchars($tech['name']); ?></p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
-                <div class="tech-item">
-                    <i class="fab fa-css3-alt"></i>
-                    <p>CSS3</p>
+                <?php
+                $delay = $delay >= 400 ? 100 : $delay + 100;
+                endforeach;
+                ?>
+            <?php else: ?>
+                <!-- Fallback static technologies -->
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="tech-item">
+                        <i class="fab fa-html5" style="color: #E34F26;"></i>
+                        <p>HTML5</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
-                <div class="tech-item">
-                    <i class="fab fa-js"></i>
-                    <p>JavaScript</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="tech-item">
+                        <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
+                        <p>CSS3</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
-                <div class="tech-item">
-                    <i class="fab fa-react"></i>
-                    <p>React</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="tech-item">
+                        <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
+                        <p>JavaScript</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
-                <div class="tech-item">
-                    <i class="fab fa-node"></i>
-                    <p>Node.js</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="tech-item">
+                        <i class="fab fa-php" style="color: #777BB4;"></i>
+                        <p>PHP</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
-                <div class="tech-item">
-                    <i class="fab fa-python"></i>
-                    <p>Python</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="tech-item">
+                        <i class="fab fa-wordpress" style="color: #21759B;"></i>
+                        <p>WordPress</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
-                <div class="tech-item">
-                    <i class="fab fa-php"></i>
-                    <p>PHP</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="tech-item">
+                        <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
+                        <p>Bootstrap</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
-                <div class="tech-item">
-                    <i class="fab fa-wordpress"></i>
-                    <p>WordPress</p>
+                <div class="col-6 col-md-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="tech-item">
+                        <i class="fab fa-shopify" style="color: #96bf48;"></i>
+                        <p>Shopify</p>
+                    </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

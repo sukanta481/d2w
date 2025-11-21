@@ -4,10 +4,10 @@ if (!isset($settings)) {
     include_once __DIR__ . '/db_config.php';
     $settings = getAllSettings();
 }
-$facebook = $settings['social_facebook'] ?? '#';
-$twitter = $settings['social_twitter'] ?? '#';
-$linkedin = $settings['social_linkedin'] ?? '#';
-$instagram = $settings['social_instagram'] ?? '#';
+$facebook = $settings['facebook_url'] ?? '#';
+$twitter = $settings['twitter_url'] ?? '#';
+$linkedin = $settings['linkedin_url'] ?? '#';
+$instagram = $settings['instagram_url'] ?? '#';
 ?>
     <footer class="footer">
         <div class="container">
@@ -16,10 +16,10 @@ $instagram = $settings['social_instagram'] ?? '#';
                     <h5 class="footer-title">About Dawn To Web</h5>
                     <p class="footer-text">We specialize in web development, agentic AI solutions, and comprehensive digital marketing services designed specifically for small businesses. Let us help you grow your digital presence.</p>
                     <div class="social-links mt-3">
-                        <?php if ($facebook && $facebook !== '#'): ?><a href="<?php echo htmlspecialchars($facebook); ?>" target="_blank"><i class="fab fa-facebook"></i></a><?php endif; ?>
-                        <?php if ($twitter && $twitter !== '#'): ?><a href="<?php echo htmlspecialchars($twitter); ?>" target="_blank"><i class="fab fa-twitter"></i></a><?php endif; ?>
-                        <?php if ($linkedin && $linkedin !== '#'): ?><a href="<?php echo htmlspecialchars($linkedin); ?>" target="_blank"><i class="fab fa-linkedin"></i></a><?php endif; ?>
-                        <?php if ($instagram && $instagram !== '#'): ?><a href="<?php echo htmlspecialchars($instagram); ?>" target="_blank"><i class="fab fa-instagram"></i></a><?php endif; ?>
+                        <a href="<?php echo htmlspecialchars($facebook); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+                        <a href="<?php echo htmlspecialchars($twitter); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                        <a href="<?php echo htmlspecialchars($linkedin); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="<?php echo htmlspecialchars($instagram); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">

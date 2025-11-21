@@ -5,22 +5,58 @@ require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
 
+// Check if project_id column exists in testimonials table
+$hasProjectColumn = false;
+try {
+    $checkCol = $db->query("SHOW COLUMNS FROM testimonials LIKE 'project_id'");
+    $hasProjectColumn = $checkCol->rowCount() > 0;
+} catch(PDOException $e) {
+    // Column check failed
+}
+
+// Get all projects for linking dropdown
+$projects = [];
+try {
+    $stmt = $db->query("SELECT id, title FROM projects WHERE status = 'active' ORDER BY title ASC");
+    $projects = $stmt->fetchAll();
+} catch(PDOException $e) {
+    // Table might not exist
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['add_testimonial'])) {
-            $stmt = $db->prepare("INSERT INTO testimonials (client_name, client_position, client_company, testimonial, rating, client_photo, display_order, status)
-                                  VALUES (:client_name, :client_position, :client_company, :testimonial, :rating, :client_photo, :display_order, :status)");
-            $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
-                ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
-                ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status']]);
+            if ($hasProjectColumn) {
+                $stmt = $db->prepare("INSERT INTO testimonials (client_name, client_position, client_company, testimonial, rating, client_photo, project_id, display_order, status)
+                                      VALUES (:client_name, :client_position, :client_company, :testimonial, :rating, :client_photo, :project_id, :display_order, :status)");
+                $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
+                    ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
+                    ':project_id' => !empty($_POST['project_id']) ? $_POST['project_id'] : null,
+                    ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status']]);
+            } else {
+                $stmt = $db->prepare("INSERT INTO testimonials (client_name, client_position, client_company, testimonial, rating, client_photo, display_order, status)
+                                      VALUES (:client_name, :client_position, :client_company, :testimonial, :rating, :client_photo, :display_order, :status)");
+                $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
+                    ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
+                    ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status']]);
+            }
             $successMessage = "Testimonial added successfully!";
         }
         if (isset($_POST['update_testimonial'])) {
-            $stmt = $db->prepare("UPDATE testimonials SET client_name = :client_name, client_position = :client_position, client_company = :client_company,
-                                  testimonial = :testimonial, rating = :rating, client_photo = :client_photo, display_order = :display_order, status = :status WHERE id = :id");
-            $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
-                ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
-                ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status'], ':id' => $_POST['testimonial_id']]);
+            if ($hasProjectColumn) {
+                $stmt = $db->prepare("UPDATE testimonials SET client_name = :client_name, client_position = :client_position, client_company = :client_company,
+                                      testimonial = :testimonial, rating = :rating, client_photo = :client_photo, project_id = :project_id, display_order = :display_order, status = :status WHERE id = :id");
+                $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
+                    ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
+                    ':project_id' => !empty($_POST['project_id']) ? $_POST['project_id'] : null,
+                    ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status'], ':id' => $_POST['testimonial_id']]);
+            } else {
+                $stmt = $db->prepare("UPDATE testimonials SET client_name = :client_name, client_position = :client_position, client_company = :client_company,
+                                      testimonial = :testimonial, rating = :rating, client_photo = :client_photo, display_order = :display_order, status = :status WHERE id = :id");
+                $stmt->execute([':client_name' => $_POST['client_name'], ':client_position' => $_POST['client_position'] ?? null, ':client_company' => $_POST['client_company'] ?? null,
+                    ':testimonial' => $_POST['testimonial'], ':rating' => $_POST['rating'], ':client_photo' => $_POST['client_photo'] ?? null,
+                    ':display_order' => $_POST['display_order'] ?? 0, ':status' => $_POST['status'], ':id' => $_POST['testimonial_id']]);
+            }
             $successMessage = "Testimonial updated successfully!";
         }
         if (isset($_POST['delete_testimonial'])) {
@@ -31,7 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch(PDOException $e) { $errorMessage = "Error: " . $e->getMessage(); }
 }
 
-$stmt = $db->query("SELECT * FROM testimonials ORDER BY display_order ASC, id DESC");
+// Fetch testimonials with or without project join based on column existence
+if ($hasProjectColumn) {
+    $stmt = $db->query("SELECT t.*, p.title as project_title FROM testimonials t LEFT JOIN projects p ON t.project_id = p.id ORDER BY t.display_order ASC, t.id DESC");
+} else {
+    $stmt = $db->query("SELECT * FROM testimonials ORDER BY display_order ASC, id DESC");
+}
 $testimonials = $stmt->fetchAll();
 $pageTitle = 'Testimonials Management';
 include 'includes/header.php';
@@ -45,6 +86,16 @@ include 'includes/header.php';
 
     <?php if (isset($successMessage)): ?>
         <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo $successMessage; ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+    <?php if (isset($errorMessage)): ?>
+        <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i><?php echo $errorMessage; ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    <?php endif; ?>
+    <?php if (!$hasProjectColumn): ?>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Project Linking Feature:</strong> To link testimonials to projects, run this SQL in phpMyAdmin:
+            <code class="d-block mt-2">ALTER TABLE testimonials ADD COLUMN project_id int(11) DEFAULT NULL AFTER client_photo;</code>
+        </div>
     <?php endif; ?>
 
     <div class="row">
@@ -73,9 +124,12 @@ include 'includes/header.php';
 
                     <p class="text-muted"><?php echo htmlspecialchars($testimonial['testimonial']); ?></p>
 
-                    <div class="d-flex gap-2 mt-3">
+                    <div class="d-flex flex-wrap gap-2 mt-3">
                         <span class="badge bg-<?php echo $testimonial['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($testimonial['status']); ?></span>
                         <span class="badge bg-info">Order: <?php echo $testimonial['display_order']; ?></span>
+                        <?php if (!empty($testimonial['project_title'])): ?>
+                        <span class="badge bg-primary"><i class="fas fa-link me-1"></i><?php echo htmlspecialchars($testimonial['project_title']); ?></span>
+                        <?php endif; ?>
                     </div>
 
                     <div class="d-flex gap-2 mt-3">
@@ -100,6 +154,18 @@ include 'includes/header.php';
                             <div class="mb-3"><label class="form-label">Testimonial *</label><textarea name="testimonial" class="form-control" rows="4" required><?php echo htmlspecialchars($testimonial['testimonial']); ?></textarea></div>
                             <div class="mb-3"><label class="form-label">Rating *</label><select name="rating" class="form-select" required><?php for ($i = 5; $i >= 1; $i--): ?><option value="<?php echo $i; ?>" <?php echo $testimonial['rating'] == $i ? 'selected' : ''; ?>><?php echo $i; ?> Star<?php echo $i > 1 ? 's' : ''; ?></option><?php endfor; ?></select></div>
                             <div class="mb-3"><label class="form-label">Client Photo URL</label><input type="url" name="client_photo" class="form-control" value="<?php echo htmlspecialchars($testimonial['client_photo'] ?? ''); ?>"></div>
+                            <?php if ($hasProjectColumn): ?>
+                            <div class="mb-3">
+                                <label class="form-label">Link to Project</label>
+                                <select name="project_id" class="form-select">
+                                    <option value="">-- No Project Link --</option>
+                                    <?php foreach ($projects as $proj): ?>
+                                    <option value="<?php echo $proj['id']; ?>" <?php echo ($testimonial['project_id'] ?? '') == $proj['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($proj['title']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <small class="text-muted">Link this testimonial to a specific project</small>
+                            </div>
+                            <?php endif; ?>
                             <div class="mb-3"><label class="form-label">Display Order</label><input type="number" name="display_order" class="form-control" value="<?php echo $testimonial['display_order']; ?>"></div>
                             <div class="mb-3"><label class="form-label">Status *</label><select name="status" class="form-select" required><option value="active" <?php echo $testimonial['status'] === 'active' ? 'selected' : ''; ?>>Active</option><option value="inactive" <?php echo $testimonial['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option></select></div>
                         </div>
@@ -130,6 +196,18 @@ include 'includes/header.php';
         <div class="mb-3"><label class="form-label">Testimonial *</label><textarea name="testimonial" class="form-control" rows="4" required></textarea></div>
         <div class="mb-3"><label class="form-label">Rating *</label><select name="rating" class="form-select" required><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select></div>
         <div class="mb-3"><label class="form-label">Client Photo URL</label><input type="url" name="client_photo" class="form-control"></div>
+        <?php if ($hasProjectColumn): ?>
+        <div class="mb-3">
+            <label class="form-label">Link to Project</label>
+            <select name="project_id" class="form-select">
+                <option value="">-- No Project Link --</option>
+                <?php foreach ($projects as $proj): ?>
+                <option value="<?php echo $proj['id']; ?>"><?php echo htmlspecialchars($proj['title']); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <small class="text-muted">Link this testimonial to a specific project (will show on project detail page)</small>
+        </div>
+        <?php endif; ?>
         <div class="mb-3"><label class="form-label">Display Order</label><input type="number" name="display_order" class="form-control" value="0"></div>
         <div class="mb-3"><label class="form-label">Status *</label><select name="status" class="form-select" required><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
     </div>

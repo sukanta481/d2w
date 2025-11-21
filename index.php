@@ -249,6 +249,7 @@ include 'includes/header.php';
     </div>
 </section>
 
+<?php $technologies = getTechnologies(); ?>
 <section class="technology-section py-5 bg-light">
     <div class="container">
         <div class="section-title text-center mb-5" data-aos="fade-up">
@@ -256,84 +257,54 @@ include 'includes/header.php';
             <p>We use latest technologies & tools to build secure & updated website & Application</p>
         </div>
         <div class="row justify-content-center align-items-center">
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="tech-logo">
-                    <i class="fab fa-html5" style="color: #E34F26;"></i>
-                    <p class="tech-name mt-2">HTML5</p>
+            <?php if (!empty($technologies)): ?>
+                <?php $delay = 100; foreach ($technologies as $tech): ?>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="tech-logo">
+                        <i class="<?php echo htmlspecialchars($tech['icon']); ?>" style="color: <?php echo htmlspecialchars($tech['color']); ?>;"></i>
+                        <p class="tech-name mt-2"><?php echo htmlspecialchars($tech['name']); ?></p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
-                <div class="tech-logo">
-                    <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
-                    <p class="tech-name mt-2">CSS3</p>
+                <?php $delay = $delay >= 350 ? 100 : $delay + 50; endforeach; ?>
+            <?php else: ?>
+                <!-- Fallback static technologies -->
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="tech-logo">
+                        <i class="fab fa-html5" style="color: #E34F26;"></i>
+                        <p class="tech-name mt-2">HTML5</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="tech-logo">
-                    <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
-                    <p class="tech-name mt-2">JavaScript</p>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
+                    <div class="tech-logo">
+                        <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
+                        <p class="tech-name mt-2">CSS3</p>
+                    </div>
                 </div>
-            </div>
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
-                <div class="tech-logo">
-                    <i class="fab fa-react fa-4x" style="color: #61DAFB;"></i>
-                    <p class="tech-name mt-2">React</p>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="tech-logo">
+                        <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
+                        <p class="tech-name mt-2">JavaScript</p>
+                    </div>
                 </div>
-            </div> -->
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="tech-logo">
-                    <i class="fab fa-node-js fa-4x" style="color: #339933;"></i>
-                    <p class="tech-name mt-2">Node.js</p>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+                    <div class="tech-logo">
+                        <i class="fab fa-php" style="color: #777BB4;"></i>
+                        <p class="tech-name mt-2">PHP</p>
+                    </div>
                 </div>
-            </div> -->
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
-                <div class="tech-logo">
-                    <i class="fab fa-python fa-4x" style="color: #3776AB;"></i>
-                    <p class="tech-name mt-2">Python</p>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="tech-logo">
+                        <i class="fab fa-wordpress" style="color: #21759B;"></i>
+                        <p class="tech-name mt-2">WordPress</p>
+                    </div>
                 </div>
-            </div> -->
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="tech-logo">
-                    <i class="fab fa-php" style="color: #777BB4;"></i>
-                    <p class="tech-name mt-2">PHP</p>
+                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+                    <div class="tech-logo">
+                        <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
+                        <p class="tech-name mt-2">Bootstrap</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
-                <div class="tech-logo">
-                    <i class="fab fa-wordpress" style="color: #21759B;"></i>
-                    <p class="tech-name mt-2">WordPress</p>
-                </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="tech-logo">
-                    <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
-                    <p class="tech-name mt-2">Bootstrap</p>
-                </div>
-            </div>
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
-                <div class="tech-logo">
-                    <i class="fab fa-aws" style="color: #FF9900;"></i>
-                    <p class="tech-name mt-2">AWS</p>
-                </div>
-            </div> -->
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="tech-logo">
-                    <i class="fab fa-docker" style="color: #2496ED;"></i>
-                    <p class="tech-name mt-2">Docker</p>
-                </div>
-            </div> -->
-            <!-- <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
-                <div class="tech-logo">
-                    <i class="fab fa-git-alt" style="color: #F05032;"></i>
-                    <p class="tech-name mt-2">Git</p>
-                </div>
-            </div> -->
-                        <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
-                <div class="tech-logo">
-                    <i class="fab fa-shopify" style="color: #96bf48;"></i>
-                    <p class="tech-name mt-2">Shopify</p>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

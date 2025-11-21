@@ -20,8 +20,9 @@ $pageTitle = htmlspecialchars($project['title']);
 $settings = getAllSettings();
 
 // Get client testimonial if available
-$testimonial = null;
-if (!empty($project['client_name'])) {
+// First try to get testimonial linked by project_id, then fallback to client name match
+$testimonial = getTestimonialByProject($project['id']);
+if (!$testimonial && !empty($project['client_name'])) {
     $testimonial = getTestimonialByClient($project['client_name']);
 }
 
