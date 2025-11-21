@@ -42,19 +42,12 @@ include 'includes/header.php';
 
 <section class="page-header blog-post-header">
     <div class="container">
-        <nav aria-label="breadcrumb" data-aos="fade-up">
-            <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                <li class="breadcrumb-item"><a href="blog.php">Blog</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($post['title']); ?></li>
-            </ol>
-        </nav>
-        <span class="blog-category-badge" data-aos="fade-up" data-aos-delay="50"><?php echo htmlspecialchars($post['category']); ?></span>
+        <span class="blog-category-badge" data-aos="fade-up"><?php echo htmlspecialchars($post['category']); ?></span>
         <h1 data-aos="fade-up" data-aos-delay="100"><?php echo htmlspecialchars($post['title']); ?></h1>
         <div class="post-meta" data-aos="fade-up" data-aos-delay="150">
             <span><i class="fas fa-user"></i> <?php echo htmlspecialchars($post['author_name'] ?? 'Admin'); ?></span>
             <span><i class="fas fa-calendar"></i> <?php echo date('F d, Y', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
-            <span><i class="fas fa-eye"></i> <?php echo number_format($post['views']); ?> views</span>
+            <span><i class="fas fa-eye"></i> <?php echo number_format($post['views'] + 1); ?> views</span>
         </div>
     </div>
 </section>

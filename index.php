@@ -131,16 +131,17 @@ include 'includes/header.php';
         </div>
         <?php if (!empty($services)): ?>
         <?php
-        // Calculate slides needed
+        // Calculate slides needed for different screen sizes
         $totalServices = count($services);
-        $desktopPerSlide = 3;
-        $mobilePerSlide = 2;
-        $desktopSlides = ceil($totalServices / $desktopPerSlide);
-        $mobileSlides = ceil($totalServices / $mobilePerSlide);
         ?>
-        <div id="servicesCarousel" class="carousel slide" data-bs-ride="carousel">
+        <!-- Desktop View: 3 services per slide -->
+        <div id="servicesCarouselDesktop" class="carousel slide d-none d-md-block" data-bs-ride="carousel">
             <div class="carousel-inner">
-                <?php for ($slide = 0; $slide < $desktopSlides; $slide++): ?>
+                <?php
+                $desktopPerSlide = 3;
+                $desktopSlides = ceil($totalServices / $desktopPerSlide);
+                for ($slide = 0; $slide < $desktopSlides; $slide++):
+                ?>
                 <div class="carousel-item <?php echo $slide === 0 ? 'active' : ''; ?>">
                     <div class="row justify-content-center">
                         <?php for ($i = 0; $i < $desktopPerSlide; $i++):
@@ -148,7 +149,7 @@ include 'includes/header.php';
                             if ($index >= $totalServices) break;
                             $service = $services[$index];
                         ?>
-                        <div class="col-lg-4 col-md-6 <?php echo $i >= $mobilePerSlide ? 'd-none d-lg-block' : 'col-6'; ?> mb-4">
+                        <div class="col-lg-4 col-md-4 mb-4">
                             <div class="service-card">
                                 <div class="service-icon">
                                     <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
@@ -164,17 +165,54 @@ include 'includes/header.php';
                 <?php endfor; ?>
             </div>
             <?php if ($desktopSlides > 1): ?>
-            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarousel" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarousel" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Next</span>
             </button>
             <div class="carousel-indicators">
                 <?php for ($s = 0; $s < $desktopSlides; $s++): ?>
-                <button type="button" data-bs-target="#servicesCarousel" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
+                <button type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
+                <?php endfor; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Mobile View: 1 service per slide -->
+        <div id="servicesCarouselMobile" class="carousel slide d-md-none" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <?php foreach ($services as $idx => $service): ?>
+                <div class="carousel-item <?php echo $idx === 0 ? 'active' : ''; ?>">
+                    <div class="row justify-content-center">
+                        <div class="col-10 col-sm-8 mb-4">
+                            <div class="service-card">
+                                <div class="service-icon">
+                                    <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
+                                </div>
+                                <h4><?php echo htmlspecialchars($service['title']); ?></h4>
+                                <p><?php echo htmlspecialchars($service['short_description']); ?></p>
+                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if ($totalServices > 1): ?>
+            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            <div class="carousel-indicators">
+                <?php for ($s = 0; $s < $totalServices; $s++): ?>
+                <button type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
                 <?php endfor; ?>
             </div>
             <?php endif; ?>
