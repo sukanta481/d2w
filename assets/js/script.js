@@ -309,5 +309,5 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('loaded');
     });
 
-    console.log('%c✨ Dawn To Web - Enhanced with Advanced Animations ✨', 'font-size: 20px; color: #0d6efd; font-weight: bold;');
+    console.log('%c✨ BizNexa - Enhanced with Advanced Animations ✨', 'font-size: 20px; color: #0d6efd; font-weight: bold;');
 });

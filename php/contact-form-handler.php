@@ -62,7 +62,7 @@ try {
 
 // Get admin email from settings
 $settings = getAllSettings();
-$to = $settings['contact_email'] ?? 'info@dawntoweb.com';
+$to = $settings['contact_email'] ?? 'info@biznexa.tech';
 
 $subject = 'New Contact Form Submission from ' . $name;
 $email_content = "Name: $name\n";
@@ -71,7 +71,7 @@ $email_content .= "Phone: $phone\n";
 $email_content .= "Service: $service\n\n";
 $email_content .= "Message:\n$message\n";
 
-$headers = "From: Dawn To Web Contact Form <noreply@dawntoweb.com>\r\n";
+$headers = "From: BizNexa Contact Form <noreply@biznexa.tech>\r\n";
 $headers .= "Reply-To: $name <$email>\r\n";
 $headers .= "X-Mailer: PHP/" . phpversion();
 
@@ -104,7 +104,7 @@ if ($leadSaved || $mail_sent) {
 
     echo json_encode([
         'success' => false,
-        'message' => 'Sorry, there was an error sending your message. Please try again or contact us directly at info@dawntoweb.com.'
+        'message' => 'Sorry, there was an error sending your message. Please try again or contact us directly at info@biznexa.tech.'
     ]);
 }
 ?>

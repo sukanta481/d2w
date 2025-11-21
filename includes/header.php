@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>Dawn To Web | Web Development & Agentic AI Solutions</title>
-    <meta name="description" content="Dawn To Web provides professional web development, agentic AI solutions, and digital marketing services for small businesses. Transform your digital presence today.">
-    
+    <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>BizNexa | Web Development & Agentic AI Solutions</title>
+    <meta name="description" content="BizNexa provides professional web development, agentic AI solutions, and digital marketing services for small businesses. Transform your digital presence today.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link rel="apple-touch-icon" href="assets/images/favicon.png">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,7 +22,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="top-info">
-                        <i class="fas fa-envelope"></i> info@dawntoweb.com
+                        <i class="fas fa-envelope"></i> info@biznexa.tech
                         <span class="ms-4"><i class="fas fa-phone"></i> Call: +91 94332 15443</span>
                     </div>
                 </div>
@@ -32,7 +36,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="index.php">
-                <h3 class="mb-0"><span class="brand-dawn">Dawn</span><span class="brand-to">To</span><span class="brand-web">Web</span></h3>
+                <img src="assets/images/logo.png" alt="BizNexa" height="60">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

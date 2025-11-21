@@ -5,7 +5,7 @@ $pageTitle = 'Contact Us';
 // Include database helper
 include_once 'includes/db_config.php';
 $settings = getAllSettings();
-$contactEmail = $settings['site_email'] ?? 'info@dawntoweb.com';
+$contactEmail = $settings['site_email'] ?? 'info@biznexa.tech';
 $contactPhone = $settings['site_phone'] ?? '+91 94332 15443';
 $contactAddress = $settings['site_address'] ?? '123 Business Avenue, Suite 100, New York, NY 10001';
 

@@ -1,4 +1,4 @@
-# Dawn To Web - Admin CMS Documentation
+# BizNexa - Admin CMS Documentation
 
 ## 🚀 Professional Content Management System
 
@@ -279,15 +279,15 @@ Built with:
 
 ## 📄 License
 
-Copyright © 2025 Dawn To Web. All rights reserved.
+Copyright © 2025 BizNexa. All rights reserved.
 
 ---
 
 ## 💬 Support
 
 For support or questions:
-- Email: info@dawntoweb.com
-- Website: [dawntoweb.com](https://dawntoweb.com)
+- Email: info@biznexa.tech
+- Website: [biznexa.tech](https://biznexa.tech)
 
 ---
 

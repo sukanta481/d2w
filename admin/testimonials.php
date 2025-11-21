@@ -127,10 +127,14 @@ include 'includes/header.php';
                     <div class="d-flex flex-wrap gap-2 mt-3">
                         <span class="badge bg-<?php echo $testimonial['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($testimonial['status']); ?></span>
                         <span class="badge bg-info">Order: <?php echo $testimonial['display_order']; ?></span>
-                        <?php if (!empty($testimonial['project_title'])): ?>
-                        <span class="badge bg-primary"><i class="fas fa-link me-1"></i><?php echo htmlspecialchars($testimonial['project_title']); ?></span>
-                        <?php endif; ?>
                     </div>
+                    <?php if (!empty($testimonial['project_title'])): ?>
+                    <div class="mt-2">
+                        <span class="badge bg-primary text-truncate d-inline-block" style="max-width: 100%;" title="<?php echo htmlspecialchars($testimonial['project_title']); ?>">
+                            <i class="fas fa-link me-1"></i><?php echo htmlspecialchars($testimonial['project_title']); ?>
+                        </span>
+                    </div>
+                    <?php endif; ?>
 
                     <div class="d-flex gap-2 mt-3">
                         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editTestimonialModal<?php echo $testimonial['id']; ?>">

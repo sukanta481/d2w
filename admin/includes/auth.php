@@ -1,7 +1,7 @@
 <?php
 /**
  * Authentication Helper
- * Dawn To Web CMS
+ * BizNexa CMS
  */
 
 session_start();

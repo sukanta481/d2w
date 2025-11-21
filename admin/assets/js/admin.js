@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    console.log('%c🚀 Dawn To Web Admin CMS Loaded Successfully!', 'font-size: 14px; color: #0d6efd; font-weight: bold;');
+    console.log('%c🚀 BizNexa Admin CMS Loaded Successfully!', 'font-size: 14px; color: #0d6efd; font-weight: bold;');
 });
 
 // AJAX helper function

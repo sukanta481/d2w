@@ -1,4 +1,4 @@
--- Dawn To Web CMS Database Schema
+-- BizNexa CMS Database Schema
 -- Created: 2025
 
 CREATE DATABASE IF NOT EXISTS d2w_cms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Insert default admin user (password: admin123 - Please change after first login)
 INSERT INTO admin_users (username, email, password, full_name, role, status)
-VALUES ('admin', 'admin@dawntoweb.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrator', 'super_admin', 'active');
+VALUES ('admin', 'admin@biznexa.tech', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrator', 'super_admin', 'active');
 
 -- Insert default services
 INSERT INTO services (title, short_description, icon, display_order, status) VALUES
@@ -211,14 +211,14 @@ INSERT INTO services (title, short_description, icon, display_order, status) VAL
 
 -- Insert default testimonials
 INSERT INTO testimonials (client_name, client_position, client_company, testimonial, rating, status) VALUES
-('John Smith', 'CEO', 'TechStart Inc.', 'Dawn To Web transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!', 5, 'active'),
+('John Smith', 'CEO', 'TechStart Inc.', 'BizNexa transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!', 5, 'active'),
 ('Sarah Johnson', 'Founder', 'Fashion Hub', 'Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch.', 5, 'active'),
-('Michael Chen', 'Owner', 'Local Bistro', 'Professional, dedicated, and responsive. Dawn To Web created a beautiful website for our business that truly represents our brand.', 5, 'active');
+('Michael Chen', 'Owner', 'Local Bistro', 'Professional, dedicated, and responsive. BizNexa created a beautiful website for our business that truly represents our brand.', 5, 'active');
 
 -- Insert default settings
 INSERT INTO settings (setting_key, setting_value, setting_type, description) VALUES
-('site_name', 'Dawn To Web', 'text', 'Website name'),
-('site_email', 'info@dawntoweb.com', 'email', 'Contact email'),
+('site_name', 'BizNexa', 'text', 'Website name'),
+('site_email', 'info@biznexa.tech', 'email', 'Contact email'),
 ('site_phone', '+91 94332 15443', 'text', 'Contact phone'),
 ('site_address', 'Your Business Address', 'text', 'Business address'),
 ('facebook_url', '#', 'url', 'Facebook page URL'),

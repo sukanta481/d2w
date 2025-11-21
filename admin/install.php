@@ -1,7 +1,7 @@
 <?php
 /**
  * Database Installation Script
- * Dawn To Web CMS
+ * BizNexa CMS
  *
  * Run this file once to set up the database
  */
@@ -17,7 +17,7 @@ echo "<!DOCTYPE html>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Dawn To Web CMS - Database Installer</title>
+    <title>BizNexa CMS - Database Installer</title>
     <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
     <style>
@@ -36,7 +36,7 @@ echo "<!DOCTYPE html>
     <div class='install-box'>
         <div class='install-header'>
             <i class='fas fa-database'></i>
-            <h1>Dawn To Web CMS</h1>
+            <h1>BizNexa CMS</h1>
             <p class='text-muted'>Database Installation</p>
         </div>";
 

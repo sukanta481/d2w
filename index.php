@@ -84,7 +84,7 @@ include 'includes/header.php';
         </div>
         <div class="row">
             <div class="col-lg-6 mb-4" data-aos="fade-right">
-                <p>Dawn To Web is a premier web development and digital marketing company focused on small businesses. Utilizing the latest technology including agentic AI, our team of skilled professionals specializes in creating result-driven websites to increase leads and sales.</p>
+                <p>BizNexa is a premier web development and digital marketing company focused on small businesses. Utilizing the latest technology including agentic AI, our team of skilled professionals specializes in creating result-driven websites to increase leads and sales.</p>
                 <p>From strategic business websites to e-commerce and custom portal development with AI integration, we have the expertise to design and develop all types of websites for small and medium companies.</p>
             </div>
             <div class="col-lg-6" data-aos="fade-left">
@@ -383,7 +383,7 @@ include 'includes/header.php';
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="testimonial-card">
                     <div class="testimonial-text">
-                        <p>"Dawn To Web transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
+                        <p>"BizNexa transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
                     </div>
                     <div class="testimonial-author">
                         <h5>John Smith</h5>
@@ -405,7 +405,7 @@ include 'includes/header.php';
             <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="testimonial-card">
                     <div class="testimonial-text">
-                        <p>"Professional, dedicated, and responsive. Dawn To Web created a beautiful website for our business that truly represents our brand."</p>
+                        <p>"Professional, dedicated, and responsive. BizNexa created a beautiful website for our business that truly represents our brand."</p>
                     </div>
                     <div class="testimonial-author">
                         <h5>Michael Chen</h5>

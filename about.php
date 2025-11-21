@@ -17,7 +17,7 @@ include 'includes/header.php';
 
 <section class="page-header">
     <div class="container">
-        <h1 data-aos="fade-up">About Dawn To Web</h1>
+        <h1 data-aos="fade-up">About BizNexa</h1>
         <p data-aos="fade-up" data-aos-delay="100">Your Trusted Partner in Digital Transformation</p>
     </div>
 </section>
@@ -26,8 +26,8 @@ include 'includes/header.php';
     <div class="container">
         <div class="row align-items-center mb-5">
             <div class="col-lg-6 mb-4" data-aos="fade-right">
-                <h2>Dawn To Web - Your Partner in Digital Excellence Since 2020</h2>
-                <p>Dawn To Web is a leading web development and digital marketing company dedicated to helping small businesses thrive in the digital age. We specialize in custom website design, agentic AI solutions, and comprehensive digital marketing services.</p>
+                <h2>BizNexa - Your Partner in Digital Excellence Since 2020</h2>
+                <p>BizNexa is a leading web development and digital marketing company dedicated to helping small businesses thrive in the digital age. We specialize in custom website design, agentic AI solutions, and comprehensive digital marketing services.</p>
                 <p>Founded with a vision to make professional web services accessible to small businesses, we have successfully delivered innovative solutions to clients across multiple industries. Our commitment to quality, innovation, and customer satisfaction sets us apart.</p>
                 <p>We believe in building long-term relationships with our clients, providing ongoing support and helping them adapt to the ever-changing digital landscape.</p>
             </div>
@@ -173,7 +173,7 @@ include 'includes/header.php';
         <div class="row justify-content-center">
             <div class="col-lg-8" data-aos="zoom-in">
                 <h2 class="text-white mb-3">Let's Build Something Great Together</h2>
-                <p class="text-white mb-4">Partner with us for your next digital project and experience the Dawn To Web difference.</p>
+                <p class="text-white mb-4">Partner with us for your next digital project and experience the BizNexa difference.</p>
                 <a href="contact.php" class="btn btn-light btn-lg">Get In Touch</a>
             </div>
         </div>

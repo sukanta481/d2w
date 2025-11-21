@@ -1,4 +1,4 @@
-# Dawn To Web - Digital Marketing Website
+# BizNexa - Digital Marketing Website
 
 ## Overview
 Professional digital marketing agency website built with Bootstrap 5, HTML, CSS, JavaScript, and PHP backend. Features web development and agentic AI solutions for small businesses.
@@ -53,7 +53,7 @@ Professional digital marketing agency website built with Bootstrap 5, HTML, CSS,
 The contact form uses PHP's `mail()` function with proper email headers.
 
 ### Important: Email Header Configuration
-- **From**: Uses `noreply@dawntoweb.com` to avoid SPF/DMARC issues
+- **From**: Uses `noreply@biznexa.tech` to avoid SPF/DMARC issues
 - **Reply-To**: Contains visitor's email for easy responses
 - This prevents email spoofing and improves deliverability
 
@@ -62,7 +62,7 @@ The contact form uses PHP's `mail()` function with proper email headers.
 #### Option 1: Configure Sendmail/SMTP
 1. Install and configure sendmail or SMTP on your server
 2. Update PHP.ini with SMTP settings
-3. Ensure `noreply@dawntoweb.com` is configured on your mail server
+3. Ensure `noreply@biznexa.tech` is configured on your mail server
 4. Test mail delivery
 
 #### Option 2: Use Third-Party Email Service (Recommended)
@@ -91,7 +91,7 @@ This ensures no submission is lost even if email delivery fails.
 If mail delivery fails, the form:
 - Returns error message to user
 - Logs complete submission to `contacts.txt` with "FAILED TO SEND" marker
-- Provides direct contact email: info@dawntoweb.com
+- Provides direct contact email: info@biznexa.tech
 - Team can manually follow up using logged data
 
 ## Customization
@@ -115,7 +115,7 @@ Edit CSS variables in `assets/css/style.css`:
 ### Logo
 Replace the text logo in `includes/header.php` with an image:
 ```html
-<img src="assets/images/logo.png" alt="Dawn To Web">
+<img src="assets/images/logo.png" alt="BizNexa">
 ```
 
 ## Form Submissions

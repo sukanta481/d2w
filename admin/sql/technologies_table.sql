@@ -1,4 +1,4 @@
--- Technologies/Tools Table for Dawn To Web CMS
+-- Technologies/Tools Table for BizNexa CMS
 -- Run this SQL in phpMyAdmin to create the technologies table
 
 CREATE TABLE IF NOT EXISTS `technologies` (

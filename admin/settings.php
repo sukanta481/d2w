@@ -43,7 +43,7 @@ include 'includes/header.php';
 
                     <div class="mb-3">
                         <label class="form-label">Site Name</label>
-                        <input type="text" name="settings[site_name]" class="form-control" value="<?php echo htmlspecialchars($settings['site_name'] ?? 'Dawn To Web'); ?>">
+                        <input type="text" name="settings[site_name]" class="form-control" value="<?php echo htmlspecialchars($settings['site_name'] ?? 'BizNexa'); ?>">
                     </div>
 
                     <div class="mb-3">

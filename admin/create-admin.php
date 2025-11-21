@@ -11,7 +11,7 @@ $db = $database->connect();
 
 // Admin user details
 $username = 'admin';
-$email = 'admin@dawntoweb.com';
+$email = 'admin@biznexa.tech';
 $password = 'admin123';
 $fullName = 'Administrator';
 $role = 'super_admin';

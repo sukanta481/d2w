@@ -1,7 +1,7 @@
 <?php
 /**
  * Frontend Database Configuration
- * Dawn To Web Website
+ * BizNexa Website
  *
  * Automatically detects environment (local vs production)
  */

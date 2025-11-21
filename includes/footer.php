@@ -13,7 +13,7 @@ $instagram = $settings['instagram_url'] ?? '#';
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <h5 class="footer-title">About Dawn To Web</h5>
+                    <h5 class="footer-title">About BizNexa</h5>
                     <p class="footer-text">We specialize in web development, agentic AI solutions, and comprehensive digital marketing services designed specifically for small businesses. Let us help you grow your digital presence.</p>
                     <div class="social-links mt-3">
                         <a href="<?php echo htmlspecialchars($facebook); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
@@ -57,7 +57,7 @@ $instagram = $settings['instagram_url'] ?? '#';
             <hr class="footer-divider">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start">
-                    <p class="copyright">&copy; <?php echo date('Y'); ?> Dawn To Web. All Rights Reserved.</p>
+                    <p class="copyright">&copy; <?php echo date('Y'); ?> BizNexa. All Rights Reserved.</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <a href="#" class="footer-link-inline">Privacy Policy</a> | 
@@ -72,7 +72,7 @@ $instagram = $settings['instagram_url'] ?? '#';
     </button>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919876543210?text=Hi%20Dawn%20To%20Web!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
+    <a href="https://wa.me/919876543210?text=Hi%20BizNexa!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
         <div class="whatsapp-pulse"></div>
         <div class="whatsapp-icon">
             <i class="fab fa-whatsapp"></i>

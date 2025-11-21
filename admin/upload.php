@@ -1,7 +1,7 @@
 <?php
 /**
  * Image Upload Handler
- * Dawn To Web CMS
+ * BizNexa CMS
  */
 require_once 'includes/auth.php';
 $auth->requireLogin();
