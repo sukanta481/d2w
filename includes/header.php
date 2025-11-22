@@ -38,9 +38,11 @@
             <a class="navbar-brand" href="index.php">
                 <img src="assets/images/logo.png" alt="BizNexa" height="60">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <!-- Mobile menu toggle button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <!-- Desktop menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -68,3 +70,81 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Off-canvas Menu (slides from left) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel" style="width: 300px;">
+        <div class="offcanvas-header" style="padding: 20px 25px; border-bottom: 1px solid #eee; background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);">
+            <a href="index.php">
+                <img src="assets/images/logo.png" alt="BizNexa" height="50">
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" style="padding: 0; display: flex; flex-direction: column;">
+            <ul style="list-style: none; padding: 15px 0; margin: 0; flex: 1;">
+                <li style="border-bottom: 1px solid #f0f0f0;">
+                    <a href="index.php" style="display: flex; align-items: center; padding: 15px 25px; color: <?php echo ($currentPage == 'home') ? '#0d6efd' : '#2d3748'; ?>; text-decoration: none; font-size: 15px; font-weight: 500; background: <?php echo ($currentPage == 'home') ? 'linear-gradient(135deg, #e8f4ff 0%, #dbeafe 100%)' : 'transparent'; ?>; border-left: <?php echo ($currentPage == 'home') ? '4px solid #0d6efd' : 'none'; ?>;">
+                        <i class="fas fa-home" style="width: 24px; margin-right: 12px; font-size: 16px; color: #0d6efd;"></i> Home
+                    </a>
+                </li>
+                <li style="border-bottom: 1px solid #f0f0f0;">
+                    <a href="services.php" style="display: flex; align-items: center; padding: 15px 25px; color: <?php echo ($currentPage == 'services') ? '#0d6efd' : '#2d3748'; ?>; text-decoration: none; font-size: 15px; font-weight: 500; background: <?php echo ($currentPage == 'services') ? 'linear-gradient(135deg, #e8f4ff 0%, #dbeafe 100%)' : 'transparent'; ?>; border-left: <?php echo ($currentPage == 'services') ? '4px solid #0d6efd' : 'none'; ?>;">
+                        <i class="fas fa-cogs" style="width: 24px; margin-right: 12px; font-size: 16px; color: #0d6efd;"></i> Services
+                    </a>
+                </li>
+                <li style="border-bottom: 1px solid #f0f0f0;">
+                    <a href="portfolio.php" style="display: flex; align-items: center; padding: 15px 25px; color: <?php echo ($currentPage == 'portfolio') ? '#0d6efd' : '#2d3748'; ?>; text-decoration: none; font-size: 15px; font-weight: 500; background: <?php echo ($currentPage == 'portfolio') ? 'linear-gradient(135deg, #e8f4ff 0%, #dbeafe 100%)' : 'transparent'; ?>; border-left: <?php echo ($currentPage == 'portfolio') ? '4px solid #0d6efd' : 'none'; ?>;">
+                        <i class="fas fa-briefcase" style="width: 24px; margin-right: 12px; font-size: 16px; color: #0d6efd;"></i> Portfolio
+                    </a>
+                </li>
+                <li class="mobile-dropdown" style="border-bottom: 1px solid #f0f0f0;">
+                    <a href="#" onclick="toggleMobileDropdown(event)" style="display: flex; align-items: center; padding: 15px 25px; color: <?php echo (in_array($currentPage, ['about', 'blog'])) ? '#0d6efd' : '#2d3748'; ?>; text-decoration: none; font-size: 15px; font-weight: 500;">
+                        <i class="fas fa-building" style="width: 24px; margin-right: 12px; font-size: 16px; color: #0d6efd;"></i> Company
+                        <i class="fas fa-chevron-down dropdown-arrow" style="margin-left: auto; font-size: 12px; transition: transform 0.3s ease;"></i>
+                    </a>
+                    <ul class="mobile-submenu" style="list-style: none; padding: 0; margin: 0; background: #f8f9fa; max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                        <li><a href="about.php" style="display: block; padding: 12px 25px 12px 60px; color: #4a5568; text-decoration: none; font-size: 14px; border-bottom: 1px solid #eee;">About Us</a></li>
+                        <li><a href="blog.php" style="display: block; padding: 12px 25px 12px 60px; color: #4a5568; text-decoration: none; font-size: 14px;">Blog</a></li>
+                    </ul>
+                </li>
+                <li style="border-bottom: 1px solid #f0f0f0;">
+                    <a href="contact.php" style="display: flex; align-items: center; padding: 15px 25px; color: <?php echo ($currentPage == 'contact') ? '#0d6efd' : '#2d3748'; ?>; text-decoration: none; font-size: 15px; font-weight: 500; background: <?php echo ($currentPage == 'contact') ? 'linear-gradient(135deg, #e8f4ff 0%, #dbeafe 100%)' : 'transparent'; ?>; border-left: <?php echo ($currentPage == 'contact') ? '4px solid #0d6efd' : 'none'; ?>;">
+                        <i class="fas fa-envelope" style="width: 24px; margin-right: 12px; font-size: 16px; color: #0d6efd;"></i> Contact Us
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Get Started Button in Mobile Menu -->
+            <div style="padding: 20px 25px; border-top: 1px solid #eee;">
+                <a href="contact.php" style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 50px; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                    <i class="fas fa-rocket" style="margin-right: 10px;"></i>Get Started
+                </a>
+            </div>
+
+            <!-- Contact Info in Mobile Menu -->
+            <div style="padding: 20px 25px; background: #f8f9fa; border-top: 1px solid #eee;">
+                <p style="margin: 0 0 10px 0; font-size: 13px; color: #4a5568; display: flex; align-items: center;">
+                    <i class="fas fa-envelope" style="width: 20px; margin-right: 10px; color: #10B981;"></i> info@biznexa.tech
+                </p>
+                <p style="margin: 0; font-size: 13px; color: #4a5568; display: flex; align-items: center;">
+                    <i class="fas fa-phone" style="width: 20px; margin-right: 10px; color: #10B981;"></i> +91 94332 15443
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleMobileDropdown(event) {
+        event.preventDefault();
+        const parent = event.currentTarget.parentElement;
+        const submenu = parent.querySelector('.mobile-submenu');
+        const arrow = parent.querySelector('.dropdown-arrow');
+
+        if (submenu.style.maxHeight === '0px' || submenu.style.maxHeight === '') {
+            submenu.style.maxHeight = '200px';
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            submenu.style.maxHeight = '0px';
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+    </script>

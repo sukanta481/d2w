@@ -90,7 +90,7 @@ html {
 }
 
 .navbar {
-    padding: 18px 0;
+    padding: 2px 0;
     background: white !important;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
 }
@@ -2652,5 +2652,208 @@ body.loaded .fade-section {
     .tech-tag {
         padding: 6px 12px;
         font-size: 0.8rem;
+    }
+}
+
+/* ========================================
+   Mobile Off-canvas Menu Styles
+   ======================================== */
+
+/* Off-canvas menu customization */
+#mobileMenu {
+    width: 300px;
+    background: #fff;
+    border-right: none;
+    box-shadow: 5px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+#mobileMenu .offcanvas-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+}
+
+#mobileMenu .offcanvas-brand img {
+    max-height: 50px;
+}
+
+#mobileMenu .offcanvas-body {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Mobile Navigation Menu */
+.mobile-nav-menu {
+    list-style: none;
+    padding: 15px 0;
+    margin: 0;
+    flex: 1;
+}
+
+.mobile-nav-menu > li {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mobile-nav-menu > li > a {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.mobile-nav-menu > li > a i:first-child {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 16px;
+    color: #0d6efd;
+    text-align: center;
+}
+
+.mobile-nav-menu > li > a:hover,
+.mobile-nav-menu > li > a.active {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+    color: #0d6efd;
+    padding-left: 30px;
+}
+
+.mobile-nav-menu > li > a.active {
+    border-left: 4px solid #0d6efd;
+    background: linear-gradient(135deg, #e8f4ff 0%, #dbeafe 100%);
+}
+
+/* Dropdown in mobile menu */
+.mobile-dropdown .dropdown-toggle-mobile {
+    position: relative;
+}
+
+.mobile-dropdown .dropdown-arrow {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.mobile-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.mobile-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #f8f9fa;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.mobile-dropdown.open .mobile-submenu {
+    max-height: 200px;
+}
+
+.mobile-submenu li a {
+    display: block;
+    padding: 12px 25px 12px 60px;
+    color: #4a5568;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #eee;
+}
+
+.mobile-submenu li a:hover {
+    background: #e8f4ff;
+    color: #0d6efd;
+    padding-left: 65px;
+}
+
+/* Get Started Button in Mobile Menu */
+.mobile-menu-cta {
+    padding: 20px 25px;
+    border-top: 1px solid #eee;
+}
+
+.mobile-menu-cta .btn-get-started {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border: none;
+    border-radius: 50px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.mobile-menu-cta .btn-get-started:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.mobile-menu-cta .btn-get-started i {
+    font-size: 14px;
+}
+
+/* Contact Info in Mobile Menu */
+.mobile-menu-contact {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+
+.mobile-menu-contact p {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-menu-contact p:last-child {
+    margin-bottom: 0;
+}
+
+.mobile-menu-contact p i {
+    width: 20px;
+    margin-right: 10px;
+    color: #10B981;
+    font-size: 14px;
+}
+
+/* Off-canvas backdrop */
+.offcanvas-backdrop.show {
+    opacity: 0.5;
+}
+
+/* Animation for menu items */
+#mobileMenu.show .mobile-nav-menu > li {
+    animation: slideInLeft 0.3s ease forwards;
+    opacity: 0;
+}
+
+#mobileMenu.show .mobile-nav-menu > li:nth-child(1) { animation-delay: 0.05s; }
+#mobileMenu.show .mobile-nav-menu > li:nth-child(2) { animation-delay: 0.1s; }
+#mobileMenu.show .mobile-nav-menu > li:nth-child(3) { animation-delay: 0.15s; }
+#mobileMenu.show .mobile-nav-menu > li:nth-child(4) { animation-delay: 0.2s; }
+#mobileMenu.show .mobile-nav-menu > li:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }

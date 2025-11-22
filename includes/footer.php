@@ -71,8 +71,24 @@ $instagram = $settings['instagram_url'] ?? '#';
         <i class="fas fa-arrow-up"></i>
     </button>
 
+    <!-- Floating Side Contact Box -->
+    <div class="side-contact-box" id="sideContactBox">
+        <a href="mailto:info@biznexa.tech" class="side-contact-item" title="Email Us">
+            <i class="fas fa-envelope"></i>
+        </a>
+        <a href="tel:+919433215443" class="side-contact-item" title="Call Us">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="skype:live:biznexa?chat" class="side-contact-item" title="Skype">
+            <i class="fab fa-skype"></i>
+        </a>
+        <a href="contact.php" class="side-contact-item" title="Get a Quote">
+            <i class="fas fa-quote-right"></i>
+        </a>
+    </div>
+
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919876543210?text=Hi%20BizNexa!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
+    <a href="https://wa.me/919433215443?text=Hi%20BizNexa!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
         <div class="whatsapp-pulse"></div>
         <div class="whatsapp-icon">
             <i class="fab fa-whatsapp"></i>
@@ -81,6 +97,76 @@ $instagram = $settings['instagram_url'] ?? '#';
     </a>
 
     <style>
+    /* Floating Side Contact Box Styles */
+    .side-contact-box {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px 0 0 8px;
+        overflow: hidden;
+        box-shadow: -3px 0 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .side-contact-item {
+        width: 50px;
+        height: 50px;
+        background: #0d6efd;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .side-contact-item:last-child {
+        border-bottom: none;
+    }
+
+    .side-contact-item i {
+        font-size: 18px;
+        transition: transform 0.3s ease;
+    }
+
+    .side-contact-item:hover {
+        background: #0b5ed7;
+        color: #fff;
+        width: 60px;
+    }
+
+    .side-contact-item:hover i {
+        transform: scale(1.2);
+    }
+
+    /* Individual item colors on hover */
+    .side-contact-item[href^="mailto"]:hover {
+        background: #ea4335;
+    }
+
+    .side-contact-item[href^="tel"]:hover {
+        background: #34a853;
+    }
+
+    .side-contact-item[href^="skype"]:hover {
+        background: #00aff0;
+    }
+
+    .side-contact-item[href="contact.php"]:hover {
+        background: #f59e0b;
+    }
+
+    /* Hide on mobile to avoid overlap with WhatsApp button */
+    @media (max-width: 768px) {
+        .side-contact-box {
+            display: none;
+        }
+    }
+
     /* Floating WhatsApp Button Styles */
     .whatsapp-float {
         position: fixed;
