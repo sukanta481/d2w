@@ -21,58 +21,145 @@ $statCountries = $settings['stat_countries'] ?? '15';
 include 'includes/header.php';
 ?>
 
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6 col-md-12" data-aos="fade-right">
-                <div class="hero-content">
-                    <h1 class="hero-title"><?php echo htmlspecialchars($heroTitle); ?></h1>
-                    <p class="hero-subtitle"><?php echo htmlspecialchars($heroSubtitle); ?></p>
+<section class="hero-section-new">
+    <!-- Animated Background Elements -->
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="floating-code floating-code-1">&lt;div&gt;</div>
+        <div class="floating-code floating-code-2">&lt;/&gt;</div>
+        <div class="floating-code floating-code-3">{...}</div>
+    </div>
 
-                    <div class="hero-features">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Responsive Design</span>
-                                </div>
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>SEO-Optimized</span>
-                                </div>
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Fast Loading Speed</span>
-                                </div>
+    <div class="container">
+        <div class="row align-items-center min-vh-85">
+            <div class="col-lg-6 col-md-12 order-lg-1 order-2">
+                <div class="hero-content-new">
+                    <!-- Badge -->
+                    <div class="hero-badge" data-aos="fade-up" data-aos-delay="100">
+                        <span class="badge-icon"><i class="fas fa-rocket"></i></span>
+                        <span class="badge-text">Trusted by 120+ Businesses Worldwide</span>
+                    </div>
+
+                    <!-- Main Title -->
+                    <h1 class="hero-title-new" data-aos="fade-up" data-aos-delay="200">
+                        We Build <span class="text-gradient">Digital Experiences</span> That Drive Results
+                    </h1>
+
+                    <!-- Subtitle -->
+                    <p class="hero-subtitle-new" data-aos="fade-up" data-aos-delay="300">
+                        Transform your vision into stunning, high-performance websites with our expert team. We combine cutting-edge design with powerful technology to create solutions that convert visitors into customers.
+                    </p>
+
+                    <!-- Feature Pills -->
+                    <div class="hero-pills" data-aos="fade-up" data-aos-delay="400">
+                        <span class="hero-pill"><i class="fas fa-bolt"></i> Lightning Fast</span>
+                        <span class="hero-pill"><i class="fas fa-mobile-alt"></i> Mobile First</span>
+                        <span class="hero-pill"><i class="fas fa-search"></i> SEO Ready</span>
+                        <span class="hero-pill"><i class="fas fa-shield-alt"></i> Secure</span>
+                    </div>
+
+                    <!-- CTA Buttons -->
+                    <div class="hero-cta-group" data-aos="fade-up" data-aos-delay="500">
+                        <a href="contact.php" class="btn-hero-primary">
+                            <span>Start Your Project</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="portfolio.php" class="btn-hero-secondary">
+                            <span class="play-icon"><i class="fas fa-play"></i></span>
+                            <span>View Our Work</span>
+                        </a>
+                    </div>
+
+                    <!-- Trust Indicators -->
+                    <div class="hero-trust" data-aos="fade-up" data-aos-delay="600">
+                        <div class="trust-avatars">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Client">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Client">
+                            <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Client">
+                            <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="Client">
+                            <span class="avatar-count">+116</span>
+                        </div>
+                        <div class="trust-text">
+                            <div class="trust-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span>5.0</span>
                             </div>
-                            <div class="col-md-6">
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Content Management System</span>
-                                </div>
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>E-Commerce Integration</span>
-                                </div>
-                                <div class="hero-feature-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Secure & Scalable Solutions</span>
-                                </div>
+                            <p>From 120+ Happy Clients</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-12 order-lg-2 order-1">
+                <div class="hero-visual" data-aos="zoom-in" data-aos-delay="300">
+                    <!-- Main Visual Card -->
+                    <div class="hero-visual-card">
+                        <div class="visual-browser">
+                            <div class="browser-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
                             </div>
+                            <div class="browser-url">
+                                <i class="fas fa-lock"></i>
+                                <span>yourwebsite.com</span>
+                            </div>
+                        </div>
+                        <div class="visual-content">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop" alt="Website Preview">
                         </div>
                     </div>
 
-                    <a href="contact.php" class="btn-hero">
-                        Have a Query? <i class="fas fa-external-link-alt"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-12" data-aos="fade-left">
-                <div class="hero-illustration">
-                    <img src="https://cdn.pixabay.com/photo/2019/10/09/07/28/development-4536630_1280.png" alt="Web Development Illustration" class="img-fluid">
+                    <!-- Floating Stats Cards -->
+                    <div class="floating-stat-card stat-card-1" data-aos="fade-left" data-aos-delay="600">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">+150%</span>
+                            <span class="stat-label">Traffic Growth</span>
+                        </div>
+                    </div>
+
+                    <div class="floating-stat-card stat-card-2" data-aos="fade-right" data-aos-delay="700">
+                        <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value"><?php echo $statProjects; ?>+</span>
+                            <span class="stat-label">Projects Delivered</span>
+                        </div>
+                    </div>
+
+                    <div class="floating-stat-card stat-card-3" data-aos="fade-up" data-aos-delay="800">
+                        <div class="stat-icon warning"><i class="fas fa-star"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">5.0</span>
+                            <span class="stat-label">Client Rating</span>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack Icons -->
+                    <div class="hero-tech-stack">
+                        <div class="tech-icon" title="React"><i class="fab fa-react"></i></div>
+                        <div class="tech-icon" title="Node.js"><i class="fab fa-node-js"></i></div>
+                        <div class="tech-icon" title="Python"><i class="fab fa-python"></i></div>
+                        <div class="tech-icon" title="AWS"><i class="fab fa-aws"></i></div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        <div class="mouse">
+            <div class="wheel"></div>
+        </div>
+        <span>Scroll to explore</span>
     </div>
 </section>
 
