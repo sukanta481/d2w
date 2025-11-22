@@ -38,17 +38,30 @@ if (!empty($project['technologies'])) {
 include 'includes/header.php';
 ?>
 
-<section class="page-header">
+<section class="page-header-new">
+    <!-- Animated Background -->
+    <div class="page-header-bg">
+        <div class="header-shape header-shape-1"></div>
+        <div class="header-shape header-shape-2"></div>
+        <div class="header-shape header-shape-3"></div>
+    </div>
+
     <div class="container">
-        <nav aria-label="breadcrumb" data-aos="fade-up">
-            <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-                <li class="breadcrumb-item"><a href="portfolio.php">Portfolio</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($project['title']); ?></li>
-            </ol>
-        </nav>
-        <h1 data-aos="fade-up" data-aos-delay="100"><?php echo htmlspecialchars($project['title']); ?></h1>
-        <p data-aos="fade-up" data-aos-delay="200"><?php echo htmlspecialchars($project['category']); ?></p>
+        <div class="header-content">
+            <div class="header-badge" data-aos="fade-up">
+                <i class="fas fa-folder-open"></i>
+                <span><?php echo htmlspecialchars($project['category']); ?></span>
+            </div>
+            <h1 data-aos="fade-up" data-aos-delay="100"><?php echo htmlspecialchars($project['title']); ?></h1>
+            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200"><?php echo htmlspecialchars($project['short_description'] ?? 'Project Details'); ?></p>
+            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
+                <a href="index.php"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <a href="portfolio.php">Portfolio</a>
+                <i class="fas fa-chevron-right"></i>
+                <span><?php echo htmlspecialchars($project['title']); ?></span>
+            </div>
+        </div>
     </div>
 </section>
 

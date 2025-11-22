@@ -9,6 +9,7 @@ include_once 'includes/db_config.php';
 $settings = getAllSettings();
 $services = getServices();
 $testimonials = getTestimonials();
+$technologies = getTechnologies();
 
 // Fallback values if database not available
 $heroTitle = $settings['hero_title'] ?? 'Website Design and Development Company';
@@ -21,6 +22,7 @@ $statCountries = $settings['stat_countries'] ?? '15';
 include 'includes/header.php';
 ?>
 
+<!-- Hero Section -->
 <section class="hero-section-new">
     <!-- Animated Background Elements -->
     <div class="hero-bg-shapes">
@@ -163,46 +165,60 @@ include 'includes/header.php';
     </div>
 </section>
 
-<section class="about-section py-5">
+<!-- About Section with Light Animated Background -->
+<section class="section-light-animated" style="padding: 100px 0;">
+    <!-- Animated Background Shapes -->
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
     <div class="container">
-        <div class="section-title text-center mb-5" data-aos="fade-up">
-            <h2>Expert Web Development and Agentic AI Services</h2>
-            <p>Custom, Responsive, and SEO-optimized websites that drive results for your business.</p>
-        </div>
-        <div class="row">
+        <div class="row align-items-center">
             <div class="col-lg-6 mb-4" data-aos="fade-right">
-                <p>BizNexa is a premier web development and digital marketing company focused on small businesses. Utilizing the latest technology including agentic AI, our team of skilled professionals specializes in creating result-driven websites to increase leads and sales.</p>
-                <p>From strategic business websites to e-commerce and custom portal development with AI integration, we have the expertise to design and develop all types of websites for small and medium companies.</p>
+                <div class="about-content-home">
+                    <div class="section-badge d-inline-flex mb-3" style="background: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.2);">
+                        <i class="fas fa-info-circle" style="color: #0d6efd;"></i>
+                        <span style="color: #0d6efd;">About Us</span>
+                    </div>
+                    <h2 style="color: #1e293b; font-size: 2.5rem; font-weight: 800; margin-bottom: 20px;">Expert Web Development & <span style="color: #0d6efd;">Agentic AI</span> Services</h2>
+                    <p style="color: #64748b; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px;">BizNexa is a premier web development and digital marketing company focused on small businesses. Utilizing the latest technology including agentic AI, our team of skilled professionals specializes in creating result-driven websites to increase leads and sales.</p>
+                    <p style="color: #64748b; font-size: 1.05rem; line-height: 1.8; margin-bottom: 25px;">From strategic business websites to e-commerce and custom portal development with AI integration, we have the expertise to design and develop all types of websites for small and medium companies.</p>
+                    <a href="about.php" class="btn-learn-more">
+                        <span>Learn More About Us</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="row stats-row">
-                    <div class="col-6 mb-3">
-                        <div class="stat-box">
-                            <i class="fas fa-briefcase stat-icon"></i>
-                            <h3 class="stat-number" data-count="<?php echo $statYears; ?>">0</h3>
-                            <p class="stat-label">Years of Experience</p>
+            <div class="col-lg-6 mb-4" data-aos="fade-left">
+                <div class="stats-grid-home">
+                    <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="stat-icon-home">
+                            <i class="fas fa-briefcase"></i>
                         </div>
+                        <h3 class="stat-number" data-count="<?php echo $statYears; ?>">0</h3>
+                        <p>Years Experience</p>
                     </div>
-                    <div class="col-6 mb-3">
-                        <div class="stat-box">
-                            <i class="fas fa-project-diagram stat-icon"></i>
-                            <h3 class="stat-number" data-count="<?php echo $statProjects; ?>">0</h3>
-                            <p class="stat-label">Projects Done</p>
+                    <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="stat-icon-home">
+                            <i class="fas fa-project-diagram"></i>
                         </div>
+                        <h3 class="stat-number" data-count="<?php echo $statProjects; ?>">0</h3>
+                        <p>Projects Done</p>
                     </div>
-                    <div class="col-6 mb-3">
-                        <div class="stat-box">
-                            <i class="fas fa-smile stat-icon"></i>
-                            <h3 class="stat-number" data-count="<?php echo $statClients; ?>">0</h3>
-                            <p class="stat-label">Satisfied Clients</p>
+                    <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="stat-icon-home">
+                            <i class="fas fa-smile"></i>
                         </div>
+                        <h3 class="stat-number" data-count="<?php echo $statClients; ?>">0</h3>
+                        <p>Happy Clients</p>
                     </div>
-                    <div class="col-6 mb-3">
-                        <div class="stat-box">
-                            <i class="fas fa-globe stat-icon"></i>
-                            <h3 class="stat-number" data-count="<?php echo $statCountries; ?>">0</h3>
-                            <p class="stat-label">Countries Served</p>
+                    <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="stat-icon-home">
+                            <i class="fas fa-globe"></i>
                         </div>
+                        <h3 class="stat-number" data-count="<?php echo $statCountries; ?>">0</h3>
+                        <p>Countries Served</p>
                     </div>
                 </div>
             </div>
@@ -210,311 +226,605 @@ include 'includes/header.php';
     </div>
 </section>
 
-<section class="services-section py-5">
+<!-- Services Section with Dark Animated Background -->
+<section class="section-dark-animated" style="padding: 100px 0;">
+    <!-- Animated Background Shapes -->
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="bg-shape bg-shape-3"></div>
+    </div>
+
+    <!-- Floating Code Elements -->
+    <div class="floating-elements">
+        <div class="floating-element">&lt;code/&gt;</div>
+        <div class="floating-element">{...}</div>
+        <div class="floating-element">&lt;div&gt;</div>
+        <div class="floating-element">( )</div>
+    </div>
+
     <div class="container">
-        <div class="section-title text-center mb-5" data-aos="fade-up">
-            <h2>Our Featured Services</h2>
-            <p>Elevate Your Online Presence with Our Expertise – You Dream It, We Build It</p>
+        <!-- Section Title -->
+        <div class="section-title-animated" data-aos="fade-up">
+            <div class="section-badge">
+                <i class="fas fa-rocket"></i>
+                <span>What We Offer</span>
+            </div>
+            <h2>Our Featured <span class="text-gradient">Services</span></h2>
+            <p>Elevate Your Online Presence with Our Expertise - You Dream It, We Build It</p>
         </div>
-        <?php if (!empty($services)): ?>
-        <?php
-        // Calculate slides needed for different screen sizes
-        $totalServices = count($services);
-        ?>
-        <!-- Desktop View: 3 services per slide -->
-        <div id="servicesCarouselDesktop" class="carousel slide d-none d-md-block" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <?php
-                $desktopPerSlide = 3;
-                $desktopSlides = ceil($totalServices / $desktopPerSlide);
-                for ($slide = 0; $slide < $desktopSlides; $slide++):
-                ?>
-                <div class="carousel-item <?php echo $slide === 0 ? 'active' : ''; ?>">
-                    <div class="row justify-content-center">
-                        <?php for ($i = 0; $i < $desktopPerSlide; $i++):
-                            $index = $slide * $desktopPerSlide + $i;
-                            if ($index >= $totalServices) break;
-                            $service = $services[$index];
-                        ?>
-                        <div class="col-lg-4 col-md-4 mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
-                                </div>
-                                <h4><?php echo htmlspecialchars($service['title']); ?></h4>
-                                <p><?php echo htmlspecialchars($service['short_description']); ?></p>
-                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                            </div>
+
+        <!-- Services Grid -->
+        <div class="row">
+            <?php if (!empty($services)): ?>
+                <?php $delay = 0; $count = 0; foreach ($services as $service): if ($count >= 6) break; ?>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="service-card-animated h-100">
+                        <div class="service-icon-animated">
+                            <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
                         </div>
-                        <?php endfor; ?>
+                        <h4><?php echo htmlspecialchars($service['title']); ?></h4>
+                        <p><?php echo htmlspecialchars($service['short_description']); ?></p>
+                        <a href="services.php" class="btn-service">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
-                <?php endfor; ?>
-            </div>
-            <?php if ($desktopSlides > 1): ?>
-            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            <div class="carousel-indicators">
-                <?php for ($s = 0; $s < $desktopSlides; $s++): ?>
-                <button type="button" data-bs-target="#servicesCarouselDesktop" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
-                <?php endfor; ?>
-            </div>
+                <?php $delay = $delay >= 200 ? 0 : $delay + 100; $count++; endforeach; ?>
+            <?php else: ?>
+                <!-- Fallback static services -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="service-card-animated h-100">
+                        <div class="service-icon-animated">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h4>Website Design</h4>
+                        <p>Create stunning, user-friendly websites that captivate your audience and drive conversions.</p>
+                        <a href="services.php" class="btn-service">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-card-animated h-100">
+                        <div class="service-icon-animated">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h4>E-Commerce Development</h4>
+                        <p>Launch your online store with powerful e-commerce solutions that drive sales.</p>
+                        <a href="services.php" class="btn-service">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-card-animated h-100">
+                        <div class="service-icon-animated">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>Agentic AI Solutions</h4>
+                        <p>Harness the power of AI agents to automate tasks and improve customer service.</p>
+                        <a href="services.php" class="btn-service">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
 
-        <!-- Mobile View: 1 service per slide -->
-        <div id="servicesCarouselMobile" class="carousel slide d-md-none" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <?php foreach ($services as $idx => $service): ?>
-                <div class="carousel-item <?php echo $idx === 0 ? 'active' : ''; ?>">
-                    <div class="row justify-content-center">
-                        <div class="col-10 col-sm-8 mb-4">
-                            <div class="service-card">
-                                <div class="service-icon">
-                                    <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
-                                </div>
-                                <h4><?php echo htmlspecialchars($service['title']); ?></h4>
-                                <p><?php echo htmlspecialchars($service['short_description']); ?></p>
-                                <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <?php if ($totalServices > 1): ?>
-            <button class="carousel-control-prev" type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            <div class="carousel-indicators">
-                <?php for ($s = 0; $s < $totalServices; $s++): ?>
-                <button type="button" data-bs-target="#servicesCarouselMobile" data-bs-slide-to="<?php echo $s; ?>" <?php echo $s === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $s + 1; ?>"></button>
-                <?php endfor; ?>
-            </div>
-            <?php endif; ?>
+        <!-- View All Button -->
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="services.php" class="btn-hero-primary" style="padding: 14px 35px;">
+                <span>View All Services</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
-        <?php else: ?>
-        <!-- Fallback static services if database unavailable -->
+    </div>
+</section>
+
+<!-- Technology Section with Light Animated Background -->
+<section class="section-light-animated" style="padding: 80px 0;">
+    <!-- Animated Background Shapes -->
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <div class="section-badge d-inline-flex" style="background: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.2);">
+                <i class="fas fa-layer-group" style="color: #0d6efd;"></i>
+                <span style="color: #0d6efd;">Tech Stack</span>
+            </div>
+            <h2 style="color: #1e293b; font-size: 2.5rem; font-weight: 800; margin-top: 15px;">Technologies We <span style="color: #0d6efd;">Master</span></h2>
+            <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 15px auto 0;">We use cutting-edge technologies to build secure, scalable, and high-performance solutions.</p>
+        </div>
+
         <div class="row justify-content-center">
-            <div class="col-lg-4 col-md-6 col-6 mb-4">
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-laptop-code"></i></div>
-                    <h4>Website Design</h4>
-                    <p>Faster loading secured website designing service.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-6 mb-4">
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <h4>Ecommerce Website</h4>
-                    <p>Premium Quality E-Commerce Development Services.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Learn More</a>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 d-none d-lg-block mb-4">
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-code"></i></div>
-                    <h4>Web Development</h4>
-                    <p>Web portal development with the latest technology.</p>
-                    <a href="services.php" class="btn btn-outline-primary">Contact Us</a>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-</section>
-
-<?php $technologies = getTechnologies(); ?>
-<section class="technology-section py-5 bg-light">
-    <div class="container">
-        <div class="section-title text-center mb-5" data-aos="fade-up">
-            <h2>Technology We Use to Build Secure Website & Application</h2>
-            <p>We use latest technologies & tools to build secure & updated website & Application</p>
-        </div>
-        <div class="row justify-content-center align-items-center">
             <?php if (!empty($technologies)): ?>
-                <?php $delay = 100; foreach ($technologies as $tech): ?>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
-                    <div class="tech-logo">
+                <?php $delay = 0; foreach ($technologies as $tech): ?>
+                <div class="col-6 col-md-3 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="tech-item-home">
                         <i class="<?php echo htmlspecialchars($tech['icon']); ?>" style="color: <?php echo htmlspecialchars($tech['color']); ?>;"></i>
-                        <p class="tech-name mt-2"><?php echo htmlspecialchars($tech['name']); ?></p>
+                        <p><?php echo htmlspecialchars($tech['name']); ?></p>
                     </div>
                 </div>
-                <?php $delay = $delay >= 350 ? 100 : $delay + 50; endforeach; ?>
+                <?php $delay = $delay >= 300 ? 0 : $delay + 50; endforeach; ?>
             <?php else: ?>
                 <!-- Fallback static technologies -->
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="tech-logo">
-                        <i class="fab fa-html5" style="color: #E34F26;"></i>
-                        <p class="tech-name mt-2">HTML5</p>
+                <?php
+                $fallbackTechs = [
+                    ['icon' => 'fab fa-html5', 'color' => '#E34F26', 'name' => 'HTML5'],
+                    ['icon' => 'fab fa-css3-alt', 'color' => '#1572B6', 'name' => 'CSS3'],
+                    ['icon' => 'fab fa-js-square', 'color' => '#F7DF1E', 'name' => 'JavaScript'],
+                    ['icon' => 'fab fa-react', 'color' => '#61DAFB', 'name' => 'React'],
+                    ['icon' => 'fab fa-php', 'color' => '#777BB4', 'name' => 'PHP'],
+                    ['icon' => 'fab fa-python', 'color' => '#3776AB', 'name' => 'Python'],
+                ];
+                $delay = 0;
+                foreach ($fallbackTechs as $tech):
+                ?>
+                <div class="col-6 col-md-3 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="tech-item-home">
+                        <i class="<?php echo $tech['icon']; ?>" style="color: <?php echo $tech['color']; ?>;"></i>
+                        <p><?php echo $tech['name']; ?></p>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="150">
-                    <div class="tech-logo">
-                        <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
-                        <p class="tech-name mt-2">CSS3</p>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="tech-logo">
-                        <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
-                        <p class="tech-name mt-2">JavaScript</p>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="250">
-                    <div class="tech-logo">
-                        <i class="fab fa-php" style="color: #777BB4;"></i>
-                        <p class="tech-name mt-2">PHP</p>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="tech-logo">
-                        <i class="fab fa-wordpress" style="color: #21759B;"></i>
-                        <p class="tech-name mt-2">WordPress</p>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-4 mb-4" data-aos="fade-up" data-aos-delay="350">
-                    <div class="tech-logo">
-                        <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
-                        <p class="tech-name mt-2">Bootstrap</p>
-                    </div>
-                </div>
+                <?php $delay += 50; endforeach; ?>
             <?php endif; ?>
         </div>
     </div>
 </section>
 
-<section class="testimonials-section py-5 bg-light">
+<!-- Testimonials Section with Dark Animated Background -->
+<section class="section-dark-animated" style="padding: 100px 0;">
+    <!-- Animated Background Shapes -->
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
     <div class="container">
-        <div class="section-title text-center mb-5" data-aos="fade-up">
-            <h2>What Our Clients Say</h2>
-            <p>Trusted by businesses worldwide</p>
-        </div>
-
-        <?php if (!empty($testimonials)): ?>
-        <!-- Desktop View: Static 3 columns -->
-        <div class="row d-none d-lg-flex">
-            <?php $delay = 100; foreach (array_slice($testimonials, 0, 3) as $testimonial): ?>
-            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
-                <div class="testimonial-card">
-                    <div class="testimonial-rating mb-2">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                        <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
-                        <?php endfor; ?>
-                    </div>
-                    <div class="testimonial-text">
-                        <p>"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
-                        <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
-                    </div>
-                </div>
+        <!-- Section Title -->
+        <div class="section-title-animated" data-aos="fade-up">
+            <div class="section-badge">
+                <i class="fas fa-quote-left"></i>
+                <span>Testimonials</span>
             </div>
-            <?php $delay += 100; endforeach; ?>
+            <h2>What Our <span class="text-gradient">Clients Say</span></h2>
+            <p>Trusted by businesses worldwide - Here's what they have to say about us</p>
         </div>
 
-        <!-- Mobile/Tablet View: Carousel Slider -->
-        <div id="testimonialsCarousel" class="carousel slide d-lg-none" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <?php $first = true; foreach ($testimonials as $testimonial): ?>
-                <div class="carousel-item <?php echo $first ? 'active' : ''; ?>">
-                    <div class="testimonial-card">
-                        <div class="testimonial-rating mb-2">
+        <div class="row">
+            <?php if (!empty($testimonials)): ?>
+                <?php $delay = 0; $count = 0; foreach ($testimonials as $testimonial): if ($count >= 3) break; ?>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="testimonial-card-animated">
+                        <div class="testimonial-quote">
+                            <i class="fas fa-quote-left"></i>
+                        </div>
+                        <div class="testimonial-rating-animated">
                             <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'text-warning' : 'text-muted'; ?>"></i>
+                            <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'active' : ''; ?>"></i>
                             <?php endfor; ?>
                         </div>
-                        <div class="testimonial-text">
-                            <p>"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
-                            <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
+                        <p class="testimonial-text-animated">"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
+                        <div class="testimonial-author-animated">
+                            <div class="author-avatar">
+                                <?php echo strtoupper(substr($testimonial['client_name'], 0, 1)); ?>
+                            </div>
+                            <div class="author-info">
+                                <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
+                                <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <?php $first = false; endforeach; ?>
-            </div>
-            <?php if (count($testimonials) > 1): ?>
-            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            <div class="carousel-indicators">
-                <?php for ($t = 0; $t < count($testimonials); $t++): ?>
-                <button type="button" data-bs-target="#testimonialsCarousel" data-bs-slide-to="<?php echo $t; ?>" <?php echo $t === 0 ? 'class="active" aria-current="true"' : ''; ?> aria-label="Slide <?php echo $t + 1; ?>"></button>
-                <?php endfor; ?>
-            </div>
+                <?php $delay += 100; $count++; endforeach; ?>
+            <?php else: ?>
+                <!-- Fallback static testimonials -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
+                    <div class="testimonial-card-animated">
+                        <div class="testimonial-quote">
+                            <i class="fas fa-quote-left"></i>
+                        </div>
+                        <div class="testimonial-rating-animated">
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                        </div>
+                        <p class="testimonial-text-animated">"BizNexa transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
+                        <div class="testimonial-author-animated">
+                            <div class="author-avatar">J</div>
+                            <div class="author-info">
+                                <h5>John Smith</h5>
+                                <span>CEO, TechStart Inc.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card-animated">
+                        <div class="testimonial-quote">
+                            <i class="fas fa-quote-left"></i>
+                        </div>
+                        <div class="testimonial-rating-animated">
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                        </div>
+                        <p class="testimonial-text-animated">"Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch."</p>
+                        <div class="testimonial-author-animated">
+                            <div class="author-avatar">S</div>
+                            <div class="author-info">
+                                <h5>Sarah Johnson</h5>
+                                <span>Founder, Fashion Hub</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card-animated">
+                        <div class="testimonial-quote">
+                            <i class="fas fa-quote-left"></i>
+                        </div>
+                        <div class="testimonial-rating-animated">
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                            <i class="fas fa-star active"></i>
+                        </div>
+                        <p class="testimonial-text-animated">"Professional, dedicated, and responsive. BizNexa created a beautiful website for our business that truly represents our brand."</p>
+                        <div class="testimonial-author-animated">
+                            <div class="author-avatar">M</div>
+                            <div class="author-info">
+                                <h5>Michael Chen</h5>
+                                <span>Owner, Local Bistro</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
-        <?php else: ?>
-        <!-- Fallback static testimonials if database unavailable -->
-        <div class="row d-none d-lg-flex">
-            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="testimonial-card">
-                    <div class="testimonial-text">
-                        <p>"BizNexa transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <h5>John Smith</h5>
-                        <span>CEO, TechStart Inc.</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="testimonial-card">
-                    <div class="testimonial-text">
-                        <p>"Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <h5>Sarah Johnson</h5>
-                        <span>Founder, Fashion Hub</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="testimonial-card">
-                    <div class="testimonial-text">
-                        <p>"Professional, dedicated, and responsive. BizNexa created a beautiful website for our business that truly represents our brand."</p>
-                    </div>
-                    <div class="testimonial-author">
-                        <h5>Michael Chen</h5>
-                        <span>Owner, Local Bistro</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
     </div>
 </section>
 
-<section class="cta-section py-5">
-    <div class="container text-center">
-        <div class="row justify-content-center">
-            <div class="col-lg-8" data-aos="zoom-in">
-                <h2 class="text-white mb-3">Ready to Transform Your Digital Presence?</h2>
-                <p class="text-white mb-4">Contact us today for a free consultation and let's discuss how we can help your business grow.</p>
-                <a href="contact.php" class="btn btn-light btn-lg">Get Started Now</a>
+<!-- CTA Section with Gradient Background -->
+<section class="section-light-animated" style="padding: 100px 0;">
+    <!-- Animated Background Shapes -->
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="cta-box-home" data-aos="zoom-in">
+            <div class="cta-bg-shapes">
+                <div class="cta-shape cta-shape-1"></div>
+                <div class="cta-shape cta-shape-2"></div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-4 mb-lg-0">
+                    <h2>Ready to Transform Your <span>Digital Presence</span>?</h2>
+                    <p>Contact us today for a free consultation and let's discuss how we can help your business grow.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="contact.php" class="btn-cta-home">
+                        <span>Get Started Now</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+/* About Content Home */
+.btn-learn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    color: #fff;
+    padding: 14px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.3);
+}
+
+.btn-learn-more:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(13, 110, 253, 0.4);
+    color: #fff;
+}
+
+/* Stats Grid Home */
+.stats-grid-home {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.stat-item-home {
+    background: #fff;
+    border-radius: 20px;
+    padding: 35px 25px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+}
+
+.stat-item-home:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon-home {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.stat-icon-home i {
+    font-size: 28px;
+    color: #fff;
+}
+
+.stat-item-home h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 5px;
+}
+
+.stat-item-home p {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Tech Item Home */
+.tech-item-home {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+}
+
+.tech-item-home:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.tech-item-home i {
+    font-size: 48px;
+    transition: transform 0.4s ease;
+}
+
+.tech-item-home:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.tech-item-home p {
+    margin-top: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+/* Testimonial Card Animated */
+.testimonial-card-animated {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 40px 30px;
+    position: relative;
+    transition: all 0.4s ease;
+    height: 100%;
+}
+
+.testimonial-card-animated:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(13, 110, 253, 0.3);
+}
+
+.testimonial-quote {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 3rem;
+    color: rgba(13, 110, 253, 0.2);
+}
+
+.testimonial-rating-animated {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.testimonial-rating-animated i {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.testimonial-rating-animated i.active {
+    color: #fbbf24;
+}
+
+.testimonial-text-animated {
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+.testimonial-author-animated {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.author-avatar {
+    width: 55px;
+    height: 55px;
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.author-info h5 {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.author-info span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* CTA Box Home */
+.cta-box-home {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    border-radius: 25px;
+    padding: 70px 60px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(13, 110, 253, 0.3);
+}
+
+.cta-bg-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.cta-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.cta-shape-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -100px;
+}
+
+.cta-shape-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: -50px;
+}
+
+.cta-box-home h2 {
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.cta-box-home h2 span {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+}
+
+.cta-box-home p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin: 0;
+    position: relative;
+}
+
+.btn-cta-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    color: #0d6efd;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.btn-cta-home:hover {
+    background: #0f172a;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 991px) {
+    .stats-grid-home {
+        gap: 15px;
+    }
+
+    .stat-item-home {
+        padding: 25px 15px;
+    }
+
+    .stat-item-home h3 {
+        font-size: 2rem;
+    }
+
+    .cta-box-home {
+        padding: 50px 35px;
+        text-align: center;
+    }
+
+    .cta-box-home h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-icon-home {
+        width: 55px;
+        height: 55px;
+    }
+
+    .stat-icon-home i {
+        font-size: 22px;
+    }
+}
+</style>
 
 <?php include 'includes/footer.php'; ?>

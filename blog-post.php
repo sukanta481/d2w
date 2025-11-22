@@ -40,14 +40,33 @@ if (!empty($post['tags'])) {
 include 'includes/header.php';
 ?>
 
-<section class="page-header blog-post-header">
+<section class="page-header-new blog-post-header">
+    <!-- Animated Background -->
+    <div class="page-header-bg">
+        <div class="header-shape header-shape-1"></div>
+        <div class="header-shape header-shape-2"></div>
+        <div class="header-shape header-shape-3"></div>
+    </div>
+
     <div class="container">
-        <span class="blog-category-badge" data-aos="fade-up"><?php echo htmlspecialchars($post['category']); ?></span>
-        <h1 data-aos="fade-up" data-aos-delay="100"><?php echo htmlspecialchars($post['title']); ?></h1>
-        <div class="post-meta" data-aos="fade-up" data-aos-delay="150">
-            <span><i class="fas fa-user"></i> <?php echo htmlspecialchars($post['author_name'] ?? 'Admin'); ?></span>
-            <span><i class="fas fa-calendar"></i> <?php echo date('F d, Y', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
-            <span><i class="fas fa-eye"></i> <?php echo number_format($post['views'] + 1); ?> views</span>
+        <div class="header-content">
+            <div class="header-badge" data-aos="fade-up">
+                <i class="fas fa-tag"></i>
+                <span><?php echo htmlspecialchars($post['category']); ?></span>
+            </div>
+            <h1 data-aos="fade-up" data-aos-delay="100"><?php echo htmlspecialchars($post['title']); ?></h1>
+            <div class="post-meta-new" data-aos="fade-up" data-aos-delay="200">
+                <span><i class="fas fa-user"></i> <?php echo htmlspecialchars($post['author_name'] ?? 'Admin'); ?></span>
+                <span><i class="fas fa-calendar"></i> <?php echo date('F d, Y', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
+                <span><i class="fas fa-eye"></i> <?php echo number_format($post['views'] + 1); ?> views</span>
+            </div>
+            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
+                <a href="index.php"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <a href="blog.php">Blog</a>
+                <i class="fas fa-chevron-right"></i>
+                <span><?php echo htmlspecialchars(substr($post['title'], 0, 30)) . (strlen($post['title']) > 30 ? '...' : ''); ?></span>
+            </div>
         </div>
     </div>
 </section>
