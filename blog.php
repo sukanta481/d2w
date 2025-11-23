@@ -69,18 +69,36 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" <?php echo $delay > 0 ? 'data-aos-delay="' . $delay . '"' : ''; ?>>
                     <article class="blog-card-animated">
                         <div class="blog-image-animated">
-                            <?php if (!empty($post['featured_image'])): ?>
                             <?php
-                            // Handle both local uploads and external URLs
-                            $imgSrc = $post['featured_image'];
-                            if (strpos($imgSrc, 'http') !== 0 && strpos($imgSrc, '//') !== 0) {
-                                $imgSrc = $imgSrc; // Local path - use as is
+                            // Handle image path - check for external URLs, local paths, or use default
+                            $imgSrc = '';
+                            $defaultImg = 'https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg';
+
+                            if (!empty($post['featured_image'])) {
+                                $featuredImg = $post['featured_image'];
+                                // External URL (http/https or protocol-relative)
+                                if (strpos($featuredImg, 'http') === 0 || strpos($featuredImg, '//') === 0) {
+                                    $imgSrc = $featuredImg;
+                                } else {
+                                    // Local path - check if file exists
+                                    $localPath = $featuredImg;
+                                    // Remove leading slash if present
+                                    if (strpos($localPath, '/') === 0) {
+                                        $localPath = substr($localPath, 1);
+                                    }
+                                    // Check if file exists on server
+                                    if (file_exists(__DIR__ . '/' . $localPath)) {
+                                        $imgSrc = $localPath;
+                                    } else {
+                                        // File doesn't exist locally, use default
+                                        $imgSrc = $defaultImg;
+                                    }
+                                }
+                            } else {
+                                $imgSrc = $defaultImg;
                             }
                             ?>
                             <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>">
-                            <?php else: ?>
-                            <img src="https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg" alt="<?php echo htmlspecialchars($post['title']); ?>">
-                            <?php endif; ?>
                             <div class="blog-date-badge">
                                 <span class="day"><?php echo date('d', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
                                 <span class="month"><?php echo date('M', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>

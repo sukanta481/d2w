@@ -3,7 +3,11 @@
     "allow": [
       "Bash(git remote add:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(ls:*)",
+      "Bash(if not exist \"c:\\xampp\\htdocs\\d2w\\uploads\\blog\" mkdir \"c:\\xampp\\htdocs\\d2w\\uploads\\blog\")"
     ],
     "deny": [],
     "ask": []

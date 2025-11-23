@@ -254,8 +254,8 @@ include 'includes/header.php';
             <p>Elevate Your Online Presence with Our Expertise - You Dream It, We Build It</p>
         </div>
 
-        <!-- Services Grid -->
-        <div class="row">
+        <!-- Services Grid (Desktop) -->
+        <div class="row services-grid-desktop">
             <?php if (!empty($services)): ?>
                 <?php $delay = 0; $count = 0; foreach ($services as $service): if ($count >= 6) break; ?>
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
@@ -310,6 +310,66 @@ include 'includes/header.php';
                     </div>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- Services Slider (Mobile) -->
+        <div class="swiper services-swiper-mobile" data-aos="fade-up">
+            <div class="swiper-wrapper">
+                <?php if (!empty($services)): ?>
+                    <?php $count = 0; foreach ($services as $service): if ($count >= 6) break; ?>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
+                            </div>
+                            <h4><?php echo htmlspecialchars($service['title']); ?></h4>
+                            <p><?php echo htmlspecialchars($service['short_description']); ?></p>
+                            <a href="services.php" class="btn-service">
+                                Learn More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <?php $count++; endforeach; ?>
+                <?php else: ?>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                            <h4>Website Design</h4>
+                            <p>Create stunning, user-friendly websites that captivate your audience and drive conversions.</p>
+                            <a href="services.php" class="btn-service">
+                                Learn More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h4>E-Commerce Development</h4>
+                            <p>Launch your online store with powerful e-commerce solutions that drive sales.</p>
+                            <a href="services.php" class="btn-service">
+                                Learn More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h4>Agentic AI Solutions</h4>
+                            <p>Harness the power of AI agents to automate tasks and improve customer service.</p>
+                            <a href="services.php" class="btn-service">
+                                Learn More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="swiper-pagination services-pagination"></div>
         </div>
 
         <!-- View All Button -->
@@ -395,7 +455,8 @@ include 'includes/header.php';
             <p>Trusted by businesses worldwide - Here's what they have to say about us</p>
         </div>
 
-        <div class="row">
+        <!-- Testimonials Grid (Desktop) -->
+        <div class="row testimonials-grid-desktop">
             <?php if (!empty($testimonials)): ?>
                 <?php $delay = 0; $count = 0; foreach ($testimonials as $testimonial): if ($count >= 3) break; ?>
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
@@ -490,6 +551,106 @@ include 'includes/header.php';
                     </div>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- Testimonials Slider (Mobile) -->
+        <div class="swiper testimonials-swiper-mobile" data-aos="fade-up">
+            <div class="swiper-wrapper">
+                <?php if (!empty($testimonials)): ?>
+                    <?php $count = 0; foreach ($testimonials as $testimonial): if ($count >= 3) break; ?>
+                    <div class="swiper-slide">
+                        <div class="testimonial-card-animated">
+                            <div class="testimonial-quote">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="testimonial-rating-animated">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="fas fa-star <?php echo $i <= $testimonial['rating'] ? 'active' : ''; ?>"></i>
+                                <?php endfor; ?>
+                            </div>
+                            <p class="testimonial-text-animated">"<?php echo htmlspecialchars($testimonial['testimonial']); ?>"</p>
+                            <div class="testimonial-author-animated">
+                                <div class="author-avatar">
+                                    <?php echo strtoupper(substr($testimonial['client_name'], 0, 1)); ?>
+                                </div>
+                                <div class="author-info">
+                                    <h5><?php echo htmlspecialchars($testimonial['client_name']); ?></h5>
+                                    <span><?php echo htmlspecialchars($testimonial['client_position'] ?? ''); ?><?php echo $testimonial['client_company'] ? ', ' . htmlspecialchars($testimonial['client_company']) : ''; ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php $count++; endforeach; ?>
+                <?php else: ?>
+                    <div class="swiper-slide">
+                        <div class="testimonial-card-animated">
+                            <div class="testimonial-quote">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="testimonial-rating-animated">
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                            </div>
+                            <p class="testimonial-text-animated">"BizNexa transformed our online presence completely. Their expertise in web development and AI integration is outstanding. Highly recommended!"</p>
+                            <div class="testimonial-author-animated">
+                                <div class="author-avatar">J</div>
+                                <div class="author-info">
+                                    <h5>John Smith</h5>
+                                    <span>CEO, TechStart Inc.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="testimonial-card-animated">
+                            <div class="testimonial-quote">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="testimonial-rating-animated">
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                            </div>
+                            <p class="testimonial-text-animated">"Excellent service! The team delivered our e-commerce website on time with amazing features. Our sales have increased by 40% since launch."</p>
+                            <div class="testimonial-author-animated">
+                                <div class="author-avatar">S</div>
+                                <div class="author-info">
+                                    <h5>Sarah Johnson</h5>
+                                    <span>Founder, Fashion Hub</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="testimonial-card-animated">
+                            <div class="testimonial-quote">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <div class="testimonial-rating-animated">
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                                <i class="fas fa-star active"></i>
+                            </div>
+                            <p class="testimonial-text-animated">"Professional, dedicated, and responsive. BizNexa created a beautiful website for our business that truly represents our brand."</p>
+                            <div class="testimonial-author-animated">
+                                <div class="author-avatar">M</div>
+                                <div class="author-info">
+                                    <h5>Michael Chen</h5>
+                                    <span>Owner, Local Bistro</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="swiper-pagination testimonials-pagination"></div>
         </div>
     </div>
 </section>
@@ -825,6 +986,120 @@ include 'includes/header.php';
         font-size: 22px;
     }
 }
+
+/* Mobile Slider Styles */
+.services-swiper-mobile,
+.testimonials-swiper-mobile {
+    display: none;
+    padding-bottom: 50px;
+}
+
+.services-swiper-mobile .swiper-slide,
+.testimonials-swiper-mobile .swiper-slide {
+    height: auto;
+    padding: 10px 5px;
+}
+
+.services-swiper-mobile .service-card-animated,
+.testimonials-swiper-mobile .testimonial-card-animated {
+    height: 100%;
+}
+
+/* Swiper Pagination Styling */
+.services-pagination,
+.testimonials-pagination {
+    position: relative;
+    margin-top: 20px;
+}
+
+.services-pagination .swiper-pagination-bullet,
+.testimonials-pagination .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.services-pagination .swiper-pagination-bullet-active,
+.testimonials-pagination .swiper-pagination-bullet-active {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    width: 30px;
+    border-radius: 5px;
+}
+
+/* Show slider on mobile, hide grid */
+@media (max-width: 767px) {
+    .services-grid-desktop,
+    .testimonials-grid-desktop {
+        display: none !important;
+    }
+
+    .services-swiper-mobile,
+    .testimonials-swiper-mobile {
+        display: block;
+    }
+}
 </style>
+
+<!-- Mobile Sliders Initialization -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Services Swiper for Mobile
+    if (window.innerWidth <= 767) {
+        new Swiper('.services-swiper-mobile', {
+            slidesPerView: 1.2,
+            spaceBetween: 15,
+            centeredSlides: true,
+            loop: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.services-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                480: {
+                    slidesPerView: 1.3,
+                    spaceBetween: 20,
+                }
+            }
+        });
+
+        // Initialize Testimonials Swiper for Mobile
+        new Swiper('.testimonials-swiper-mobile', {
+            slidesPerView: 1.1,
+            spaceBetween: 15,
+            centeredSlides: true,
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.testimonials-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                480: {
+                    slidesPerView: 1.2,
+                    spaceBetween: 20,
+                }
+            }
+        });
+    }
+
+    // Reinitialize on resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            location.reload();
+        }, 250);
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>

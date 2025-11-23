@@ -22,13 +22,28 @@ $settings = getAllSettings();
 // Get related posts
 $relatedPosts = getRelatedBlogPosts($post['id'], $post['category'], 3);
 
-// Handle image path
-$featuredImage = $post['featured_image'] ?? '';
-if ($featuredImage && strpos($featuredImage, 'http') !== 0 && strpos($featuredImage, '//') !== 0) {
-    $featuredImage = $featuredImage; // Local path
-}
-if (empty($featuredImage)) {
-    $featuredImage = 'https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg';
+// Handle image path - check for external URLs, local paths, or use default
+$defaultImg = 'https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg';
+$featuredImage = $defaultImg;
+
+if (!empty($post['featured_image'])) {
+    $imgPath = $post['featured_image'];
+    // External URL (http/https or protocol-relative)
+    if (strpos($imgPath, 'http') === 0 || strpos($imgPath, '//') === 0) {
+        $featuredImage = $imgPath;
+    } else {
+        // Local path - check if file exists
+        $localPath = $imgPath;
+        // Remove leading slash if present
+        if (strpos($localPath, '/') === 0) {
+            $localPath = substr($localPath, 1);
+        }
+        // Check if file exists on server
+        if (file_exists(__DIR__ . '/' . $localPath)) {
+            $featuredImage = $localPath;
+        }
+        // If file doesn't exist, keep default image
+    }
 }
 
 // Parse tags
@@ -121,12 +136,18 @@ include 'includes/header.php';
         <div class="row">
             <?php foreach ($relatedPosts as $index => $related): ?>
             <?php
-            $relatedImg = $related['featured_image'] ?? '';
-            if ($relatedImg && strpos($relatedImg, 'http') !== 0 && strpos($relatedImg, '//') !== 0) {
-                $relatedImg = $relatedImg;
-            }
-            if (empty($relatedImg)) {
-                $relatedImg = 'https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg';
+            // Handle related post image path
+            $relatedImg = 'https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg';
+            if (!empty($related['featured_image'])) {
+                $relPath = $related['featured_image'];
+                if (strpos($relPath, 'http') === 0 || strpos($relPath, '//') === 0) {
+                    $relatedImg = $relPath;
+                } else {
+                    $localRelPath = (strpos($relPath, '/') === 0) ? substr($relPath, 1) : $relPath;
+                    if (file_exists(__DIR__ . '/' . $localRelPath)) {
+                        $relatedImg = $localRelPath;
+                    }
+                }
             }
             ?>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo ($index + 1) * 100; ?>">
