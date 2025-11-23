@@ -20,33 +20,8 @@ if (!empty($projects)) {
 include 'includes/header.php';
 ?>
 
-<section class="page-header-new">
-    <!-- Animated Background -->
-    <div class="page-header-bg">
-        <div class="header-shape header-shape-1"></div>
-        <div class="header-shape header-shape-2"></div>
-        <div class="header-shape header-shape-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="header-content">
-            <div class="header-badge" data-aos="fade-up">
-                <i class="fas fa-briefcase"></i>
-                <span>Our Work</span>
-            </div>
-            <h1 data-aos="fade-up" data-aos-delay="100">Our <span class="text-gradient">Portfolio</span></h1>
-            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200">Explore our collection of successful projects that showcase our expertise in web development, design, and AI solutions.</p>
-            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
-                <a href="index.php"><i class="fas fa-home"></i> Home</a>
-                <i class="fas fa-chevron-right"></i>
-                <span>Portfolio</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Portfolio Section with Dark Animated Background -->
-<section class="section-dark-animated" style="padding: 100px 0;">
+<!-- Portfolio Hero Section with Dark Animated Background -->
+<section class="section-dark-animated" style="padding-top: 120px; padding-bottom: 100px;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -63,14 +38,19 @@ include 'includes/header.php';
     </div>
 
     <div class="container">
-        <!-- Section Title -->
+        <!-- Hero Title -->
         <div class="section-title-animated" data-aos="fade-up">
             <div class="section-badge">
-                <i class="fas fa-laptop-code"></i>
-                <span>Recent Work</span>
+                <i class="fas fa-briefcase"></i>
+                <span>Our Work</span>
             </div>
-            <h2>Our <span class="text-gradient">Projects</span></h2>
-            <p>We are creating websites for businesses, NGOs & portfolios. From E-commerce to Custom Portals, we've got you covered.</p>
+            <h1 style="font-size: 3rem; color: #fff;">Our <span class="text-gradient">Portfolio</span></h1>
+            <p style="color: #94a3b8;">Explore our collection of successful projects that showcase our expertise in web development, design, and AI solutions.</p>
+            <div class="header-breadcrumb mt-3" data-aos="fade-up" data-aos-delay="100" style="justify-content: center;">
+                <a href="index.php" style="color: #94a3b8;"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right" style="color: #64748b;"></i>
+                <span style="color: #fff;">Portfolio</span>
+            </div>
         </div>
 
         <!-- Filter Buttons -->

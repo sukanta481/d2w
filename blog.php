@@ -10,33 +10,8 @@ $settings = getAllSettings();
 include 'includes/header.php';
 ?>
 
-<section class="page-header-new">
-    <!-- Animated Background -->
-    <div class="page-header-bg">
-        <div class="header-shape header-shape-1"></div>
-        <div class="header-shape header-shape-2"></div>
-        <div class="header-shape header-shape-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="header-content">
-            <div class="header-badge" data-aos="fade-up">
-                <i class="fas fa-blog"></i>
-                <span>Latest Articles</span>
-            </div>
-            <h1 data-aos="fade-up" data-aos-delay="100">Our <span class="text-gradient">Blog</span></h1>
-            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200">Stay updated with the latest insights, tips, and trends in web development, AI, and digital marketing.</p>
-            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
-                <a href="index.php"><i class="fas fa-home"></i> Home</a>
-                <i class="fas fa-chevron-right"></i>
-                <span>Blog</span>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Blog Section with Dark Animated Background -->
-<section class="section-dark-animated" style="padding: 100px 0;">
+<section class="section-dark-animated" style="padding-top: 120px; padding-bottom: 100px;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -53,14 +28,25 @@ include 'includes/header.php';
     </div>
 
     <div class="container">
+        <!-- Hero Title -->
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h1 style="font-size: 3rem; color: #fff; font-weight: 800;">Our <span class="text-gradient">Blog</span></h1>
+            <p style="color: #94a3b8; font-size: 1.1rem; max-width: 600px; margin: 15px auto;">Stay updated with the latest insights, tips, and trends in web development, AI, and digital marketing.</p>
+            <div class="header-breadcrumb mt-3" style="justify-content: center;">
+                <a href="index.php" style="color: #94a3b8;"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right" style="color: #64748b;"></i>
+                <span style="color: #fff;">Blog</span>
+            </div>
+        </div>
+
         <!-- Section Title -->
         <div class="section-title-animated" data-aos="fade-up">
-            <div class="section-badge">
-                <i class="fas fa-newspaper"></i>
-                <span>Latest Posts</span>
+            <div class="section-badge" style="background: rgba(13, 110, 253, 0.2); border-color: rgba(13, 110, 253, 0.3);">
+                <i class="fas fa-newspaper" style="color: #60a5fa;"></i>
+                <span style="color: #60a5fa;">Latest Posts</span>
             </div>
-            <h2>Insights & <span class="text-gradient">Articles</span></h2>
-            <p>Discover the latest trends, tips, and best practices in web development and digital marketing.</p>
+            <h2 style="color: #fff;">Insights & <span class="text-gradient">Articles</span></h2>
+            <p style="color: #94a3b8;">Discover the latest trends, tips, and best practices in web development and digital marketing.</p>
         </div>
 
         <div class="row">

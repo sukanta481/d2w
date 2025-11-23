@@ -15,33 +15,8 @@ $statCountries = $settings['stat_countries'] ?? '15';
 include 'includes/header.php';
 ?>
 
-<section class="page-header-new">
-    <!-- Animated Background -->
-    <div class="page-header-bg">
-        <div class="header-shape header-shape-1"></div>
-        <div class="header-shape header-shape-2"></div>
-        <div class="header-shape header-shape-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="header-content">
-            <div class="header-badge" data-aos="fade-up">
-                <i class="fas fa-building"></i>
-                <span>Who We Are</span>
-            </div>
-            <h1 data-aos="fade-up" data-aos-delay="100">About <span class="text-gradient">BizNexa</span></h1>
-            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200">Your trusted partner in digital transformation. We craft innovative solutions that drive business growth and success.</p>
-            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
-                <a href="index.php"><i class="fas fa-home"></i> Home</a>
-                <i class="fas fa-chevron-right"></i>
-                <span>About Us</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- About Story Section with Light Animated Background -->
-<section class="section-light-animated" style="padding: 100px 0;">
+<!-- About Hero Section with Light Animated Background -->
+<section class="section-light-animated" style="padding-top: 120px; padding-bottom: 100px;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -49,6 +24,21 @@ include 'includes/header.php';
     </div>
 
     <div class="container">
+        <!-- Hero Title -->
+        <div class="text-center mb-5" data-aos="fade-up">
+            <div class="section-badge d-inline-flex" style="background: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.2);">
+                <i class="fas fa-building" style="color: #0d6efd;"></i>
+                <span style="color: #0d6efd;">Who We Are</span>
+            </div>
+            <h1 style="font-size: 3rem; color: #1e293b; font-weight: 800; margin-top: 15px;">About <span style="color: #0d6efd;">BizNexa</span></h1>
+            <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 15px auto;">Your trusted partner in digital transformation. We craft innovative solutions that drive business growth and success.</p>
+            <div class="header-breadcrumb mt-3" style="justify-content: center;">
+                <a href="index.php" style="color: #64748b;"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right" style="color: #94a3b8;"></i>
+                <span style="color: #1e293b;">About Us</span>
+            </div>
+        </div>
+
         <div class="row align-items-center">
             <div class="col-lg-6 mb-4" data-aos="fade-right">
                 <div class="about-image-wrapper">

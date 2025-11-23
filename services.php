@@ -11,33 +11,8 @@ $settings = getAllSettings();
 include 'includes/header.php';
 ?>
 
-<section class="page-header-new">
-    <!-- Animated Background -->
-    <div class="page-header-bg">
-        <div class="header-shape header-shape-1"></div>
-        <div class="header-shape header-shape-2"></div>
-        <div class="header-shape header-shape-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="header-content">
-            <div class="header-badge" data-aos="fade-up">
-                <i class="fas fa-cogs"></i>
-                <span>What We Offer</span>
-            </div>
-            <h1 data-aos="fade-up" data-aos-delay="100">Our <span class="text-gradient">Services</span></h1>
-            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200">Comprehensive digital solutions tailored to transform your business and accelerate growth in the digital landscape.</p>
-            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
-                <a href="index.php"><i class="fas fa-home"></i> Home</a>
-                <i class="fas fa-chevron-right"></i>
-                <span>Services</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Services Section with Dark Animated Background -->
-<section class="section-dark-animated">
+<!-- Services Hero Section with Dark Animated Background -->
+<section class="section-dark-animated" style="padding-top: 120px;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -54,14 +29,19 @@ include 'includes/header.php';
     </div>
 
     <div class="container">
-        <!-- Section Title -->
+        <!-- Hero Title -->
         <div class="section-title-animated" data-aos="fade-up">
             <div class="section-badge">
                 <i class="fas fa-rocket"></i>
-                <span>Our Expertise</span>
+                <span>What We Offer</span>
             </div>
-            <h2>Featured <span class="text-gradient">Services</span></h2>
-            <p>Elevate your online presence with our expertise. You dream it, we build it with cutting-edge technology.</p>
+            <h1 style="font-size: 3rem; color: #fff;">Our <span class="text-gradient">Services</span></h1>
+            <p style="color: #94a3b8;">Comprehensive digital solutions tailored to transform your business and accelerate growth in the digital landscape.</p>
+            <div class="header-breadcrumb mt-3" data-aos="fade-up" data-aos-delay="100" style="justify-content: center;">
+                <a href="index.php" style="color: #94a3b8;"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right" style="color: #64748b;"></i>
+                <span style="color: #fff;">Services</span>
+            </div>
         </div>
 
         <!-- Services Grid -->
@@ -277,9 +257,9 @@ include 'includes/header.php';
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8 mx-auto text-center" data-aos="zoom-in">
-                <div class="section-badge d-inline-flex mb-4">
-                    <i class="fas fa-handshake"></i>
-                    <span>Let's Work Together</span>
+                <div class="section-badge d-inline-flex mb-4" style="background: rgba(13, 110, 253, 0.2); border-color: rgba(13, 110, 253, 0.3);">
+                    <i class="fas fa-handshake" style="color: #60a5fa;"></i>
+                    <span style="color: #60a5fa;">Let's Work Together</span>
                 </div>
                 <h2 style="font-size: 2.75rem; color: #fff; font-weight: 800; margin-bottom: 20px;">Need a <span class="text-gradient">Custom Solution</span>?</h2>
                 <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 35px; max-width: 600px; margin-left: auto; margin-right: auto;">Let's discuss your specific requirements and create something amazing together. Our team is ready to bring your vision to life.</p>

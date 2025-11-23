@@ -12,33 +12,8 @@ $contactAddress = $settings['site_address'] ?? '123 Business Avenue, Suite 100, 
 include 'includes/header.php';
 ?>
 
-<section class="page-header-new">
-    <!-- Animated Background -->
-    <div class="page-header-bg">
-        <div class="header-shape header-shape-1"></div>
-        <div class="header-shape header-shape-2"></div>
-        <div class="header-shape header-shape-3"></div>
-    </div>
-
-    <div class="container">
-        <div class="header-content">
-            <div class="header-badge" data-aos="fade-up">
-                <i class="fas fa-envelope"></i>
-                <span>Get In Touch</span>
-            </div>
-            <h1 data-aos="fade-up" data-aos-delay="100">Contact <span class="text-gradient">Us</span></h1>
-            <p class="header-subtitle" data-aos="fade-up" data-aos-delay="200">Have a project in mind? Let's discuss how we can help bring your vision to life. We're here to help!</p>
-            <div class="header-breadcrumb" data-aos="fade-up" data-aos-delay="300">
-                <a href="index.php"><i class="fas fa-home"></i> Home</a>
-                <i class="fas fa-chevron-right"></i>
-                <span>Contact Us</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact Info Section with Light Animated Background -->
-<section class="section-light-animated" style="padding: 80px 0;">
+<!-- Contact Hero Section with Light Animated Background -->
+<section class="section-light-animated" style="padding-top: 120px; padding-bottom: 80px;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -46,6 +21,17 @@ include 'includes/header.php';
     </div>
 
     <div class="container">
+        <!-- Hero Title -->
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h1 style="font-size: 3rem; color: #1e293b; font-weight: 800; margin-top: 15px;">Contact <span style="color: #0d6efd;">Us</span></h1>
+            <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 15px auto;">Get in touch with our team. We're here to help you achieve your digital goals.</p>
+            <div class="header-breadcrumb mt-3" style="justify-content: center;">
+                <a href="index.php" style="color: #64748b;"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right" style="color: #94a3b8;"></i>
+                <span style="color: #1e293b; font-weight: 600;">Contact</span>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-lg-4 mb-4" data-aos="fade-up">
                 <div class="contact-card-animated">
