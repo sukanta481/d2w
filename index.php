@@ -1045,13 +1045,23 @@ include 'includes/header.php';
 <!-- Mobile Sliders Initialization -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const isMobile = window.innerWidth <= 767;
+
+    // Remove AOS delays on mobile for faster loading
+    if (isMobile) {
+        document.querySelectorAll('[data-aos-delay]').forEach(function(el) {
+            el.removeAttribute('data-aos-delay');
+        });
+    }
+
     // Initialize Services Swiper for Mobile
-    if (window.innerWidth <= 767) {
+    if (isMobile) {
         new Swiper('.services-swiper-mobile', {
             slidesPerView: 1.2,
             spaceBetween: 15,
             centeredSlides: true,
             loop: true,
+            speed: 300,  // Faster slide transition
             autoplay: {
                 delay: 4000,
                 disableOnInteraction: false,
@@ -1074,6 +1084,7 @@ document.addEventListener('DOMContentLoaded', function() {
             spaceBetween: 15,
             centeredSlides: true,
             loop: true,
+            speed: 300,  // Faster slide transition
             autoplay: {
                 delay: 5000,
                 disableOnInteraction: false,
@@ -1091,14 +1102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Reinitialize on resize
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            location.reload();
-        }, 250);
-    });
+    // Note: Removed location.reload() on resize as it causes poor UX
 });
 </script>
 

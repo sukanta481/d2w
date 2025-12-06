@@ -655,6 +655,62 @@
     .form-animated {
         padding: 30px 20px;
     }
+
+    /* MOBILE PERFORMANCE OPTIMIZATIONS */
+    /* Disable heavy background shape animations on mobile */
+    .section-dark-animated .bg-shape,
+    .section-light-animated .bg-shape,
+    .hero-bg-shapes .shape {
+        animation: none !important;
+        filter: blur(40px) !important;
+        -webkit-filter: blur(40px) !important;
+        opacity: 0.15 !important;
+    }
+
+    /* Disable floating code elements in hero */
+    .floating-code {
+        display: none !important;
+    }
+
+    /* Disable backdrop-filter on mobile for better performance */
+    .service-card-animated,
+    .testimonial-card-animated,
+    .stat-card-animated {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(30, 41, 59, 0.95) !important;
+    }
+
+    /* Reduce transition durations on mobile */
+    .service-card-animated,
+    .testimonial-card-animated,
+    .stat-item-home,
+    .tech-item-home {
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    /* Disable hover transforms on touch devices */
+    .service-card-animated:hover,
+    .testimonial-card-animated:hover,
+    .stat-item-home:hover,
+    .tech-item-home:hover {
+        transform: none !important;
+    }
+
+    /* Disable WhatsApp floating animation on mobile */
+    .whatsapp-icon {
+        animation: none !important;
+    }
+
+    /* Reduce pulse animation impact */
+    .whatsapp-pulse {
+        animation: whatsappPulse 3s ease-out infinite !important;
+    }
+
+    /* Disable floating stat cards animations */
+    .floating-stat-card {
+        animation: none !important;
+    }
 }
 
 @media (max-width: 575px) {
@@ -3246,6 +3302,30 @@ a, button, .btn, input, textarea, select {
         opacity: 1;
         transform: none;
         transition: none;
+    }
+
+    /* Disable all animations for users who prefer reduced motion */
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .bg-shape,
+    .floating-code,
+    .floating-element,
+    .floating-stat-card,
+    .whatsapp-pulse,
+    .whatsapp-icon {
+        animation: none !important;
+    }
+
+    [data-aos] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
 

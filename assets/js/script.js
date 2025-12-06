@@ -1,11 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced AOS initialization with custom settings
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 767;
+
+    // Enhanced AOS initialization with mobile-optimized settings
     AOS.init({
-        duration: 1000,
+        duration: isMobile ? 400 : 1000,  // Faster animations on mobile
         once: true,
-        offset: 100,
-        easing: 'ease-in-out-cubic',
-        delay: 100
+        offset: isMobile ? 50 : 100,      // Smaller offset on mobile
+        easing: isMobile ? 'ease-out' : 'ease-in-out-cubic',
+        delay: isMobile ? 0 : 100,        // No delays on mobile
+        disable: function() {
+            // Disable AOS completely on very slow devices
+            return window.innerWidth < 375;
+        }
     });
 
     const scrollToTopBtn = document.getElementById('scrollToTop');
@@ -171,16 +178,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Parallax effect for hero section
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const parallaxElements = document.querySelectorAll('.hero-illustration img');
+    // Parallax effect for hero section (disabled on mobile for performance)
+    if (!isMobile) {
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.hero-illustration img');
 
-        parallaxElements.forEach(element => {
-            const speed = 0.5;
-            element.style.transform = `translateY(${scrolled * speed}px)`;
+            parallaxElements.forEach(element => {
+                const speed = 0.5;
+                element.style.transform = `translateY(${scrolled * speed}px)`;
+            });
         });
-    });
+    }
 
     // Animated text typing effect for hero title (optional)
     const heroTitle = document.querySelector('.hero-title');
@@ -200,33 +209,35 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(typeWriter, 500);
     }
 
-    // Add hover effect animations for service cards
-    const serviceCards = document.querySelectorAll('.service-card');
-    serviceCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-15px) scale(1.02) rotateX(5deg)';
+    // Add hover effect animations for service cards (desktop only)
+    if (!isMobile) {
+        const serviceCards = document.querySelectorAll('.service-card');
+        serviceCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.02) rotateX(5deg)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1) rotateX(0)';
+            });
         });
 
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1) rotateX(0)';
-        });
-    });
+        // Magnetic button effect for CTA buttons (desktop only)
+        const magneticButtons = document.querySelectorAll('.btn-hero, .btn-outline-primary');
+        magneticButtons.forEach(button => {
+            button.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
 
-    // Magnetic button effect for CTA buttons
-    const magneticButtons = document.querySelectorAll('.btn-hero, .btn-outline-primary');
-    magneticButtons.forEach(button => {
-        button.addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
+                this.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
+            });
 
-            this.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translate(0, 0)';
+            });
         });
-
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'translate(0, 0)';
-        });
-    });
+    }
 
     // Intersection Observer for fade-in animations
     const fadeObserverOptions = {

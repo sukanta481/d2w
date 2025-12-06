@@ -44,8 +44,8 @@ include 'includes/header.php';
             </div>
         </div>
 
-        <!-- Services Grid -->
-        <div class="row">
+        <!-- Services Grid (Desktop) -->
+        <div class="row services-grid-desktop">
             <?php if (!empty($services)): ?>
                 <?php $delay = 0; foreach ($services as $service): ?>
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
@@ -189,6 +189,148 @@ include 'includes/header.php';
                 </div>
             <?php endif; ?>
         </div>
+
+        <!-- Services Slider (Mobile) -->
+        <div class="swiper services-swiper-mobile" data-aos="fade-up">
+            <div class="swiper-wrapper">
+                <?php if (!empty($services)): ?>
+                    <?php foreach ($services as $service): ?>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
+                            </div>
+                            <h4><?php echo htmlspecialchars($service['title']); ?></h4>
+                            <p><?php echo htmlspecialchars($service['short_description']); ?></p>
+                            <?php if (!empty($service['features'])): ?>
+                            <ul class="service-features-list">
+                                <?php
+                                $features = explode("\n", $service['features']);
+                                $count = 0;
+                                foreach ($features as $feature):
+                                    if (trim($feature) && $count < 4):
+                                ?>
+                                    <li><i class="fas fa-check-circle"></i> <?php echo htmlspecialchars(trim($feature)); ?></li>
+                                <?php
+                                    $count++;
+                                    endif;
+                                endforeach;
+                                ?>
+                            </ul>
+                            <?php endif; ?>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-laptop-code"></i>
+                            </div>
+                            <h4>Website Design</h4>
+                            <p>Create stunning, user-friendly websites that captivate your audience and drive conversions.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> Custom Design</li>
+                                <li><i class="fas fa-check-circle"></i> Mobile Responsive</li>
+                                <li><i class="fas fa-check-circle"></i> Fast Loading</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h4>Web Development</h4>
+                            <p>Build powerful web applications and portals using the latest technologies.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> Custom Solutions</li>
+                                <li><i class="fas fa-check-circle"></i> Scalable Architecture</li>
+                                <li><i class="fas fa-check-circle"></i> Secure Development</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h4>Agentic AI Solutions</h4>
+                            <p>Harness the power of AI agents to automate tasks and improve customer service.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> AI Chatbots</li>
+                                <li><i class="fas fa-check-circle"></i> Process Automation</li>
+                                <li><i class="fas fa-check-circle"></i> Smart Analytics</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h4>E-Commerce Development</h4>
+                            <p>Launch your online store with powerful e-commerce solutions that drive sales.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> Custom Store Design</li>
+                                <li><i class="fas fa-check-circle"></i> Payment Integration</li>
+                                <li><i class="fas fa-check-circle"></i> Inventory Management</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>SEO Services</h4>
+                            <p>Boost your online visibility and rank higher on search engines.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> Keyword Research</li>
+                                <li><i class="fas fa-check-circle"></i> On-Page SEO</li>
+                                <li><i class="fas fa-check-circle"></i> Link Building</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <h4>Digital Marketing</h4>
+                            <p>Reach your target audience with effective digital marketing strategies.</p>
+                            <ul class="service-features-list">
+                                <li><i class="fas fa-check-circle"></i> Social Media Marketing</li>
+                                <li><i class="fas fa-check-circle"></i> PPC Campaigns</li>
+                                <li><i class="fas fa-check-circle"></i> Email Marketing</li>
+                            </ul>
+                            <a href="contact.php" class="btn-service">
+                                Get Started <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="swiper-pagination services-page-pagination"></div>
+        </div>
     </div>
 </section>
 
@@ -285,6 +427,90 @@ include 'includes/header.php';
 .tech-item-animated:hover i {
     transform: scale(1.2) rotate(10deg);
 }
+
+/* Mobile Slider Styles for Services Page */
+.services-swiper-mobile {
+    display: none;
+    padding-bottom: 50px;
+}
+
+.services-swiper-mobile .swiper-slide {
+    height: auto;
+    padding: 10px 5px;
+}
+
+.services-swiper-mobile .service-card-animated {
+    height: 100%;
+}
+
+/* Swiper Pagination Styling */
+.services-page-pagination {
+    position: relative;
+    margin-top: 20px;
+}
+
+.services-page-pagination .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.services-page-pagination .swiper-pagination-bullet-active {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    width: 30px;
+    border-radius: 5px;
+}
+
+/* Show slider on mobile, hide grid */
+@media (max-width: 767px) {
+    .services-grid-desktop {
+        display: none !important;
+    }
+
+    .services-swiper-mobile {
+        display: block;
+    }
+}
 </style>
+
+<!-- Mobile Slider Initialization -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Services Swiper for Mobile
+    if (window.innerWidth <= 767) {
+        new Swiper('.services-swiper-mobile', {
+            slidesPerView: 1.1,
+            spaceBetween: 15,
+            centeredSlides: true,
+            loop: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.services-page-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                480: {
+                    slidesPerView: 1.2,
+                    spaceBetween: 20,
+                }
+            }
+        });
+    }
+
+    // Reinitialize on resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            location.reload();
+        }, 250);
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>
