@@ -21,6 +21,11 @@ $instagram = $settings['instagram_url'] ?? '#';
                         <a href="<?php echo htmlspecialchars($linkedin); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
                         <a href="<?php echo htmlspecialchars($instagram); ?>" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
                     </div>
+                    <!-- MSME Registration Badge -->
+                    <div class="msme-badge mt-4">
+                        <img src="assets/images/msme-logo.png" alt="MSME Registered" class="msme-logo">
+                        <span class="msme-text">MSME Registered</span>
+                    </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h5 class="footer-title">Our Services</h5>
@@ -97,6 +102,52 @@ $instagram = $settings['instagram_url'] ?? '#';
     </a>
 
     <style>
+    /* MSME Badge Styles */
+    .msme-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 12px 18px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .msme-badge:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .msme-logo {
+        width: 45px;
+        height: auto;
+        filter: brightness(1.1);
+    }
+
+    .msme-text {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    @media (max-width: 576px) {
+        .msme-badge {
+            padding: 10px 14px;
+            gap: 10px;
+        }
+
+        .msme-logo {
+            width: 38px;
+        }
+
+        .msme-text {
+            font-size: 12px;
+        }
+    }
+
     /* Floating Side Contact Box Styles */
     .side-contact-box {
         position: fixed;

@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const statNumbers = document.querySelectorAll('.stat-number');
     const observerOptions = {
-        threshold: 0.5
+        threshold: 0.1
     };
 
     const statObserver = new IntersectionObserver(function(entries) {

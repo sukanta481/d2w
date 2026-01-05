@@ -1,0 +1,3 @@
+﻿id	banner_url
+1	NULL
+2	uploads/projects/banners/banner_1767602864_695b7ab09c530.png

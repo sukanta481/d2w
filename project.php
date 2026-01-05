@@ -72,7 +72,9 @@ include 'includes/header.php';
             <div class="col-lg-8 mb-4">
                 <!-- Project Image -->
                 <div class="project-main-image mb-4" data-aos="fade-up">
-                    <?php if (!empty($project['image_url'])): ?>
+                    <?php if (!empty($project['banner_url'])): ?>
+                    <img src="<?php echo htmlspecialchars($project['banner_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>" class="img-fluid rounded shadow">
+                    <?php elseif (!empty($project['image_url'])): ?>
                     <img src="<?php echo htmlspecialchars($project['image_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>" class="img-fluid rounded shadow">
                     <?php else: ?>
                     <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($project['title']); ?>" class="img-fluid rounded shadow">
@@ -194,7 +196,9 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo ($index + 1) * 100; ?>">
                     <div class="portfolio-card">
                         <div class="portfolio-image">
-                            <?php if (!empty($related['image_url'])): ?>
+                            <?php if (!empty($related['banner_url'])): ?>
+                            <img src="<?php echo htmlspecialchars($related['banner_url']); ?>" alt="<?php echo htmlspecialchars($related['title']); ?>">
+                            <?php elseif (!empty($related['image_url'])): ?>
                             <img src="<?php echo htmlspecialchars($related['image_url']); ?>" alt="<?php echo htmlspecialchars($related['title']); ?>">
                             <?php else: ?>
                             <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($related['title']); ?>">

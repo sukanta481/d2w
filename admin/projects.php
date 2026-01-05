@@ -10,8 +10,39 @@ $db = $database->connect();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if (isset($_POST['add_project'])) {
-            $stmt = $db->prepare("INSERT INTO projects (title, description, category, client_name, project_url, image_url, technologies, completion_date, featured, status, created_by)
-                                  VALUES (:title, :description, :category, :client_name, :project_url, :image_url, :technologies, :completion_date, :featured, :status, :created_by)");
+            // Handle banner upload
+            $bannerPath = null;
+            if (isset($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = '../uploads/projects/banners/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                $maxSize = 5 * 1024 * 1024; // 5MB
+                
+                $fileType = $_FILES['banner']['type'];
+                $fileSize = $_FILES['banner']['size'];
+                
+                if (!in_array($fileType, $allowedTypes)) {
+                    throw new Exception('Invalid file type. Only JPG, PNG, and WebP images are allowed.');
+                }
+                
+                if ($fileSize > $maxSize) {
+                    throw new Exception('File size exceeds 5MB limit.');
+                }
+                
+                $fileExtension = pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION);
+                $fileName = 'banner_' . time() . '_' . uniqid() . '.' . $fileExtension;
+                $targetPath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['banner']['tmp_name'], $targetPath)) {
+                    $bannerPath = 'uploads/projects/banners/' . $fileName;
+                }
+            }
+            
+            $stmt = $db->prepare("INSERT INTO projects (title, description, category, client_name, project_url, image_url, banner_url, technologies, completion_date, featured, status, created_by)
+                                  VALUES (:title, :description, :category, :client_name, :project_url, :image_url, :banner_url, :technologies, :completion_date, :featured, :status, :created_by)");
 
             $stmt->execute([
                 ':title' => $_POST['title'],
@@ -20,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':client_name' => $_POST['client_name'] ?? null,
                 ':project_url' => $_POST['project_url'] ?? null,
                 ':image_url' => $_POST['image_url'] ?? null,
+                ':banner_url' => $bannerPath,
                 ':technologies' => $_POST['technologies'] ?? null,
                 ':completion_date' => $_POST['completion_date'] ?? null,
                 ':featured' => isset($_POST['featured']) ? 1 : 0,
@@ -32,8 +64,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (isset($_POST['update_project'])) {
+            // Get current project data for existing banner
+            $stmt = $db->prepare("SELECT banner_url FROM projects WHERE id = :id");
+            $stmt->execute([':id' => $_POST['project_id']]);
+            $currentProject = $stmt->fetch();
+            
+            // Handle banner upload
+            $bannerPath = $currentProject['banner_url'] ?? null;
+            if (isset($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = '../uploads/projects/banners/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                $maxSize = 5 * 1024 * 1024; // 5MB
+                
+                $fileType = $_FILES['banner']['type'];
+                $fileSize = $_FILES['banner']['size'];
+                
+                if (!in_array($fileType, $allowedTypes)) {
+                    throw new Exception('Invalid file type. Only JPG, PNG, and WebP images are allowed.');
+                }
+                
+                if ($fileSize > $maxSize) {
+                    throw new Exception('File size exceeds 5MB limit.');
+                }
+                
+                $fileExtension = pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION);
+                $fileName = 'banner_' . time() . '_' . uniqid() . '.' . $fileExtension;
+                $targetPath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['banner']['tmp_name'], $targetPath)) {
+                    // Delete old banner if exists
+                    if ($bannerPath && file_exists('..' . $bannerPath)) {
+                        unlink('..' . $bannerPath);
+                    }
+                    $bannerPath = 'uploads/projects/banners/' . $fileName;
+                }
+            }
+            
             $stmt = $db->prepare("UPDATE projects SET title = :title, description = :description, category = :category,
-                                  client_name = :client_name, project_url = :project_url, image_url = :image_url,
+                                  client_name = :client_name, project_url = :project_url, image_url = :image_url, banner_url = :banner_url,
                                   technologies = :technologies, completion_date = :completion_date, featured = :featured, status = :status
                                   WHERE id = :id");
 
@@ -44,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':client_name' => $_POST['client_name'] ?? null,
                 ':project_url' => $_POST['project_url'] ?? null,
                 ':image_url' => $_POST['image_url'] ?? null,
+                ':banner_url' => $bannerPath,
                 ':technologies' => $_POST['technologies'] ?? null,
                 ':completion_date' => $_POST['completion_date'] ?? null,
                 ':featured' => isset($_POST['featured']) ? 1 : 0,
@@ -56,6 +129,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (isset($_POST['delete_project'])) {
+            // Get project data to delete associated files
+            $stmt = $db->prepare("SELECT banner_url FROM projects WHERE id = :id");
+            $stmt->execute([':id' => $_POST['project_id']]);
+            $project = $stmt->fetch();
+            
+            // Delete banner file if exists
+            if ($project && $project['banner_url'] && file_exists('..' . $project['banner_url'])) {
+                unlink('..' . $project['banner_url']);
+            }
+            
             $stmt = $db->prepare("DELETE FROM projects WHERE id = :id");
             $stmt->execute([':id' => $_POST['project_id']]);
 
@@ -110,6 +193,7 @@ include 'includes/header.php';
                 <thead>
                     <tr>
                         <th>Image</th>
+                        <th>Banner</th>
                         <th>Title</th>
                         <th>Category</th>
                         <th>Client</th>
@@ -129,6 +213,16 @@ include 'includes/header.php';
                                              alt="Project" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                                     <?php else: ?>
                                         <div style="width: 60px; height: 60px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($project['banner_url']): ?>
+                                        <img src="../<?php echo htmlspecialchars($project['banner_url']); ?>"
+                                             alt="Banner" style="width: 80px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                    <?php else: ?>
+                                        <div style="width: 80px; height: 50px; background: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                             <i class="fas fa-image text-muted"></i>
                                         </div>
                                     <?php endif; ?>
@@ -172,7 +266,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editProjectModal<?php echo $project['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST" enctype="multipart/form-data">
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Edit Project</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -215,6 +309,19 @@ include 'includes/header.php';
                                                         <input type="url" name="image_url" class="form-control"
                                                                value="<?php echo htmlspecialchars($project['image_url'] ?? ''); ?>">
                                                         <small class="text-muted">Enter image URL or upload to your server</small>
+                                                    </div>
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="form-label">Banner Image</label>
+                                                        <?php if ($project['banner_url']): ?>
+                                                            <div class="mb-2">
+                                                                <img src="../<?php echo htmlspecialchars($project['banner_url']); ?>" 
+                                                                     alt="Current Banner" 
+                                                                     style="max-width: 200px; height: auto; border-radius: 8px; border: 2px solid #e9ecef;">
+                                                                <p class="small text-muted mt-1">Current banner</p>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <input type="file" name="banner" class="form-control" accept="image/jpeg,image/jpg,image/png,image/webp">
+                                                        <small class="text-muted">Upload a banner image (JPG, PNG, WebP - Max 5MB). Leave empty to keep current banner.</small>
                                                     </div>
                                                     <div class="col-md-6 mb-3">
                                                         <label class="form-label">Technologies</label>
@@ -296,7 +403,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addProjectModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Add New Project</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -333,6 +440,11 @@ include 'includes/header.php';
                             <label class="form-label">Image URL</label>
                             <input type="url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg">
                             <small class="text-muted">Enter image URL or upload to your server</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Banner Image</label>
+                            <input type="file" name="banner" class="form-control" accept="image/jpeg,image/jpg,image/png,image/webp">
+                            <small class="text-muted">Upload a banner image (JPG, PNG, WebP - Max 5MB)</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Technologies</label>

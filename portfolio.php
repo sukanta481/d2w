@@ -87,7 +87,9 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $project['category'] ?? 'website'))); ?>" data-aos="fade-up" <?php echo $delay > 0 ? 'data-aos-delay="' . $delay . '"' : ''; ?>>
                     <div class="portfolio-card-animated">
                         <div class="portfolio-image-animated">
-                            <?php if (!empty($project['image_url'])): ?>
+                            <?php if (!empty($project['banner_url'])): ?>
+                            <img src="<?php echo htmlspecialchars($project['banner_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <?php elseif (!empty($project['image_url'])): ?>
                             <img src="<?php echo htmlspecialchars($project['image_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>">
                             <?php else: ?>
                             <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($project['title']); ?>">

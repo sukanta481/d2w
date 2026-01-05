@@ -319,7 +319,7 @@ include 'includes/header.php';
 .about-experience-badge {
     position: absolute;
     bottom: -30px;
-    right: -30px;
+    right: -10px;
     background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
     padding: 25px 35px;
     border-radius: 20px;
