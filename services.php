@@ -999,15 +999,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Reinitialize on resize
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            location.reload();
-        }, 250);
-    });
 });
 </script>
 

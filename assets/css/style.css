@@ -13,6 +13,12 @@
     --dark-bg-secondary: #1e293b;
 }
 
+/* Prevent mobile pull-to-refresh behavior */
+html,
+body {
+    overscroll-behavior-y: contain;
+}
+
 /* ============================================
    ANIMATED SECTION BACKGROUNDS
    ============================================ */
