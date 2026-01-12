@@ -382,7 +382,7 @@ include 'includes/header.php';
     </div>
 </section>
 
-<!-- Technology Section with Light Animated Background -->
+<!-- Technology Section with Tabbed Categories -->
 <section class="section-light-animated" style="padding: 80px 0;">
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
@@ -390,7 +390,7 @@ include 'includes/header.php';
         <div class="bg-shape bg-shape-2"></div>
     </div>
 
-    <div class="container">
+        <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <div class="section-badge d-inline-flex" style="background: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.2);">
                 <i class="fas fa-layer-group" style="color: #0d6efd;"></i>
@@ -400,38 +400,236 @@ include 'includes/header.php';
             <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 15px auto 0;">We use cutting-edge technologies to build secure, scalable, and high-performance solutions.</p>
         </div>
 
-        <div class="row justify-content-center">
-            <?php if (!empty($technologies)): ?>
-                <?php $delay = 0; foreach ($technologies as $tech): ?>
-                <div class="col-6 col-md-3 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="<?php echo $delay; ?>">
-                    <div class="tech-item-home">
-                        <i class="<?php echo htmlspecialchars($tech['icon']); ?>" style="color: <?php echo htmlspecialchars($tech['color']); ?>;"></i>
-                        <p><?php echo htmlspecialchars($tech['name']); ?></p>
+        <!-- Tech Stack Tabs -->
+        <div class="tech-stack-tabs" data-aos="fade-up" data-aos-delay="100">
+            <ul class="nav nav-pills tech-tabs-nav justify-content-center mb-4" id="techStackTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="frontend-tab" data-bs-toggle="pill" data-bs-target="#frontend" type="button" role="tab" aria-controls="frontend" aria-selected="true">
+                        <i class="fas fa-palette"></i>
+                        <span>Frontend</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="backend-tab" data-bs-toggle="pill" data-bs-target="#backend" type="button" role="tab" aria-controls="backend" aria-selected="false">
+                        <i class="fas fa-server"></i>
+                        <span>Backend</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="database-tab" data-bs-toggle="pill" data-bs-target="#database" type="button" role="tab" aria-controls="database" aria-selected="false">
+                        <i class="fas fa-database"></i>
+                        <span>Database</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cms-tab" data-bs-toggle="pill" data-bs-target="#cms" type="button" role="tab" aria-controls="cms" aria-selected="false">
+                        <i class="fas fa-cubes"></i>
+                        <span>CMS & Tools</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="techStackTabContent">
+                <!-- Frontend Tab -->
+                <div class="tab-pane fade show active" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="0">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-html5" style="color: #E34F26;"></i>
+                                </div>
+                                <p>HTML5</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="50">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-css3-alt" style="color: #1572B6;"></i>
+                                </div>
+                                <p>CSS3</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-js-square" style="color: #F7DF1E;"></i>
+                                </div>
+                                <p>JavaScript</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="150">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-react" style="color: #61DAFB;"></i>
+                                </div>
+                                <p>React</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-vuejs" style="color: #4FC08D;"></i>
+                                </div>
+                                <p>Vue.js</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="250">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-bootstrap" style="color: #7952B3;"></i>
+                                </div>
+                                <p>Bootstrap</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <?php $delay = $delay >= 300 ? 0 : $delay + 50; endforeach; ?>
-            <?php else: ?>
-                <!-- Fallback static technologies -->
-                <?php
-                $fallbackTechs = [
-                    ['icon' => 'fab fa-html5', 'color' => '#E34F26', 'name' => 'HTML5'],
-                    ['icon' => 'fab fa-css3-alt', 'color' => '#1572B6', 'name' => 'CSS3'],
-                    ['icon' => 'fab fa-js-square', 'color' => '#F7DF1E', 'name' => 'JavaScript'],
-                    ['icon' => 'fab fa-react', 'color' => '#61DAFB', 'name' => 'React'],
-                    ['icon' => 'fab fa-php', 'color' => '#777BB4', 'name' => 'PHP'],
-                    ['icon' => 'fab fa-python', 'color' => '#3776AB', 'name' => 'Python'],
-                ];
-                $delay = 0;
-                foreach ($fallbackTechs as $tech):
-                ?>
-                <div class="col-6 col-md-3 col-lg-2 mb-4" data-aos="zoom-in" data-aos-delay="<?php echo $delay; ?>">
-                    <div class="tech-item-home">
-                        <i class="<?php echo $tech['icon']; ?>" style="color: <?php echo $tech['color']; ?>;"></i>
-                        <p><?php echo $tech['name']; ?></p>
+
+                <!-- Backend Tab -->
+                <div class="tab-pane fade" id="backend" role="tabpanel" aria-labelledby="backend-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-php" style="color: #777BB4;"></i>
+                                </div>
+                                <p>PHP</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-node-js" style="color: #339933;"></i>
+                                </div>
+                                <p>Node.js</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-python" style="color: #3776AB;"></i>
+                                </div>
+                                <p>Python</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-laravel" style="color: #FF2D20;"></i>
+                                </div>
+                                <p>Laravel</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fas fa-fire" style="color: #FFCA28;"></i>
+                                </div>
+                                <p>Firebase</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-aws" style="color: #FF9900;"></i>
+                                </div>
+                                <p>AWS</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <?php $delay += 50; endforeach; ?>
-            <?php endif; ?>
+
+                <!-- Database Tab -->
+                <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fas fa-database" style="color: #4479A1;"></i>
+                                </div>
+                                <p>MySQL</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fas fa-leaf" style="color: #47A248;"></i>
+                                </div>
+                                <p>MongoDB</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fas fa-layer-group" style="color: #336791;"></i>
+                                </div>
+                                <p>PostgreSQL</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fas fa-bolt" style="color: #DC382D;"></i>
+                                </div>
+                                <p>Redis</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CMS & Tools Tab -->
+                <div class="tab-pane fade" id="cms" role="tabpanel" aria-labelledby="cms-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-wordpress" style="color: #21759B;"></i>
+                                </div>
+                                <p>WordPress</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-shopify" style="color: #7AB55C;"></i>
+                                </div>
+                                <p>Shopify</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-magento" style="color: #EE672F;"></i>
+                                </div>
+                                <p>Magento</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-git-alt" style="color: #F05032;"></i>
+                                </div>
+                                <p>Git</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-docker" style="color: #2496ED;"></i>
+                                </div>
+                                <p>Docker</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4 col-lg-2 mb-4">
+                            <div class="tech-item-glass">
+                                <div class="tech-icon-wrapper">
+                                    <i class="fab fa-figma" style="color: #F24E1E;"></i>
+                                </div>
+                                <p>Figma</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
