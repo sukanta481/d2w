@@ -354,11 +354,8 @@ include 'includes/header.php';
 
         <!-- Process Steps with Connector Line -->
         <div class="process-timeline-dark" data-aos="fade-up" data-aos-delay="100" style="position: relative; z-index: 10; padding-top: 30px;">
-            <!-- Horizontal Connector Line (Desktop) -->
+            <!-- Horizontal Connector Line (Desktop only) -->
             <div class="process-connector-line d-none d-lg-block" style="position: absolute; top: 70px; left: 15%; right: 15%; height: 3px; background: linear-gradient(90deg, rgba(13, 110, 253, 0.4), rgba(102, 16, 242, 0.6), rgba(102, 16, 242, 0.6), rgba(13, 110, 253, 0.4)); z-index: 1;"></div>
-            
-            <!-- Vertical Connector Line (Mobile/Tablet) -->
-            <div class="process-connector-vertical d-lg-none" style="position: absolute; top: 100px; left: 50%; width: 3px; height: calc(100% - 150px); background: linear-gradient(180deg, rgba(13, 110, 253, 0.4), rgba(102, 16, 242, 0.5), rgba(102, 16, 242, 0.5), rgba(13, 110, 253, 0.4)); z-index: 1; transform: translateX(-50%);"></div>
             
             <div class="row justify-content-center">
                 <!-- Step 1: Discovery -->
