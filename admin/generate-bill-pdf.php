@@ -484,6 +484,10 @@ $html = '
         }
         
         @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -492,11 +496,14 @@ $html = '
                 height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                font-size: 11px !important;
             }
             .invoice-container {
-                padding: 15px !important;
+                padding: 10px !important;
                 max-width: 100% !important;
                 min-height: auto !important;
+                transform: scale(0.92);
+                transform-origin: top left;
             }
             /* Prevent page breaks inside elements */
             .invoice-header,
@@ -513,12 +520,15 @@ $html = '
             }
             /* Keep bottom sections together - no breaks before them */
             .payment-section,
-            .notes-section,
-            .terms-section,
             .signature-section,
             .invoice-footer {
                 page-break-before: avoid !important;
                 break-before: avoid !important;
+            }
+            /* Force page break before terms section */
+            .page-break-before {
+                page-break-before: always !important;
+                break-before: page !important;
             }
             /* Reduce sizes for print to fit on one page */
             .payment-section {
@@ -742,10 +752,10 @@ if ($bankAccount || $upiMethod) {
         </div>';
 }
 
-// Notes and Terms
+// Notes and Terms - on second page
 if ($bill['notes'] || $bill['terms']) {
     $html .= '
-        <div class="notes-section">';
+        <div class="notes-section page-break-before">';
     
     if ($bill['notes']) {
         $html .= '
