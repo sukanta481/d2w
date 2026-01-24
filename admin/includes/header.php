@@ -49,6 +49,32 @@
                     </li>
                 </ul>
 
+                <div class="menu-section-title">Billing</div>
+                <ul>
+                    <li class="menu-item">
+                        <a href="clients.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'clients.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Clients</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="billing.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'billing.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Bills</span>
+                            <?php
+                            // Get unpaid bills count
+                            try {
+                                $stmt = $db->query("SELECT COUNT(*) as count FROM bills WHERE payment_status = 'unpaid'");
+                                $unpaidCount = $stmt->fetch()['count'];
+                                if ($unpaidCount > 0) {
+                                    echo '<span class="menu-badge bg-danger">' . $unpaidCount . '</span>';
+                                }
+                            } catch(Exception $e) {}
+                            ?>
+                        </a>
+                    </li>
+                </ul>
+
                 <div class="menu-section-title">Content</div>
                 <ul>
                     <li class="menu-item">
