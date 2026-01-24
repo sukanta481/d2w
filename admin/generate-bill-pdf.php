@@ -505,30 +505,41 @@ $html = '
             .totals-section,
             .payment-section,
             .notes-section,
+            .terms-section,
             .signature-section,
             .invoice-footer {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-            /* Keep payment and signature together */
+            /* Keep bottom sections together - no breaks before them */
             .payment-section,
             .notes-section,
+            .terms-section,
             .signature-section,
             .invoice-footer {
                 page-break-before: avoid !important;
+                break-before: avoid !important;
             }
-            /* Reduce sizes for print */
+            /* Reduce sizes for print to fit on one page */
             .payment-section {
-                padding: 15px !important;
-                margin-top: 20px !important;
+                padding: 12px !important;
+                margin-top: 15px !important;
+            }
+            .notes-section,
+            .terms-section {
+                margin-top: 15px !important;
+                padding: 10px !important;
+            }
+            .signature-section {
+                margin-top: 15px !important;
             }
             .invoice-footer {
-                margin-top: 20px !important;
-                padding-top: 15px !important;
+                margin-top: 15px !important;
+                padding-top: 10px !important;
             }
             .qr-code-section img {
-                max-width: 80px !important;
-                max-height: 80px !important;
+                max-width: 70px !important;
+                max-height: 70px !important;
             }
         }
     </style>
