@@ -417,7 +417,7 @@ $html = '
         
         /* Signature Section */
         .signature-section {
-            margin-top: 50px;
+            margin-top: 30px;
             display: flex;
             justify-content: flex-end;
         }
@@ -428,7 +428,7 @@ $html = '
         .signature-line {
             border-top: 2px solid ' . $darkColor . ';
             margin-bottom: 8px;
-            margin-top: 60px;
+            
         }
         .signature-label {
             font-size: 10px;
@@ -484,12 +484,51 @@ $html = '
         }
         
         @media print {
-            body { 
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            html, body {
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             .invoice-container {
-                padding: 20px;
+                padding: 15px !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+            }
+            /* Prevent page breaks inside elements */
+            .invoice-header,
+            .billing-section,
+            .items-table,
+            .totals-section,
+            .payment-section,
+            .notes-section,
+            .signature-section,
+            .invoice-footer {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            /* Keep payment and signature together */
+            .payment-section,
+            .notes-section,
+            .signature-section,
+            .invoice-footer {
+                page-break-before: avoid !important;
+            }
+            /* Reduce sizes for print */
+            .payment-section {
+                padding: 15px !important;
+                margin-top: 20px !important;
+            }
+            .invoice-footer {
+                margin-top: 20px !important;
+                padding-top: 15px !important;
+            }
+            .qr-code-section img {
+                max-width: 80px !important;
+                max-height: 80px !important;
             }
         }
     </style>
@@ -713,10 +752,22 @@ if ($bill['notes'] || $bill['terms']) {
         </div>';
 }
 
-// Authorized Signatory Section
+// Authorized Signatory Section with Stamp and Sign
+$stampSignPath = '../assets/images/stamp and sign.png';
 $html .= '
         <div class="signature-section">
-            <div class="signature-box">
+            <div class="signature-box">';
+
+// Add stamp and signature image if exists
+if (file_exists($stampSignPath)) {
+    $stampData = base64_encode(file_get_contents($stampSignPath));
+    $stampMime = mime_content_type($stampSignPath);
+    $html .= '
+                <img src="data:' . $stampMime . ';base64,' . $stampData . '" alt="Authorized Signature" 
+                     style="max-height: 80px; max-width: 180px; ">';
+}
+
+$html .= '
                 <div class="signature-line"></div>
                 <div class="signature-label">Authorized Signatory</div>
                 <div class="signature-company">For ' . htmlspecialchars($companyName) . '</div>
@@ -765,11 +816,15 @@ if ($viewMode) {
     exit;
 }
 
-// For download, we'll create a simple HTML file that user can save as PDF
-// In production, you'd use TCPDF or DOMPDF here
+// For download - open with print dialog so user can save as PDF
+// Add print script and auto-trigger
+$html = str_replace(
+    'if (window.location.search.includes("print=1")) {',
+    'if (true) { // Auto print for download',
+    $html
+);
 
 header('Content-Type: text/html; charset=utf-8');
-header('Content-Disposition: attachment; filename="Invoice-' . $bill['bill_number'] . '.html"');
 echo $html;
 exit;
 ?>
