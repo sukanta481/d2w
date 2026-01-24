@@ -530,7 +530,6 @@ $html .= '
             <div class="invoice-title">
                 <h2>Invoice</h2>
                 <div class="invoice-number">#' . htmlspecialchars($bill['bill_number']) . '</div>
-                <span class="status-badge status-' . $bill['status'] . '">' . ucfirst($bill['status']) . '</span>
             </div>
         </div>
         

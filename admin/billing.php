@@ -197,11 +197,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if (isset($_POST['mark_paid'])) {
-            $stmt = $db->prepare("UPDATE bills SET status = 'paid', payment_status = 'paid', 
-                paid_amount = total_amount, payment_date = CURDATE() WHERE id = :id");
-            $stmt->execute([':id' => $_POST['bill_id']]);
+            $billId = $_POST['bill_id'];
+            $paymentMethod = $_POST['payment_method'] ?? 'cash';
+            $paymentBankId = !empty($_POST['payment_bank_id']) ? $_POST['payment_bank_id'] : null;
+            $paymentUpiId = !empty($_POST['payment_upi_id']) ? $_POST['payment_upi_id'] : null;
+            $paymentDate = $_POST['payment_date'] ?? date('Y-m-d');
+            $paymentReference = $_POST['payment_reference'] ?? null;
+            $paymentNotes = $_POST['payment_notes'] ?? null;
             
-            $auth->logActivity($auth->getUserId(), 'update', 'bills', $_POST['bill_id'], 'Marked bill as paid');
+            $stmt = $db->prepare("UPDATE bills SET 
+                status = 'paid', 
+                payment_status = 'paid', 
+                paid_amount = total_amount,
+                payment_date = :payment_date,
+                payment_method = :payment_method,
+                payment_bank_id = :payment_bank_id,
+                payment_upi_id = :payment_upi_id,
+                payment_reference = :payment_reference,
+                payment_notes = :payment_notes
+                WHERE id = :id");
+            $stmt->execute([
+                ':id' => $billId,
+                ':payment_date' => $paymentDate,
+                ':payment_method' => $paymentMethod,
+                ':payment_bank_id' => $paymentBankId,
+                ':payment_upi_id' => $paymentUpiId,
+                ':payment_reference' => $paymentReference,
+                ':payment_notes' => $paymentNotes
+            ]);
+            
+            $auth->logActivity($auth->getUserId(), 'update', 'bills', $billId, 'Marked bill as paid via ' . $paymentMethod);
             $successMessage = "Bill marked as paid!";
         }
         
@@ -603,13 +628,10 @@ include 'includes/header.php';
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <?php if ($bill['payment_status'] !== 'paid'): ?>
-                                            <form method="POST" class="d-inline">
-                                                <input type="hidden" name="mark_paid" value="1">
-                                                <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
-                                                <button type="submit" class="btn btn-sm btn-success" title="Mark as Paid">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
+                                            <button class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                                    data-bs-target="#markPaidModal<?php echo $bill['id']; ?>" title="Mark as Paid">
+                                                <i class="fas fa-check"></i>
+                                            </button>
                                         <?php endif; ?>
                                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                                                 data-bs-target="#deleteBillModal<?php echo $bill['id']; ?>" title="Delete">
@@ -825,6 +847,93 @@ include 'includes/header.php';
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Mark as Paid Modal -->
+                            <?php if ($bill['payment_status'] !== 'paid'): ?>
+                            <div class="modal fade" id="markPaidModal<?php echo $bill['id']; ?>" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST">
+                                            <input type="hidden" name="mark_paid" value="1">
+                                            <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Mark as Paid</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="alert alert-info">
+                                                    <strong>Bill:</strong> #<?php echo htmlspecialchars($bill['bill_number']); ?><br>
+                                                    <strong>Amount:</strong> ₹<?php echo number_format($bill['total_amount'], 2); ?>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Payment Method *</label>
+                                                    <select class="form-select" name="payment_method" id="paymentMethod<?php echo $bill['id']; ?>" 
+                                                            onchange="togglePaymentFields(<?php echo $bill['id']; ?>)" required>
+                                                        <option value="cash">💵 Cash</option>
+                                                        <option value="bank">🏦 Bank Transfer</option>
+                                                        <option value="upi">📱 UPI</option>
+                                                        <option value="cheque">📄 Cheque</option>
+                                                        <option value="other">📋 Other</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" id="bankSelectDiv<?php echo $bill['id']; ?>" style="display: none;">
+                                                    <label class="form-label">Select Bank Account</label>
+                                                    <select class="form-select" name="payment_bank_id">
+                                                        <option value="">-- Select Bank --</option>
+                                                        <?php foreach ($bankMethods as $bank): ?>
+                                                            <option value="<?php echo $bank['id']; ?>">
+                                                                <?php echo htmlspecialchars($bank['name']); ?> - 
+                                                                <?php echo htmlspecialchars($bank['bank_name']); ?> 
+                                                                (****<?php echo substr($bank['account_number'], -4); ?>)
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" id="upiSelectDiv<?php echo $bill['id']; ?>" style="display: none;">
+                                                    <label class="form-label">Select UPI Account Received To</label>
+                                                    <select class="form-select" name="payment_upi_id">
+                                                        <option value="">-- Select UPI ID --</option>
+                                                        <?php foreach ($upiMethods as $upi): ?>
+                                                            <option value="<?php echo $upi['id']; ?>">
+                                                                <?php echo htmlspecialchars($upi['name']); ?> - 
+                                                                <?php echo htmlspecialchars($upi['upi_id']); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Payment Received Date *</label>
+                                                    <input type="date" class="form-control" name="payment_date" 
+                                                           value="<?php echo date('Y-m-d'); ?>" required>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Transaction Reference / ID</label>
+                                                    <input type="text" class="form-control" name="payment_reference" 
+                                                           placeholder="UTR, Cheque No., Transaction ID, etc.">
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Notes (Optional)</label>
+                                                    <textarea class="form-control" name="payment_notes" rows="2" 
+                                                              placeholder="Any additional payment notes..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check me-2"></i>Confirm Payment
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
@@ -1158,6 +1267,24 @@ function sendEmail(billId) {
                 </div>
             `;
         });
+}
+
+// Toggle bank/upi select visibility based on payment method
+function togglePaymentFields(billId) {
+    const paymentMethod = document.getElementById('paymentMethod' + billId).value;
+    const bankSelectDiv = document.getElementById('bankSelectDiv' + billId);
+    const upiSelectDiv = document.getElementById('upiSelectDiv' + billId);
+    
+    // Hide both first
+    bankSelectDiv.style.display = 'none';
+    upiSelectDiv.style.display = 'none';
+    
+    // Show relevant one
+    if (paymentMethod === 'bank') {
+        bankSelectDiv.style.display = 'block';
+    } else if (paymentMethod === 'upi') {
+        upiSelectDiv.style.display = 'block';
+    }
 }
 
 // Show add modal if URL has action=new
