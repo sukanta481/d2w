@@ -27,6 +27,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     }
 }
 
+// Handle delete lead
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_lead'])) {
+    try {
+        $leadId = $_POST['lead_id'];
+        
+        $stmt = $db->prepare("DELETE FROM leads WHERE id = :id");
+        $stmt->bindParam(':id', $leadId);
+        $stmt->execute();
+        
+        $auth->logActivity($auth->getUserId(), 'delete', 'leads', $leadId, "Deleted lead");
+        
+        $successMessage = "Lead deleted successfully!";
+    } catch(PDOException $e) {
+        $errorMessage = "Error deleting lead: " . $e->getMessage();
+    }
+}
+
 // Get leads with filters
 $statusFilter = $_GET['status'] ?? '';
 $priorityFilter = $_GET['priority'] ?? '';
@@ -191,6 +208,11 @@ include 'includes/header.php';
                                             title="Update Status">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteLeadModal<?php echo $lead['id']; ?>"
+                                            title="Delete Lead">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
 
@@ -271,6 +293,30 @@ include 'includes/header.php';
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                 <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Lead Modal -->
+                            <div class="modal fade" id="deleteLeadModal<?php echo $lead['id']; ?>" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST">
+                                            <input type="hidden" name="delete_lead" value="1">
+                                            <input type="hidden" name="lead_id" value="<?php echo $lead['id']; ?>">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Delete Lead</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete the lead from <strong><?php echo htmlspecialchars($lead['name']); ?></strong>?</p>
+                                                <p class="text-muted mb-0"><i class="fas fa-exclamation-triangle text-warning me-1"></i> This action cannot be undone.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger">Delete</button>
                                             </div>
                                         </form>
                                     </div>
