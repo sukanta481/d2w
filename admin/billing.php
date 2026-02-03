@@ -196,8 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $successMessage = "Bill deleted successfully!";
         }
         
-        if (isset($_POST['mark_paid'])) {
+        if (isset($_POST['record_payment'])) {
             $billId = $_POST['bill_id'];
+            $paymentAmount = floatval($_POST['payment_amount']);
             $paymentMethod = $_POST['payment_method'] ?? 'cash';
             $paymentBankId = !empty($_POST['payment_bank_id']) ? $_POST['payment_bank_id'] : null;
             $paymentUpiId = !empty($_POST['payment_upi_id']) ? $_POST['payment_upi_id'] : null;
@@ -205,29 +206,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $paymentReference = $_POST['payment_reference'] ?? null;
             $paymentNotes = $_POST['payment_notes'] ?? null;
             
-            $stmt = $db->prepare("UPDATE bills SET 
-                status = 'paid', 
-                payment_status = 'paid', 
-                paid_amount = total_amount,
-                payment_date = :payment_date,
-                payment_method = :payment_method,
-                payment_bank_id = :payment_bank_id,
-                payment_upi_id = :payment_upi_id,
-                payment_reference = :payment_reference,
-                payment_notes = :payment_notes
-                WHERE id = :id");
-            $stmt->execute([
-                ':id' => $billId,
-                ':payment_date' => $paymentDate,
-                ':payment_method' => $paymentMethod,
-                ':payment_bank_id' => $paymentBankId,
-                ':payment_upi_id' => $paymentUpiId,
-                ':payment_reference' => $paymentReference,
-                ':payment_notes' => $paymentNotes
-            ]);
+            // Get current bill details
+            $stmt = $db->prepare("SELECT total_amount, paid_amount, status FROM bills WHERE id = :id");
+            $stmt->execute([':id' => $billId]);
+            $currentBill = $stmt->fetch();
             
-            $auth->logActivity($auth->getUserId(), 'update', 'bills', $billId, 'Marked bill as paid via ' . $paymentMethod);
-            $successMessage = "Bill marked as paid!";
+            if ($currentBill) {
+                $newPaidAmount = $currentBill['paid_amount'] + $paymentAmount;
+                $totalAmount = floatval($currentBill['total_amount']);
+                
+                // Determine statuses
+                if ($newPaidAmount >= $totalAmount) {
+                    $newPaidAmount = $totalAmount; // Cap at total
+                    $paymentStatus = 'paid';
+                    $status = 'paid';
+                } elseif ($newPaidAmount > 0) {
+                    $paymentStatus = 'partial';
+                    // Keep existing status unless it was paid/draft, maybe ensure it's at least 'sent' if we took money? 
+                    // Let's just keep 'sent' if it was 'sent', or 'overdue'. 
+                    // If it was 'paid' (reverting?), handle that. 
+                    // Simplest: If it was 'draft', stay 'draft' (rare). If 'paid', goes back to 'sent'? 
+                    // Let's rely on current status but update if it BECOMES paid.
+                    $status = ($currentBill['status'] == 'paid') ? 'sent' : $currentBill['status'];
+                    if ($status == 'draft') $status = 'sent'; // Assume taking money implies it's "live"
+                } else {
+                    $paymentStatus = 'unpaid';
+                    $status = ($currentBill['status'] == 'paid') ? 'sent' : $currentBill['status'];
+                }
+                
+                $stmt = $db->prepare("UPDATE bills SET 
+                    status = :status, 
+                    payment_status = :payment_status, 
+                    paid_amount = :paid_amount,
+                    payment_date = :payment_date,
+                    payment_method = :payment_method,
+                    payment_bank_id = :payment_bank_id,
+                    payment_upi_id = :payment_upi_id,
+                    payment_reference = :payment_reference,
+                    payment_notes = :payment_notes
+                    WHERE id = :id");
+                    
+                $stmt->execute([
+                    ':id' => $billId,
+                    ':status' => $status,
+                    ':payment_status' => $paymentStatus,
+                    ':paid_amount' => $newPaidAmount,
+                    ':payment_date' => $paymentDate,
+                    ':payment_method' => $paymentMethod,
+                    ':payment_bank_id' => $paymentBankId,
+                    ':payment_upi_id' => $paymentUpiId,
+                    ':payment_reference' => $paymentReference,
+                    ':payment_notes' => $paymentNotes
+                ]);
+                
+                $auth->logActivity($auth->getUserId(), 'update', 'bills', $billId, 
+                    'Recorded payment of ₹' . number_format($paymentAmount, 2) . ' (' . ucfirst($paymentMethod) . ')');
+                $successMessage = "Payment recorded successfully! New status: " . ucfirst($paymentStatus);
+            }
         }
         
     } catch(PDOException $e) {
@@ -629,8 +664,8 @@ include 'includes/header.php';
                                         </button>
                                         <?php if ($bill['payment_status'] !== 'paid'): ?>
                                             <button class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                                    data-bs-target="#markPaidModal<?php echo $bill['id']; ?>" title="Mark as Paid">
-                                                <i class="fas fa-check"></i>
+                                                    data-bs-target="#markPaidModal<?php echo $bill['id']; ?>" title="Record Payment">
+                                                <i class="fas fa-hand-holding-usd"></i>
                                             </button>
                                         <?php endif; ?>
                                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
@@ -850,20 +885,39 @@ include 'includes/header.php';
 
                             <!-- Mark as Paid Modal -->
                             <?php if ($bill['payment_status'] !== 'paid'): ?>
+                            <!-- Record Payment Modal -->
                             <div class="modal fade" id="markPaidModal<?php echo $bill['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <form method="POST">
-                                            <input type="hidden" name="mark_paid" value="1">
+                                            <input type="hidden" name="record_payment" value="1">
                                             <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
                                             <div class="modal-header bg-success text-white">
-                                                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Mark as Paid</h5>
+                                                <h5 class="modal-title"><i class="fas fa-hand-holding-usd me-2"></i>Record Payment</h5>
                                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <div class="alert alert-info">
-                                                    <strong>Bill:</strong> #<?php echo htmlspecialchars($bill['bill_number']); ?><br>
-                                                    <strong>Amount:</strong> ₹<?php echo number_format($bill['total_amount'], 2); ?>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <strong>Bill Total:</strong>
+                                                        <span>₹<?php echo number_format($bill['total_amount'], 2); ?></span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <strong>Already Paid:</strong>
+                                                        <span>₹<?php echo number_format($bill['paid_amount'], 2); ?></span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                                                        <strong>Remaining Due:</strong>
+                                                        <strong>₹<?php echo number_format($bill['total_amount'] - $bill['paid_amount'], 2); ?></strong>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Amount Received (₹) *</label>
+                                                    <input type="number" class="form-control form-control-lg fw-bold text-success" 
+                                                           name="payment_amount" step="0.01" min="0.01" 
+                                                           max="<?php echo round($bill['total_amount'] - $bill['paid_amount'], 2); ?>"
+                                                           value="<?php echo round($bill['total_amount'] - $bill['paid_amount'], 2); ?>" required>
                                                 </div>
 
                                                 <div class="mb-3">
@@ -926,7 +980,7 @@ include 'includes/header.php';
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                 <button type="submit" class="btn btn-success">
-                                                    <i class="fas fa-check me-2"></i>Confirm Payment
+                                                    <i class="fas fa-check me-2"></i>Record Payment
                                                 </button>
                                             </div>
                                         </form>
