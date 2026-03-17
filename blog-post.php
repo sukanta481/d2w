@@ -52,6 +52,27 @@ if (!empty($post['tags'])) {
     $tags = array_map('trim', explode(',', $post['tags']));
 }
 
+$pageMeta = [
+    'title' => $post['title'],
+    'description' => substr(strip_tags($post['excerpt'] ?? $post['content']), 0, 155),
+    'canonical' => '/blog-post.php?slug=' . $post['slug'],
+    'type' => 'article',
+    'schema' => 'Article',
+    'og_image' => (!empty($featuredImage) && strpos($featuredImage, 'http') === 0) ? $featuredImage : '/assets/images/og-default.jpg',
+    'article' => [
+        'author' => $post['author_name'] ?? 'BizNexa Team',
+        'published' => $post['published_at'] ?? $post['created_at'],
+        'modified' => $post['updated_at'] ?? $post['created_at'],
+        'category' => $post['category'] ?? '',
+        'image' => $featuredImage,
+    ],
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+        ['name' => 'Blog', 'url' => '/blog.php'],
+        ['name' => $post['title'], 'url' => '/blog-post.php?slug=' . $post['slug']],
+    ],
+];
+
 include 'includes/header.php';
 ?>
 
@@ -92,14 +113,14 @@ include 'includes/header.php';
             <div class="col-lg-10">
                 <!-- Featured Image -->
                 <div class="post-featured-image mb-4" data-aos="fade-up">
-                    <img src="<?php echo htmlspecialchars($featuredImage); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" class="img-fluid rounded shadow">
+                    <img src="<?php echo htmlspecialchars($featuredImage); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" class="img-fluid rounded shadow" loading="lazy">
                 </div>
 
                 <!-- Post Content -->
                 <div class="post-body" data-aos="fade-up" data-aos-delay="100">
                     <?php
-                    // Output content - allow HTML from TinyMCE
-                    echo $post['content'];
+                    // Output content - allow HTML from TinyMCE (sanitized)
+                    echo strip_tags($post['content'], '<p><br><h2><h3><h4><h5><h6><ul><ol><li><a><strong><em><b><i><img><blockquote><pre><code><table><thead><tbody><tr><th><td><hr><div><span>');
                     ?>
                 </div>
 
@@ -153,7 +174,7 @@ include 'includes/header.php';
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo ($index + 1) * 100; ?>">
                 <article class="blog-card">
                     <div class="blog-image">
-                        <img src="<?php echo htmlspecialchars($relatedImg); ?>" alt="<?php echo htmlspecialchars($related['title']); ?>">
+                        <img src="<?php echo htmlspecialchars($relatedImg); ?>" alt="<?php echo htmlspecialchars($related['title']); ?>" loading="lazy">
                         <div class="blog-date"><?php echo date('M d, Y', strtotime($related['published_at'] ?? $related['created_at'])); ?></div>
                     </div>
                     <div class="blog-content">

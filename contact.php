@@ -1,13 +1,21 @@
 <?php
 $currentPage = 'contact';
-$pageTitle = 'Contact Us';
-
-// Include database helper
 include_once 'includes/db_config.php';
 $settings = getAllSettings();
 $contactEmail = $settings['site_email'] ?? 'info@biznexa.tech';
 $contactPhone = $settings['site_phone'] ?? '+91 94332 15443';
 $contactAddress = $settings['site_address'] ?? '123 Business Avenue, Suite 100, New York, NY 10001';
+
+$pageMeta = [
+    'title' => 'Contact Us - Get a Free Consultation',
+    'description' => 'Contact BizNexa for web development, AI automation, or digital marketing services. Call +91 94332 15443 or email info@biznexa.tech. Free consultation available.',
+    'canonical' => '/contact.php',
+    'schema' => 'ContactPage',
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+        ['name' => 'Contact Us', 'url' => '/contact.php'],
+    ],
+];
 
 include 'includes/header.php';
 ?>

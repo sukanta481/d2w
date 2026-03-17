@@ -1,16 +1,22 @@
 <?php
 $currentPage = 'about';
-$pageTitle = 'About Us';
-
-// Include database helper
 include_once 'includes/db_config.php';
 $settings = getAllSettings();
-
-// Get stats from settings
 $statYears = $settings['stat_years'] ?? '5';
 $statProjects = $settings['stat_projects'] ?? '150';
 $statClients = $settings['stat_clients'] ?? '120';
 $statCountries = $settings['stat_countries'] ?? '15';
+
+$pageMeta = [
+    'title' => 'About Us - Your Digital Growth Partner',
+    'description' => 'BizNexa is a web development, AI automation, and digital marketing company helping small businesses grow since 2020. MSME registered, ' . $statClients . '+ happy clients.',
+    'canonical' => '/about.php',
+    'schema' => 'WebPage',
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+        ['name' => 'About Us', 'url' => '/about.php'],
+    ],
+];
 
 include 'includes/header.php';
 ?>
@@ -42,7 +48,7 @@ include 'includes/header.php';
         <div class="row align-items-center">
             <div class="col-lg-6 mb-4" data-aos="fade-right">
                 <div class="about-image-wrapper">
-                    <img src="https://cdn.pixabay.com/photo/2015/01/09/11/08/startup-594090_1280.jpg" alt="About Us" class="about-main-image">
+                    <img src="https://cdn.pixabay.com/photo/2015/01/09/11/08/startup-594090_1280.jpg" alt="About Us" class="about-main-image" loading="lazy">
                     <div class="about-experience-badge">
                         <span class="exp-number"><?php echo $statYears; ?>+</span>
                         <span class="exp-text">Years of Excellence</span>

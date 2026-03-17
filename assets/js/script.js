@@ -2,15 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if mobile device
     const isMobile = window.innerWidth <= 767;
 
-    // Enhanced AOS initialization with mobile-optimized settings
+    // Enhanced AOS initialization with smooth, snappy animations
     AOS.init({
-        duration: isMobile ? 400 : 1000,  // Faster animations on mobile
+        duration: isMobile ? 350 : 600,   // Snappier animations
         once: true,
-        offset: isMobile ? 50 : 100,      // Smaller offset on mobile
-        easing: isMobile ? 'ease-out' : 'ease-in-out-cubic',
-        delay: isMobile ? 0 : 100,        // No delays on mobile
+        offset: isMobile ? 40 : 80,
+        easing: 'ease-out',               // Smooth deceleration
+        delay: isMobile ? 0 : 50,         // Minimal delay
         disable: function() {
-            // Disable AOS completely on very slow devices
             return window.innerWidth < 375;
         }
     });
@@ -89,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressObserver.observe(bar);
     });
 
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const filterButtons = document.querySelectorAll('.filter-btn, .filter-btn-animated');
     const portfolioItems = document.querySelectorAll('.portfolio-item');
 
     filterButtons.forEach(button => {
@@ -209,35 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(typeWriter, 500);
     }
 
-    // Add hover effect animations for service cards (desktop only)
-    if (!isMobile) {
-        const serviceCards = document.querySelectorAll('.service-card');
-        serviceCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-15px) scale(1.02) rotateX(5deg)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1) rotateX(0)';
-            });
-        });
-
-        // Magnetic button effect for CTA buttons (desktop only)
-        const magneticButtons = document.querySelectorAll('.btn-hero, .btn-outline-primary');
-        magneticButtons.forEach(button => {
-            button.addEventListener('mousemove', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-
-                this.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
-            });
-
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translate(0, 0)';
-            });
-        });
-    }
+    // Hover effects handled purely by CSS — no JS overrides needed
 
     // Intersection Observer for fade-in animations
     const fadeObserverOptions = {
@@ -294,26 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     */
 
-    // Add ripple effect to buttons
-    const buttons = document.querySelectorAll('.btn, .service-card, .stat-box');
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            ripple.classList.add('ripple-effect');
-
-            this.appendChild(ripple);
-
-            setTimeout(() => ripple.remove(), 600);
-        });
-    });
+    // Ripple effect removed — CSS handles hover/active states cleanly
 
     // Loading animation
     window.addEventListener('load', function() {

@@ -1,11 +1,19 @@
 <?php
 $currentPage = 'blog';
-$pageTitle = 'Blog';
-
-// Include database helper
 include_once 'includes/db_config.php';
 $blogPosts = getBlogPosts();
 $settings = getAllSettings();
+
+$pageMeta = [
+    'title' => 'Blog - Web Development, AI & Marketing Insights',
+    'description' => 'Read the latest insights on web development, AI automation, and digital marketing from the BizNexa team. Tips, trends, and best practices for small businesses.',
+    'canonical' => '/blog.php',
+    'schema' => 'WebPage',
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+        ['name' => 'Blog', 'url' => '/blog.php'],
+    ],
+];
 
 include 'includes/header.php';
 ?>
@@ -84,7 +92,7 @@ include 'includes/header.php';
                                 $imgSrc = $defaultImg;
                             }
                             ?>
-                            <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>">
+                            <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" loading="lazy">
                             <div class="blog-date-badge">
                                 <span class="day"><?php echo date('d', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
                                 <span class="month"><?php echo date('M', strtotime($post['published_at'] ?? $post['created_at'])); ?></span>
@@ -109,7 +117,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
                     <article class="blog-card-animated">
                         <div class="blog-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg" alt="Web Design Trends">
+                            <img src="https://cdn.pixabay.com/photo/2018/05/18/15/30/web-design-3411373_1280.jpg" alt="Web Design Trends" loading="lazy">
                             <div class="blog-date-badge">
                                 <span class="day">18</span>
                                 <span class="month">Nov</span>
@@ -129,7 +137,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
                     <article class="blog-card-animated">
                         <div class="blog-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2023/05/04/17/00/ai-generated-7970187_1280.png" alt="Agentic AI">
+                            <img src="https://cdn.pixabay.com/photo/2023/05/04/17/00/ai-generated-7970187_1280.png" alt="Agentic AI" loading="lazy">
                             <div class="blog-date-badge">
                                 <span class="day">15</span>
                                 <span class="month">Nov</span>
@@ -149,7 +157,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <article class="blog-card-animated">
                         <div class="blog-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2017/06/26/19/03/social-media-2444991_1280.jpg" alt="SEO Tips">
+                            <img src="https://cdn.pixabay.com/photo/2017/06/26/19/03/social-media-2444991_1280.jpg" alt="SEO Tips" loading="lazy">
                             <div class="blog-date-badge">
                                 <span class="day">12</span>
                                 <span class="month">Nov</span>

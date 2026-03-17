@@ -1,6 +1,5 @@
 <?php
 $currentPage = 'home';
-$pageTitle = 'Home';
 
 // Include database helper
 include_once 'includes/db_config.php';
@@ -12,12 +11,21 @@ $testimonials = getTestimonials();
 $technologies = getTechnologies();
 
 // Fallback values if database not available
-$heroTitle = $settings['hero_title'] ?? 'Website Design and Development Company';
-$heroSubtitle = $settings['hero_subtitle'] ?? 'Custom Web Design Services at Affordable Pricing';
 $statYears = $settings['stat_years'] ?? '5';
 $statProjects = $settings['stat_projects'] ?? '150';
 $statClients = $settings['stat_clients'] ?? '120';
 $statCountries = $settings['stat_countries'] ?? '15';
+
+// SEO meta for homepage
+$pageMeta = [
+    'title' => 'Web Development, AI & Automation, Digital Marketing',
+    'description' => 'BizNexa builds high-performance websites, automates business workflows with AI, and drives growth through digital marketing. Trusted by ' . $statClients . '+ businesses worldwide.',
+    'canonical' => '/index.php',
+    'schema' => 'LocalBusiness',
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+    ],
+];
 
 include 'includes/header.php';
 ?>
@@ -47,20 +55,19 @@ include 'includes/header.php';
 
                     <!-- Main Title -->
                     <h1 class="hero-title-new" data-aos="fade-up" data-aos-delay="200">
-                        We Build <span class="text-gradient">Digital Experiences</span> That Drive Results
+                        We Build Websites, Automate with <span class="text-gradient">AI</span> & Grow Your Brand
                     </h1>
 
                     <!-- Subtitle -->
                     <p class="hero-subtitle-new" data-aos="fade-up" data-aos-delay="300">
-                        Transform your vision into stunning, high-performance websites with our expert team. We combine cutting-edge design with powerful technology to create solutions that convert visitors into customers.
+                        From high-performance websites to intelligent automation and data-driven marketing — we help small businesses scale faster with modern digital solutions.
                     </p>
 
-                    <!-- Feature Pills -->
+                    <!-- Service Pillars Pills -->
                     <div class="hero-pills" data-aos="fade-up" data-aos-delay="400">
-                        <span class="hero-pill"><i class="fas fa-bolt"></i> Lightning Fast</span>
-                        <span class="hero-pill"><i class="fas fa-mobile-alt"></i> Mobile First</span>
-                        <span class="hero-pill"><i class="fas fa-search"></i> SEO Ready</span>
-                        <span class="hero-pill"><i class="fas fa-shield-alt"></i> Secure</span>
+                        <a href="services.php#web-development" class="hero-pill"><i class="fas fa-code"></i> Web Development</a>
+                        <a href="services.php#ai-automation" class="hero-pill"><i class="fas fa-robot"></i> AI & Automation</a>
+                        <a href="services.php#digital-marketing" class="hero-pill"><i class="fas fa-chart-line"></i> Digital Marketing</a>
                     </div>
 
                     <!-- CTA Buttons -->
@@ -78,10 +85,10 @@ include 'includes/header.php';
                     <!-- Trust Indicators -->
                     <div class="hero-trust" data-aos="fade-up" data-aos-delay="600">
                         <div class="trust-avatars">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Client">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Client">
-                            <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Client">
-                            <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="Client">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="BizNexa client" loading="lazy">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="BizNexa client" loading="lazy">
+                            <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="BizNexa client" loading="lazy">
+                            <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="BizNexa client" loading="lazy">
                             <span class="avatar-count">+116</span>
                         </div>
                         <div class="trust-text">
@@ -115,7 +122,7 @@ include 'includes/header.php';
                             </div>
                         </div>
                         <div class="visual-content">
-                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop" alt="Website Preview">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop" alt="Modern website design preview by BizNexa">
                         </div>
                     </div>
 
@@ -166,7 +173,7 @@ include 'includes/header.php';
 </section>
 
 <!-- About Section with Light Animated Background -->
-<section class="section-light-animated" style="padding: 100px 0;">
+<section class="section-light-animated" >
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -181,9 +188,9 @@ include 'includes/header.php';
                         <i class="fas fa-info-circle" style="color: #0d6efd;"></i>
                         <span style="color: #0d6efd;">About Us</span>
                     </div>
-                    <h2 style="color: #1e293b; font-size: 2.5rem; font-weight: 800; margin-bottom: 20px;">Expert Web Development & <span style="color: #0d6efd;">Agentic AI</span> Services</h2>
-                    <p style="color: #64748b; font-size: 1.05rem; line-height: 1.8; margin-bottom: 15px;">BizNexa is a premier web development and digital marketing company focused on small businesses. Utilizing the latest technology including agentic AI, our team of skilled professionals specializes in creating result-driven websites to increase leads and sales.</p>
-                    <p style="color: #64748b; font-size: 1.05rem; line-height: 1.8; margin-bottom: 25px;">From strategic business websites to e-commerce and custom portal development with AI integration, we have the expertise to design and develop all types of websites for small and medium companies.</p>
+                    <h2 class="section-heading-dark">Expert Web Development, <span class="text-primary">AI & Automation</span> Services</h2>
+                    <p class="section-text">BizNexa is a digital solutions company focused on small businesses. We build high-performance websites, automate workflows with AI, and drive growth through data-driven digital marketing.</p>
+                    <p class="section-text mb-4">From custom websites and e-commerce stores to AI chatbots, workflow automation, and full-scale marketing campaigns — we deliver solutions that convert visitors into customers.</p>
                     <a href="about.php" class="btn-learn-more">
                         <span>Learn More About Us</span>
                         <i class="fas fa-arrow-right"></i>
@@ -227,7 +234,7 @@ include 'includes/header.php';
 </section>
 
 <!-- Services Section with Dark Animated Background -->
-<section class="section-dark-animated" style="padding: 100px 0;">
+<section class="section-dark-animated" >
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -250,37 +257,26 @@ include 'includes/header.php';
                 <i class="fas fa-rocket"></i>
                 <span>What We Offer</span>
             </div>
-            <h2>Our Featured <span class="text-gradient">Services</span></h2>
-            <p>Elevate Your Online Presence with Our Expertise - You Dream It, We Build It</p>
+            <h2>Our Core <span class="text-gradient">Services</span></h2>
+            <p>Three pillars of digital growth — websites that convert, AI that automates, marketing that scales</p>
         </div>
 
-        <!-- Services Grid (Desktop) -->
+        <!-- Services Grid (Desktop) — Always 3 Pillar Cards -->
         <div class="row services-grid-desktop">
-            <?php if (!empty($services)): ?>
-                <?php $delay = 0; $count = 0; foreach ($services as $service): if ($count >= 6) break; ?>
-                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
-                    <div class="service-card-animated h-100">
-                        <div class="service-icon-animated">
-                            <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
-                        </div>
-                        <h4><?php echo htmlspecialchars($service['title']); ?></h4>
-                        <p><?php echo htmlspecialchars($service['short_description']); ?></p>
-                        <a href="services.php" class="btn-service">
-                            Learn More <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <?php $delay = $delay >= 200 ? 0 : $delay + 100; $count++; endforeach; ?>
-            <?php else: ?>
-                <!-- Fallback static services -->
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
                     <div class="service-card-animated h-100">
                         <div class="service-icon-animated">
-                            <i class="fas fa-laptop-code"></i>
+                            <i class="fas fa-code"></i>
                         </div>
-                        <h4>Website Design</h4>
-                        <p>Create stunning, user-friendly websites that captivate your audience and drive conversions.</p>
-                        <a href="services.php" class="btn-service">
+                        <h4>Web Development</h4>
+                        <p>Custom websites, e-commerce stores, and web applications built for performance, security, and conversion.</p>
+                        <ul class="service-features-list">
+                            <li><i class="fas fa-check"></i> Custom Website Design</li>
+                            <li><i class="fas fa-check"></i> E-Commerce Solutions</li>
+                            <li><i class="fas fa-check"></i> Responsive &amp; Mobile-First</li>
+                            <li><i class="fas fa-check"></i> CMS Development</li>
+                        </ul>
+                        <a href="services.php#web-development" class="btn-service">
                             Learn More <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -288,11 +284,17 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="service-card-animated h-100">
                         <div class="service-icon-animated">
-                            <i class="fas fa-shopping-cart"></i>
+                            <i class="fas fa-robot"></i>
                         </div>
-                        <h4>E-Commerce Development</h4>
-                        <p>Launch your online store with powerful e-commerce solutions that drive sales.</p>
-                        <a href="services.php" class="btn-service">
+                        <h4>AI &amp; Automation</h4>
+                        <p>Intelligent automation solutions that streamline operations, reduce costs, and enhance customer experience.</p>
+                        <ul class="service-features-list">
+                            <li><i class="fas fa-check"></i> AI Chatbots &amp; Assistants</li>
+                            <li><i class="fas fa-check"></i> Workflow Automation</li>
+                            <li><i class="fas fa-check"></i> Smart Integrations</li>
+                            <li><i class="fas fa-check"></i> Data Analytics</li>
+                        </ul>
+                        <a href="services.php#ai-automation" class="btn-service">
                             Learn More <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -300,57 +302,34 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="service-card-animated h-100">
                         <div class="service-icon-animated">
-                            <i class="fas fa-robot"></i>
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <h4>Agentic AI Solutions</h4>
-                        <p>Harness the power of AI agents to automate tasks and improve customer service.</p>
-                        <a href="services.php" class="btn-service">
+                        <h4>Digital Marketing</h4>
+                        <p>Data-driven marketing strategies that increase visibility, drive traffic, and generate quality leads.</p>
+                        <ul class="service-features-list">
+                            <li><i class="fas fa-check"></i> SEO Optimization</li>
+                            <li><i class="fas fa-check"></i> Social Media Marketing</li>
+                            <li><i class="fas fa-check"></i> Content Strategy</li>
+                            <li><i class="fas fa-check"></i> PPC Campaigns</li>
+                        </ul>
+                        <a href="services.php#digital-marketing" class="btn-service">
                             Learn More <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
-            <?php endif; ?>
         </div>
 
-        <!-- Services Slider (Mobile) -->
+        <!-- Services Slider (Mobile) — Always 3 Pillars -->
         <div class="swiper services-swiper-mobile" data-aos="fade-up">
             <div class="swiper-wrapper">
-                <?php if (!empty($services)): ?>
-                    <?php $count = 0; foreach ($services as $service): if ($count >= 6) break; ?>
                     <div class="swiper-slide">
                         <div class="service-card-animated h-100">
                             <div class="service-icon-animated">
-                                <i class="<?php echo htmlspecialchars($service['icon']); ?>"></i>
+                                <i class="fas fa-code"></i>
                             </div>
-                            <h4><?php echo htmlspecialchars($service['title']); ?></h4>
-                            <p><?php echo htmlspecialchars($service['short_description']); ?></p>
-                            <a href="services.php" class="btn-service">
-                                Learn More <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <?php $count++; endforeach; ?>
-                <?php else: ?>
-                    <div class="swiper-slide">
-                        <div class="service-card-animated h-100">
-                            <div class="service-icon-animated">
-                                <i class="fas fa-laptop-code"></i>
-                            </div>
-                            <h4>Website Design</h4>
-                            <p>Create stunning, user-friendly websites that captivate your audience and drive conversions.</p>
-                            <a href="services.php" class="btn-service">
-                                Learn More <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="service-card-animated h-100">
-                            <div class="service-icon-animated">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <h4>E-Commerce Development</h4>
-                            <p>Launch your online store with powerful e-commerce solutions that drive sales.</p>
-                            <a href="services.php" class="btn-service">
+                            <h4>Web Development</h4>
+                            <p>Custom websites, e-commerce stores, and web applications built for performance and conversion.</p>
+                            <a href="services.php#web-development" class="btn-service">
                                 Learn More <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
@@ -360,14 +339,25 @@ include 'includes/header.php';
                             <div class="service-icon-animated">
                                 <i class="fas fa-robot"></i>
                             </div>
-                            <h4>Agentic AI Solutions</h4>
-                            <p>Harness the power of AI agents to automate tasks and improve customer service.</p>
-                            <a href="services.php" class="btn-service">
+                            <h4>AI &amp; Automation</h4>
+                            <p>Intelligent automation that streamlines operations and enhances customer experience.</p>
+                            <a href="services.php#ai-automation" class="btn-service">
                                 Learn More <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
                     </div>
-                <?php endif; ?>
+                    <div class="swiper-slide">
+                        <div class="service-card-animated h-100">
+                            <div class="service-icon-animated">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4>Digital Marketing</h4>
+                            <p>Data-driven strategies that increase visibility, drive traffic, and generate leads.</p>
+                            <a href="services.php#digital-marketing" class="btn-service">
+                                Learn More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
             </div>
             <div class="swiper-pagination services-pagination"></div>
         </div>
@@ -383,7 +373,7 @@ include 'includes/header.php';
 </section>
 
 <!-- Technology Section with Tabbed Categories -->
-<section class="section-light-animated" style="padding: 80px 0;">
+<section class="section-light-animated" >
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -635,7 +625,7 @@ include 'includes/header.php';
 </section>
 
 <!-- Testimonials Section with Dark Animated Background -->
-<section class="section-dark-animated" style="padding: 100px 0;">
+<section class="section-dark-animated" >
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>
@@ -854,7 +844,7 @@ include 'includes/header.php';
 </section>
 
 <!-- CTA Section with Gradient Background -->
-<section class="section-light-animated" style="padding: 100px 0;">
+<section class="section-light-animated" >
     <!-- Animated Background Shapes -->
     <div class="section-bg-shapes">
         <div class="bg-shape bg-shape-1"></div>

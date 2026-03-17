@@ -1,13 +1,9 @@
 <?php
 $currentPage = 'portfolio';
-$pageTitle = 'Portfolio';
-
-// Include database helper
 include_once 'includes/db_config.php';
 $projects = getProjects();
 $settings = getAllSettings();
 
-// Get unique categories from projects for filter buttons
 $categories = [];
 if (!empty($projects)) {
     foreach ($projects as $project) {
@@ -16,6 +12,17 @@ if (!empty($projects)) {
         }
     }
 }
+
+$pageMeta = [
+    'title' => 'Portfolio - Our Web Development & AI Projects',
+    'description' => 'Explore BizNexa\'s portfolio of web development, AI automation, and digital marketing projects. See how we help small businesses succeed online.',
+    'canonical' => '/portfolio.php',
+    'schema' => 'CollectionPage',
+    'breadcrumbs' => [
+        ['name' => 'Home', 'url' => '/'],
+        ['name' => 'Portfolio', 'url' => '/portfolio.php'],
+    ],
+];
 
 include 'includes/header.php';
 ?>
@@ -88,11 +95,11 @@ include 'includes/header.php';
                     <div class="portfolio-card-animated">
                         <div class="portfolio-image-animated">
                             <?php if (!empty($project['banner_url'])): ?>
-                            <img src="<?php echo htmlspecialchars($project['banner_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <img src="<?php echo htmlspecialchars($project['banner_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>" loading="lazy">
                             <?php elseif (!empty($project['image_url'])): ?>
-                            <img src="<?php echo htmlspecialchars($project['image_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <img src="<?php echo htmlspecialchars($project['image_url']); ?>" alt="<?php echo htmlspecialchars($project['title']); ?>" loading="lazy">
                             <?php else: ?>
-                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($project['title']); ?>">
+                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="<?php echo htmlspecialchars($project['title']); ?>" loading="lazy">
                             <?php endif; ?>
                             <div class="portfolio-overlay-animated">
                                 <div class="overlay-content">
@@ -123,7 +130,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="website" data-aos="fade-up">
                     <div class="portfolio-card-animated">
                         <div class="portfolio-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="Restaurant Website">
+                            <img src="https://cdn.pixabay.com/photo/2020/05/18/16/17/social-media-5187243_1280.png" alt="Restaurant Website" loading="lazy">
                             <div class="portfolio-overlay-animated">
                                 <div class="overlay-content">
                                     <span class="project-category">Website Design</span>
@@ -145,7 +152,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ecommerce" data-aos="fade-up" data-aos-delay="100">
                     <div class="portfolio-card-animated">
                         <div class="portfolio-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2016/11/29/13/14/attractive-1869761_1280.jpg" alt="Fashion E-commerce">
+                            <img src="https://cdn.pixabay.com/photo/2016/11/29/13/14/attractive-1869761_1280.jpg" alt="Fashion E-commerce" loading="lazy">
                             <div class="portfolio-overlay-animated">
                                 <div class="overlay-content">
                                     <span class="project-category">E-Commerce</span>
@@ -167,7 +174,7 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6 mb-4 portfolio-item" data-category="ai" data-aos="fade-up" data-aos-delay="200">
                     <div class="portfolio-card-animated">
                         <div class="portfolio-image-animated">
-                            <img src="https://cdn.pixabay.com/photo/2023/01/26/22/12/ai-generated-7747180_1280.jpg" alt="AI Chatbot">
+                            <img src="https://cdn.pixabay.com/photo/2023/01/26/22/12/ai-generated-7747180_1280.jpg" alt="AI Chatbot" loading="lazy">
                             <div class="portfolio-overlay-animated">
                                 <div class="overlay-content">
                                     <span class="project-category">AI Solution</span>

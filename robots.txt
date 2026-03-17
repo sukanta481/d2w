@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /php/
+Disallow: /database/
+Disallow: /uploads/
+
+Sitemap: https://biznexa.tech/sitemap.xml
