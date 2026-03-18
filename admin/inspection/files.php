@@ -77,11 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
         $calc = calculateAmounts($_POST);
         $fileNumber = generateFileNumber($db);
 
-        // Validate branch belongs to bank
-        $stmt = $db->prepare("SELECT id FROM inspection_branches WHERE id = :bid AND bank_id = :bankid");
-        $stmt->execute([':bid' => $_POST['branch_id'], ':bankid' => $_POST['bank_id']]);
-        if (!$stmt->fetch()) {
-            throw new Exception("Selected branch does not belong to selected bank.");
+        // Validate branch belongs to bank (only if both are provided)
+        if (!empty($_POST['bank_id']) && !empty($_POST['branch_id'])) {
+            $stmt = $db->prepare("SELECT id FROM inspection_branches WHERE id = :bid AND bank_id = :bankid");
+            $stmt->execute([':bid' => $_POST['branch_id'], ':bankid' => $_POST['bank_id']]);
+            if (!$stmt->fetch()) {
+                throw new Exception("Selected branch does not belong to selected bank.");
+            }
         }
 
         $stmt = $db->prepare("INSERT INTO inspection_files
@@ -95,16 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
 
         $stmt->execute([
             ':file_number' => $fileNumber,
-            ':file_date' => $_POST['file_date'],
-            ':file_type' => $_POST['file_type'],
+            ':file_date' => !empty($_POST['file_date']) ? $_POST['file_date'] : null,
+            ':file_type' => !empty($_POST['file_type']) ? $_POST['file_type'] : null,
             ':location' => $calc['location'],
-            ':customer_name' => trim($_POST['customer_name']),
+            ':customer_name' => trim($_POST['customer_name']) ?: null,
             ':customer_phone' => trim($_POST['customer_phone']) ?: null,
-            ':property_address' => trim($_POST['property_address']),
-            ':property_value' => floatval($_POST['property_value']),
-            ':bank_id' => $_POST['bank_id'],
-            ':branch_id' => $_POST['branch_id'],
-            ':source_id' => $_POST['source_id'],
+            ':property_address' => trim($_POST['property_address']) ?: null,
+            ':property_value' => !empty($_POST['property_value']) ? floatval($_POST['property_value']) : null,
+            ':bank_id' => !empty($_POST['bank_id']) ? $_POST['bank_id'] : null,
+            ':branch_id' => !empty($_POST['branch_id']) ? $_POST['branch_id'] : null,
+            ':source_id' => !empty($_POST['source_id']) ? $_POST['source_id'] : null,
             ':fees' => $calc['fees'],
             ':report_status' => $calc['report_status'],
             ':payment_mode_id' => $calc['payment_mode_id'],
@@ -131,10 +133,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
     try {
         $calc = calculateAmounts($_POST);
 
-        $stmt = $db->prepare("SELECT id FROM inspection_branches WHERE id = :bid AND bank_id = :bankid");
-        $stmt->execute([':bid' => $_POST['branch_id'], ':bankid' => $_POST['bank_id']]);
-        if (!$stmt->fetch()) {
-            throw new Exception("Selected branch does not belong to selected bank.");
+        // Validate branch belongs to bank (only if both are provided)
+        if (!empty($_POST['bank_id']) && !empty($_POST['branch_id'])) {
+            $stmt = $db->prepare("SELECT id FROM inspection_branches WHERE id = :bid AND bank_id = :bankid");
+            $stmt->execute([':bid' => $_POST['branch_id'], ':bankid' => $_POST['bank_id']]);
+            if (!$stmt->fetch()) {
+                throw new Exception("Selected branch does not belong to selected bank.");
+            }
         }
 
         $stmt = $db->prepare("UPDATE inspection_files SET
@@ -149,16 +154,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
             WHERE id = :id");
 
         $stmt->execute([
-            ':file_date' => $_POST['file_date'],
-            ':file_type' => $_POST['file_type'],
+            ':file_date' => !empty($_POST['file_date']) ? $_POST['file_date'] : null,
+            ':file_type' => !empty($_POST['file_type']) ? $_POST['file_type'] : null,
             ':location' => $calc['location'],
-            ':customer_name' => trim($_POST['customer_name']),
+            ':customer_name' => trim($_POST['customer_name']) ?: null,
             ':customer_phone' => trim($_POST['customer_phone']) ?: null,
-            ':property_address' => trim($_POST['property_address']),
-            ':property_value' => floatval($_POST['property_value']),
-            ':bank_id' => $_POST['bank_id'],
-            ':branch_id' => $_POST['branch_id'],
-            ':source_id' => $_POST['source_id'],
+            ':property_address' => trim($_POST['property_address']) ?: null,
+            ':property_value' => !empty($_POST['property_value']) ? floatval($_POST['property_value']) : null,
+            ':bank_id' => !empty($_POST['bank_id']) ? $_POST['bank_id'] : null,
+            ':branch_id' => !empty($_POST['branch_id']) ? $_POST['branch_id'] : null,
+            ':source_id' => !empty($_POST['source_id']) ? $_POST['source_id'] : null,
             ':fees' => $calc['fees'],
             ':report_status' => $calc['report_status'],
             ':payment_mode_id' => $calc['payment_mode_id'],
@@ -338,15 +343,15 @@ include __DIR__ . '/../includes/header.php';
                         <?php foreach ($files as $file): ?>
                             <tr>
                                 <td><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
-                                <td><?php echo date('d M Y', strtotime($file['file_date'])); ?></td>
-                                <td><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span>
+                                <td><?php echo $file['file_date'] ? date('d M Y', strtotime($file['file_date'])) : '<span class="text-muted">-</span>'; ?></td>
+                                <td><?php if ($file['file_type']): ?><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span><?php else: ?><span class="text-muted">-</span><?php endif; ?>
                                     <?php if ($file['location']): ?><br><small class="text-muted"><?php echo $file['location'] === 'kolkata' ? 'Kolkata' : 'Out of Kolkata'; ?></small><?php endif; ?>
                                 </td>
                                 <td>
                                     <?php echo htmlspecialchars($file['customer_name']); ?>
                                     <?php if ($file['customer_phone']): ?><br><small class="text-muted"><i class="fas fa-phone"></i> <?php echo htmlspecialchars($file['customer_phone']); ?></small><?php endif; ?>
                                 </td>
-                                <td><?php echo htmlspecialchars($file['bank_name']); ?><br><small class="text-muted"><?php echo htmlspecialchars($file['branch_name']); ?></small></td>
+                                <td><?php echo $file['bank_name'] ? htmlspecialchars($file['bank_name']) : '<span class="text-muted">-</span>'; ?><?php if ($file['branch_name']): ?><br><small class="text-muted"><?php echo htmlspecialchars($file['branch_name']); ?></small><?php endif; ?></td>
                                 <td><?php echo $file['fees'] !== null ? '&#8377;' . number_format($file['fees'], 0) : '<span class="text-muted">NA</span>'; ?></td>
                                 <td>&#8377;<?php echo number_format($file['commission'], 0); ?></td>
                                 <td><strong>&#8377;<?php echo number_format($file['gross_amount'], 0); ?></strong></td>
@@ -418,9 +423,9 @@ include __DIR__ . '/../includes/header.php';
                                     <div class="modal-header"><h5 class="modal-title">Edit: <?php echo htmlspecialchars($file['file_number']); ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                     <div class="modal-body">
                                         <div class="row">
-                                            <div class="col-md-3 mb-3"><label class="form-label">Date</label><input type="date" name="file_date" class="form-control" value="<?php echo $file['file_date']; ?>" required></div>
+                                            <div class="col-md-3 mb-3"><label class="form-label">Date</label><input type="date" name="file_date" class="form-control" value="<?php echo $file['file_date']; ?>"></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">File Type</label>
-                                                <select name="file_type" class="form-select" required>
+                                                <select name="file_type" class="form-select">
                                                     <option value="office" <?php echo $file['file_type'] === 'office' ? 'selected' : ''; ?>>Office</option>
                                                     <option value="self" <?php echo $file['file_type'] === 'self' ? 'selected' : ''; ?>>Self</option>
                                                 </select>
@@ -432,12 +437,12 @@ include __DIR__ . '/../includes/header.php';
                                                     <option value="out_of_kolkata" <?php echo $file['location'] === 'out_of_kolkata' ? 'selected' : ''; ?>>Out of Kolkata</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-3 mb-3"><label class="form-label">Customer Name</label><input type="text" name="customer_name" class="form-control" value="<?php echo htmlspecialchars($file['customer_name']); ?>" required></div>
+                                            <div class="col-md-3 mb-3"><label class="form-label">Customer Name</label><input type="text" name="customer_name" class="form-control" value="<?php echo htmlspecialchars($file['customer_name']); ?>"></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Customer Phone</label><input type="text" name="customer_phone" class="form-control" value="<?php echo htmlspecialchars($file['customer_phone'] ?? ''); ?>"></div>
-                                            <div class="col-md-6 mb-3"><label class="form-label">Property Address</label><textarea name="property_address" class="form-control" rows="1" required><?php echo htmlspecialchars($file['property_address']); ?></textarea></div>
-                                            <div class="col-md-3 mb-3"><label class="form-label">Property Value (&#8377;)</label><input type="number" name="property_value" class="form-control" step="0.01" value="<?php echo $file['property_value']; ?>" required></div>
+                                            <div class="col-md-6 mb-3"><label class="form-label">Property Address</label><textarea name="property_address" class="form-control" rows="1"><?php echo htmlspecialchars($file['property_address']); ?></textarea></div>
+                                            <div class="col-md-3 mb-3"><label class="form-label">Property Value (&#8377;)</label><input type="number" name="property_value" class="form-control" step="0.01" value="<?php echo $file['property_value']; ?>"></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Bank</label>
-                                                <select name="bank_id" class="form-select" required>
+                                                <select name="bank_id" class="form-select">
                                                     <option value="">Select Bank</option>
                                                     <?php foreach ($banks as $b): ?>
                                                         <option value="<?php echo $b['id']; ?>" <?php echo $file['bank_id'] == $b['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($b['bank_name']); ?></option>
@@ -445,12 +450,12 @@ include __DIR__ . '/../includes/header.php';
                                                 </select>
                                             </div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Branch</label>
-                                                <select name="branch_id" class="form-select" data-selected="<?php echo $file['branch_id']; ?>" required>
+                                                <select name="branch_id" class="form-select" data-selected="<?php echo $file['branch_id']; ?>">
                                                     <option value="<?php echo $file['branch_id']; ?>"><?php echo htmlspecialchars($file['branch_name']); ?></option>
                                                 </select>
                                             </div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Source</label>
-                                                <select name="source_id" class="form-select" required>
+                                                <select name="source_id" class="form-select">
                                                     <?php foreach ($sources as $s): ?>
                                                         <option value="<?php echo $s['id']; ?>" <?php echo $file['source_id'] == $s['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($s['source_name']); ?></option>
                                                     <?php endforeach; ?>
@@ -555,9 +560,9 @@ include __DIR__ . '/../includes/header.php';
         <div class="modal-header"><h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Create New Inspection File</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="row">
-                <div class="col-md-3 mb-3"><label class="form-label">Date <span class="text-danger">*</span></label><input type="date" name="file_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required></div>
-                <div class="col-md-3 mb-3"><label class="form-label">File Type <span class="text-danger">*</span></label>
-                    <select name="file_type" class="form-select" required>
+                <div class="col-md-3 mb-3"><label class="form-label">Date</label><input type="date" name="file_date" class="form-control" value="<?php echo date('Y-m-d'); ?>"></div>
+                <div class="col-md-3 mb-3"><label class="form-label">File Type</label>
+                    <select name="file_type" class="form-select">
                         <option value="">Select Type</option>
                         <option value="office">Office</option>
                         <option value="self">Self</option>
@@ -570,25 +575,25 @@ include __DIR__ . '/../includes/header.php';
                         <option value="out_of_kolkata">Out of Kolkata</option>
                     </select>
                 </div>
-                <div class="col-md-3 mb-3"><label class="form-label">Customer Name <span class="text-danger">*</span></label><input type="text" name="customer_name" class="form-control" placeholder="Customer name" required></div>
+                <div class="col-md-3 mb-3"><label class="form-label">Customer Name</label><input type="text" name="customer_name" class="form-control" placeholder="Customer name"></div>
                 <div class="col-md-3 mb-3"><label class="form-label">Customer Phone</label><input type="text" name="customer_phone" class="form-control" placeholder="Phone number"></div>
-                <div class="col-md-6 mb-3"><label class="form-label">Property Address <span class="text-danger">*</span></label><textarea name="property_address" class="form-control" rows="1" placeholder="Full property address" required></textarea></div>
-                <div class="col-md-3 mb-3"><label class="form-label">Property Value (&#8377;) <span class="text-danger">*</span></label><input type="number" name="property_value" class="form-control" step="0.01" placeholder="0.00" required></div>
-                <div class="col-md-3 mb-3"><label class="form-label">Bank <span class="text-danger">*</span></label>
-                    <select name="bank_id" class="form-select" required>
+                <div class="col-md-6 mb-3"><label class="form-label">Property Address</label><textarea name="property_address" class="form-control" rows="1" placeholder="Full property address"></textarea></div>
+                <div class="col-md-3 mb-3"><label class="form-label">Property Value (&#8377;)</label><input type="number" name="property_value" class="form-control" step="0.01" placeholder="0.00"></div>
+                <div class="col-md-3 mb-3"><label class="form-label">Bank</label>
+                    <select name="bank_id" class="form-select">
                         <option value="">Select Bank</option>
                         <?php foreach ($banks as $b): ?>
                             <option value="<?php echo $b['id']; ?>"><?php echo htmlspecialchars($b['bank_name']); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3 mb-3"><label class="form-label">Branch <span class="text-danger">*</span></label>
-                    <select name="branch_id" class="form-select" required>
+                <div class="col-md-3 mb-3"><label class="form-label">Branch</label>
+                    <select name="branch_id" class="form-select">
                         <option value="">Select Bank first</option>
                     </select>
                 </div>
-                <div class="col-md-3 mb-3"><label class="form-label">Source <span class="text-danger">*</span></label>
-                    <select name="source_id" class="form-select" required>
+                <div class="col-md-3 mb-3"><label class="form-label">Source</label>
+                    <select name="source_id" class="form-select">
                         <option value="">Select Source</option>
                         <?php foreach ($sources as $s): ?>
                             <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['source_name']); ?></option>
