@@ -1,0 +1,220 @@
+<?php
+require_once __DIR__ . '/../includes/auth.php';
+$auth->requireLogin();
+
+require_once __DIR__ . '/../config/database.php';
+$database = new Database();
+$db = $database->connect();
+
+// Month/Year filter
+$filterMonth = $_GET['month'] ?? date('m');
+$filterYear = $_GET['year'] ?? date('Y');
+$filterType = $_GET['file_type'] ?? '';
+
+$monthStart = "{$filterYear}-{$filterMonth}-01";
+$monthEnd = date('Y-m-t', strtotime($monthStart));
+
+try {
+    $monthWhere = "WHERE f.file_date BETWEEN :start AND :end";
+    $monthParams = [':start' => $monthStart, ':end' => $monthEnd];
+
+    if ($filterType) {
+        $monthWhere .= " AND f.file_type = :type";
+        $monthParams[':type'] = $filterType;
+    }
+
+    // Stat 1: Total Files
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$monthWhere}");
+    $stmt->execute($monthParams);
+    $totalFiles = $stmt->fetch()['total'];
+
+    // Stat 2: Total Earnings (gross_amount)
+    $stmt = $db->prepare("SELECT COALESCE(SUM(f.gross_amount), 0) as total FROM inspection_files f {$monthWhere}");
+    $stmt->execute($monthParams);
+    $totalEarnings = $stmt->fetch()['total'];
+
+    // Stat 3: Pending Payments (self files with due/partially)
+    $pendingWhere = $monthWhere . " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$pendingWhere}");
+    $stmt->execute($monthParams);
+    $pendingPayments = $stmt->fetch()['total'];
+
+    // Stat 4: Active Sources
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT f.source_id) as total FROM inspection_files f {$monthWhere}");
+    $stmt->execute($monthParams);
+    $activeSources = $stmt->fetch()['total'];
+
+    // Source-wise summary
+    $stmt = $db->prepare("SELECT isrc.source_name, COUNT(*) as file_count, COALESCE(SUM(f.gross_amount), 0) as total_earnings
+        FROM inspection_files f
+        JOIN inspection_sources isrc ON f.source_id = isrc.id
+        {$monthWhere}
+        GROUP BY f.source_id, isrc.source_name
+        ORDER BY total_earnings DESC");
+    $stmt->execute($monthParams);
+    $sourceSummary = $stmt->fetchAll();
+
+    // Recent 10 files
+    $stmt = $db->prepare("SELECT f.*, ib.bank_name, isrc.source_name
+        FROM inspection_files f
+        LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
+        LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
+        {$monthWhere}
+        ORDER BY f.file_date DESC, f.id DESC LIMIT 10");
+    $stmt->execute($monthParams);
+    $recentFiles = $stmt->fetchAll();
+
+} catch(PDOException $e) {
+    $totalFiles = $totalEarnings = $pendingPayments = $activeSources = 0;
+    $sourceSummary = $recentFiles = [];
+    error_log("Dashboard error: " . $e->getMessage());
+}
+
+$pageTitle = 'Inspection Dashboard';
+$basePath = '../';
+include __DIR__ . '/../includes/header.php';
+?>
+
+<div class="admin-content">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">Inspection Dashboard</h1>
+            <p class="page-subtitle"><?php echo date('F Y', strtotime($monthStart)); ?> Overview</p>
+        </div>
+        <a href="files.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i>New File</a>
+    </div>
+
+    <!-- Month/Year Filter -->
+    <form method="GET" class="row mb-4 g-2">
+        <div class="col-auto">
+            <select name="month" class="form-select">
+                <?php for ($m = 1; $m <= 12; $m++): ?>
+                    <option value="<?php echo str_pad($m, 2, '0', STR_PAD_LEFT); ?>" <?php echo $filterMonth == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : ''; ?>>
+                        <?php echo date('F', mktime(0, 0, 0, $m, 1)); ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="year" class="form-select">
+                <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
+                    <option value="<?php echo $y; ?>" <?php echo $filterYear == $y ? 'selected' : ''; ?>><?php echo $y; ?></option>
+                <?php endfor; ?>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="file_type" class="form-select">
+                <option value="">All Types</option>
+                <option value="office" <?php echo $filterType === 'office' ? 'selected' : ''; ?>>Office</option>
+                <option value="self" <?php echo $filterType === 'self' ? 'selected' : ''; ?>>Self</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Filter</button>
+        </div>
+        <div class="col-auto">
+            <a href="index.php" class="btn btn-secondary"><i class="fas fa-redo"></i></a>
+        </div>
+    </form>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value"><?php echo $totalFiles; ?></div><div class="stat-label">Total Files</div></div>
+                <div class="stat-icon primary"><i class="fas fa-folder-open"></i></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value">&#8377;<?php echo number_format($totalEarnings, 0); ?></div><div class="stat-label">Total Earnings</div></div>
+                <div class="stat-icon success"><i class="fas fa-rupee-sign"></i></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value"><?php echo $pendingPayments; ?></div><div class="stat-label">Pending Payments</div></div>
+                <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value"><?php echo $activeSources; ?></div><div class="stat-label">Active Sources</div></div>
+                <div class="stat-icon info"><i class="fas fa-users"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Source Summary -->
+        <div class="col-lg-5">
+            <div class="content-card">
+                <div class="card-header-flex"><h5>Source-wise Summary</h5></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>Source</th><th>Files</th><th>Earnings</th></tr></thead>
+                        <tbody>
+                            <?php if (!empty($sourceSummary)): ?>
+                                <?php foreach ($sourceSummary as $row): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($row['source_name']); ?></td>
+                                        <td><span class="badge bg-primary"><?php echo $row['file_count']; ?></span></td>
+                                        <td><strong>&#8377;<?php echo number_format($row['total_earnings'], 0); ?></strong></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <tr class="table-light">
+                                    <td><strong>Total</strong></td>
+                                    <td><strong><?php echo array_sum(array_column($sourceSummary, 'file_count')); ?></strong></td>
+                                    <td><strong>&#8377;<?php echo number_format(array_sum(array_column($sourceSummary, 'total_earnings')), 0); ?></strong></td>
+                                </tr>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="text-center text-muted py-3">No data for this period</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Files -->
+        <div class="col-lg-7">
+            <div class="content-card">
+                <div class="card-header-flex">
+                    <h5>Recent Files</h5>
+                    <a href="files.php" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>File #</th><th>Date</th><th>Customer</th><th>Bank</th><th>Type</th><th>Commission</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <?php if (!empty($recentFiles)): ?>
+                                <?php foreach ($recentFiles as $file): ?>
+                                    <tr>
+                                        <td><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
+                                        <td><?php echo date('d M', strtotime($file['file_date'])); ?></td>
+                                        <td><?php echo htmlspecialchars($file['customer_name']); ?></td>
+                                        <td><small><?php echo htmlspecialchars($file['bank_name']); ?></small></td>
+                                        <td><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span></td>
+                                        <td>&#8377;<?php echo number_format($file['commission'], 0); ?></td>
+                                        <td><?php
+                                            if ($file['file_type'] === 'office') {
+                                                echo '<span class="text-muted">NA</span>';
+                                            } else {
+                                                $colors = ['due' => 'danger', 'paid' => 'success', 'partially' => 'warning'];
+                                                echo '<span class="badge bg-' . ($colors[$file['payment_status']] ?? 'secondary') . '">' . ucfirst($file['payment_status'] ?? '-') . '</span>';
+                                            }
+                                        ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="7" class="text-center text-muted py-3">No files for this period</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include __DIR__ . '/../includes/footer.php'; ?>

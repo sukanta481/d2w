@@ -1,3 +1,4 @@
+<?php if (!isset($basePath)) $basePath = ''; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +8,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="<?php echo $basePath; ?>assets/css/admin.css">
 </head>
 <body>
     <div class="admin-wrapper">
         <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
-                <a href="index.php" class="sidebar-brand">
-                    <img src="../assets/images/logo.png" alt="BizNexa" height="40" style="margin-right: 10px;">
+                <a href="<?php echo $basePath; ?>index.php" class="sidebar-brand">
+                    <img src="<?php echo $basePath; ?>../assets/images/logo.png" alt="BizNexa" height="40" style="margin-right: 10px;">
                     <div class="sidebar-brand-text">
                         <p>CMS Admin</p>
                     </div>
@@ -26,13 +27,13 @@
                 <div class="menu-section-title">Main</div>
                 <ul>
                     <li class="menu-item">
-                        <a href="index.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>index.php" class="menu-link <?php echo (basename($_SERVER['PHP_SELF']) === 'index.php' && strpos($_SERVER['PHP_SELF'], 'inspection/') === false) ? 'active' : ''; ?>">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="leads.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'leads.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>leads.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'leads.php' ? 'active' : ''; ?>">
                             <i class="fas fa-users"></i>
                             <span>Leads</span>
                             <?php
@@ -52,13 +53,13 @@
                 <div class="menu-section-title">Billing</div>
                 <ul>
                     <li class="menu-item">
-                        <a href="clients.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'clients.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>clients.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'clients.php' ? 'active' : ''; ?>">
                             <i class="fas fa-user-tie"></i>
                             <span>Clients</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="billing.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'billing.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>billing.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'billing.php' ? 'active' : ''; ?>">
                             <i class="fas fa-file-invoice-dollar"></i>
                             <span>Bills</span>
                             <?php
@@ -75,34 +76,65 @@
                     </li>
                 </ul>
 
+                <div class="menu-section-title">Inspection</div>
+                <ul>
+                    <li class="menu-item">
+                        <a href="<?php echo $basePath; ?>inspection/index.php" class="menu-link <?php echo (strpos($_SERVER['PHP_SELF'], 'inspection/') !== false && basename($_SERVER['PHP_SELF']) === 'index.php') ? 'active' : ''; ?>">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="<?php echo $basePath; ?>inspection/files.php" class="menu-link <?php echo (strpos($_SERVER['PHP_SELF'], 'inspection/') !== false && basename($_SERVER['PHP_SELF']) === 'files.php') ? 'active' : ''; ?>">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Files</span>
+                            <?php
+                            try {
+                                $stmt = $db->query("SELECT COUNT(*) as count FROM inspection_files WHERE file_type = 'self' AND payment_status IN ('due', 'partially')");
+                                $pendingCount = $stmt->fetch()['count'];
+                                if ($pendingCount > 0) {
+                                    echo '<span class="menu-badge bg-danger">' . $pendingCount . '</span>';
+                                }
+                            } catch(Exception $e) {}
+                            ?>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="<?php echo $basePath; ?>inspection/masters.php" class="menu-link <?php echo (strpos($_SERVER['PHP_SELF'], 'inspection/') !== false && basename($_SERVER['PHP_SELF']) === 'masters.php') ? 'active' : ''; ?>">
+                            <i class="fas fa-database"></i>
+                            <span>Masters</span>
+                        </a>
+                    </li>
+                </ul>
+
                 <div class="menu-section-title">Content</div>
                 <ul>
                     <li class="menu-item">
-                        <a href="projects.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'projects.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>projects.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'projects.php' ? 'active' : ''; ?>">
                             <i class="fas fa-briefcase"></i>
                             <span>Projects</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="ai-agents.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'ai-agents.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>ai-agents.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'ai-agents.php' ? 'active' : ''; ?>">
                             <i class="fas fa-robot"></i>
                             <span>AI Agents</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="services.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'services.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>services.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'services.php' ? 'active' : ''; ?>">
                             <i class="fas fa-cogs"></i>
                             <span>Services</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="testimonials.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'testimonials.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>testimonials.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'testimonials.php' ? 'active' : ''; ?>">
                             <i class="fas fa-star"></i>
                             <span>Testimonials</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="blog.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'blog.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>blog.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'blog.php' ? 'active' : ''; ?>">
                             <i class="fas fa-blog"></i>
                             <span>Blog Posts</span>
                         </a>
@@ -112,19 +144,19 @@
                 <div class="menu-section-title">Settings</div>
                 <ul>
                     <li class="menu-item">
-                        <a href="settings.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>settings.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : ''; ?>">
                             <i class="fas fa-sliders-h"></i>
                             <span>Site Settings</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="profile.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'profile.php' ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>profile.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'profile.php' ? 'active' : ''; ?>">
                             <i class="fas fa-user-circle"></i>
                             <span>My Profile</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="logout.php" class="menu-link">
+                        <a href="<?php echo $basePath; ?>logout.php" class="menu-link">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
@@ -149,16 +181,16 @@
                 </div>
 
                 <div class="header-right">
-                    <a href="leads.php?status=new" class="header-icon-btn" title="Notifications" aria-label="View new leads">
+                    <a href="<?php echo $basePath; ?>leads.php?status=new" class="header-icon-btn" title="Notifications" aria-label="View new leads">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
                     </a>
 
-                    <a href="settings.php" class="header-icon-btn" title="Settings" aria-label="Open site settings">
+                    <a href="<?php echo $basePath; ?>settings.php" class="header-icon-btn" title="Settings" aria-label="Open site settings">
                         <i class="fas fa-cog"></i>
                     </a>
 
-                    <div class="user-dropdown" onclick="window.location.href='profile.php'">
+                    <div class="user-dropdown" onclick="window.location.href='<?php echo $basePath; ?>profile.php'">
                         <div class="user-avatar">
                             <?php
                             if (!empty($_SESSION['admin_avatar'])) {
