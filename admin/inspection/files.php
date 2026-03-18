@@ -247,12 +247,18 @@ try {
     $files = $stmt->fetchAll();
 
     $banks = $db->query("SELECT id, bank_name FROM inspection_banks WHERE status = 'active' ORDER BY bank_name")->fetchAll();
+    $branches = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE status = 'active' ORDER BY branch_name")->fetchAll();
+    $branchesByBank = [];
+    foreach ($branches as $branch) {
+        $branchesByBank[$branch['bank_id']][] = $branch;
+    }
+
     $sources = $db->query("SELECT id, source_name FROM inspection_sources WHERE status = 'active' ORDER BY source_name")->fetchAll();
     $paymentModes = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE status = 'active' ORDER BY mode_name")->fetchAll();
     $myAccounts = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE status = 'active' ORDER BY account_name")->fetchAll();
 
 } catch(PDOException $e) {
-    $files = $banks = $sources = $paymentModes = $myAccounts = [];
+    $files = $banks = $branches = $branchesByBank = $sources = $paymentModes = $myAccounts = [];
     $totalFiles = 0; $totalPages = 1;
     error_log("Files fetch error: " . $e->getMessage());
 }
@@ -451,7 +457,12 @@ include __DIR__ . '/../includes/header.php';
                                             </div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Branch</label>
                                                 <select name="branch_id" class="form-select" data-selected="<?php echo $file['branch_id']; ?>">
-                                                    <option value="<?php echo $file['branch_id']; ?>"><?php echo htmlspecialchars($file['branch_name']); ?></option>
+                                                    <option value="">Select Branch</option>
+                                                    <?php foreach (($branchesByBank[$file['bank_id']] ?? []) as $branch): ?>
+                                                        <option value="<?php echo $branch['id']; ?>" <?php echo $file['branch_id'] == $branch['id'] ? 'selected' : ''; ?>>
+                                                            <?php echo htmlspecialchars($branch['branch_name']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
                                                 </select>
                                             </div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Source</label>
@@ -751,14 +762,17 @@ function initFileForm(formEl) {
     fees.addEventListener('input', () => { calcCommission(); toggleAmount(); });
     paymentStatus.addEventListener('change', toggleAmount);
     extraAmount.addEventListener('input', calcCommission);
-    bankSelect.addEventListener('change', () => loadBranches(bankSelect.value));
+    bankSelect.addEventListener('change', () => {
+        branchSelect.dataset.selected = '';
+        loadBranches(bankSelect.value);
+    });
 
     // Initialize on load
     if (fileType.value) toggleFields();
 
-    // Load branches for edit forms
-    if (bankSelect.value && branchSelect.dataset.selected) {
-        loadBranches(bankSelect.value, branchSelect.dataset.selected);
+    // Load branches for edit forms whenever a bank is already selected.
+    if (bankSelect.value) {
+        loadBranches(bankSelect.value, branchSelect.dataset.selected || '');
     }
 }
 
@@ -772,9 +786,29 @@ document.addEventListener('DOMContentLoaded', () => {
 document.querySelectorAll('[id^="editFileModal"]').forEach(modal => {
     modal.addEventListener('shown.bs.modal', function() {
         const form = this.querySelector('form');
-        if (form && !form.dataset.initialized) {
+        if (!form) return;
+        if (!form.dataset.initialized) {
             initFileForm(form);
             form.dataset.initialized = 'true';
+        } else {
+            // Always reload branches on re-open
+            const bankSelect = form.querySelector('[name="bank_id"]');
+            const branchSelect = form.querySelector('[name="branch_id"]');
+            if (bankSelect && bankSelect.value && branchSelect) {
+                const selectedBranch = branchSelect.dataset.selected;
+                fetch('files.php?ajax=branches&bank_id=' + bankSelect.value)
+                    .then(r => r.json())
+                    .then(branches => {
+                        branchSelect.innerHTML = '<option value="">Select Branch</option>';
+                        branches.forEach(b => {
+                            const opt = document.createElement('option');
+                            opt.value = b.id;
+                            opt.textContent = b.branch_name;
+                            if (selectedBranch && b.id == selectedBranch) opt.selected = true;
+                            branchSelect.appendChild(opt);
+                        });
+                    });
+            }
         }
     });
 });
