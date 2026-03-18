@@ -232,7 +232,7 @@ include 'includes/header.php';
     padding: 40px 30px;
     text-align: center;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     height: 100%;
 }
 
@@ -283,7 +283,7 @@ include 'includes/header.php';
     color: #0d6efd;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .contact-card-link:hover {
@@ -322,7 +322,7 @@ include 'includes/header.php';
     padding: 15px 20px;
     color: #fff;
     font-size: 15px;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .form-control-animated:focus {
@@ -362,7 +362,7 @@ textarea.form-control-animated {
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     box-shadow: 0 10px 30px rgba(13, 110, 253, 0.3);
 }
 
@@ -463,7 +463,7 @@ textarea.form-control-animated {
     border-radius: 12px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .quick-btn.whatsapp {

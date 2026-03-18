@@ -244,7 +244,7 @@ include 'includes/header.php';
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     overflow: hidden;
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -348,7 +348,7 @@ include 'includes/header.php';
     color: #0d6efd;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .blog-read-more-animated:hover {
@@ -384,7 +384,7 @@ include 'includes/header.php';
     border-radius: 12px;
     font-weight: 500;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .page-link-animated:hover,
@@ -477,7 +477,7 @@ include 'includes/header.php';
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .input-group-animated button:hover {

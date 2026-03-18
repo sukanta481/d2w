@@ -849,7 +849,7 @@ include 'includes/header.php';
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
@@ -980,7 +980,7 @@ include 'includes/header.php';
     border-radius: 16px;
     padding: 28px 20px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
@@ -1075,7 +1075,7 @@ include 'includes/header.php';
     color: #64748b;
     font-weight: 600;
     font-size: 0.95rem;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
@@ -1115,7 +1115,7 @@ include 'includes/header.php';
     border-radius: 20px;
     padding: 30px 20px;
     text-align: center;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -1245,7 +1245,7 @@ include 'includes/header.php';
     height: 10px;
     background: rgba(255, 255, 255, 0.3);
     opacity: 1;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .services-page-pagination .swiper-pagination-bullet-active {

@@ -7,9 +7,41 @@ $db = $database->connect();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
     try {
+        $settingMeta = [
+            'site_name' => ['type' => 'text', 'description' => 'Website name'],
+            'site_email' => ['type' => 'email', 'description' => 'Contact email'],
+            'site_phone' => ['type' => 'text', 'description' => 'Contact phone'],
+            'site_address' => ['type' => 'text', 'description' => 'Business address'],
+            'facebook_url' => ['type' => 'url', 'description' => 'Facebook page URL'],
+            'twitter_url' => ['type' => 'url', 'description' => 'Twitter profile URL'],
+            'linkedin_url' => ['type' => 'url', 'description' => 'LinkedIn profile URL'],
+            'instagram_url' => ['type' => 'url', 'description' => 'Instagram profile URL'],
+            'stat_years' => ['type' => 'number', 'description' => 'Years of experience shown on homepage'],
+            'stat_projects' => ['type' => 'number', 'description' => 'Projects completed shown on homepage'],
+            'stat_clients' => ['type' => 'number', 'description' => 'Happy clients shown on homepage'],
+            'stat_countries' => ['type' => 'number', 'description' => 'Countries served shown on homepage'],
+            'hero_title' => ['type' => 'text', 'description' => 'Homepage hero title'],
+            'hero_subtitle' => ['type' => 'text', 'description' => 'Homepage hero subtitle'],
+            'hero_image' => ['type' => 'url', 'description' => 'Homepage hero image URL']
+        ];
+
+        $stmt = $db->prepare("INSERT INTO settings (setting_key, setting_value, setting_type, description, updated_by)
+                              VALUES (:key, :value, :type, :description, :user)
+                              ON DUPLICATE KEY UPDATE
+                                setting_value = VALUES(setting_value),
+                                setting_type = VALUES(setting_type),
+                                description = VALUES(description),
+                                updated_by = VALUES(updated_by)");
+
         foreach ($_POST['settings'] as $key => $value) {
-            $stmt = $db->prepare("UPDATE settings SET setting_value = :value, updated_by = :user WHERE setting_key = :key");
-            $stmt->execute([':value' => $value, ':user' => $auth->getUserId(), ':key' => $key]);
+            $meta = $settingMeta[$key] ?? ['type' => 'text', 'description' => 'Site setting'];
+            $stmt->execute([
+                ':key' => $key,
+                ':value' => $value,
+                ':type' => $meta['type'],
+                ':description' => $meta['description'],
+                ':user' => $auth->getUserId()
+            ]);
         }
         $auth->logActivity($auth->getUserId(), 'update', 'settings', null, 'Updated site settings');
         $successMessage = "Settings updated successfully!";

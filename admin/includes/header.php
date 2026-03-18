@@ -149,14 +149,14 @@
                 </div>
 
                 <div class="header-right">
-                    <button class="header-icon-btn" title="Notifications">
+                    <a href="leads.php?status=new" class="header-icon-btn" title="Notifications" aria-label="View new leads">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
-                    </button>
+                    </a>
 
-                    <button class="header-icon-btn" title="Settings">
+                    <a href="settings.php" class="header-icon-btn" title="Settings" aria-label="Open site settings">
                         <i class="fas fa-cog"></i>
-                    </button>
+                    </a>
 
                     <div class="user-dropdown" onclick="window.location.href='profile.php'">
                         <div class="user-avatar">

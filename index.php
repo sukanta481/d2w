@@ -885,7 +885,7 @@ include 'includes/header.php';
     border-radius: 50px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     box-shadow: 0 10px 30px rgba(13, 110, 253, 0.3);
 }
 
@@ -908,7 +908,7 @@ include 'includes/header.php';
     padding: 35px 25px;
     text-align: center;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .stat-item-home:hover {
@@ -953,7 +953,7 @@ include 'includes/header.php';
     padding: 30px 20px;
     text-align: center;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .tech-item-home:hover {
@@ -986,7 +986,7 @@ include 'includes/header.php';
     border-radius: 20px;
     padding: 40px 30px;
     position: relative;
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     height: 100%;
 }
 
@@ -1129,7 +1129,7 @@ include 'includes/header.php';
     font-size: 1.1rem;
     font-weight: 700;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     position: relative;
 }
@@ -1206,7 +1206,7 @@ include 'includes/header.php';
     height: 10px;
     background: rgba(255, 255, 255, 0.3);
     opacity: 1;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .services-pagination .swiper-pagination-bullet-active,

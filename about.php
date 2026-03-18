@@ -377,7 +377,7 @@ include 'includes/header.php';
     border-radius: 20px;
     padding: 40px 30px;
     text-align: center;
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .stat-box-animated:hover {
@@ -473,7 +473,7 @@ include 'includes/header.php';
     text-align: center;
     position: relative;
     overflow: hidden;
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     height: 100%;
 }
 
@@ -567,7 +567,7 @@ include 'includes/header.php';
     font-size: 1rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 

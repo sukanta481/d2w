@@ -298,7 +298,7 @@ include 'includes/header.php';
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -319,7 +319,7 @@ include 'includes/header.php';
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .portfolio-card-animated:hover {
@@ -356,7 +356,7 @@ include 'includes/header.php';
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .portfolio-card-animated:hover .portfolio-overlay-animated {
@@ -408,7 +408,7 @@ include 'includes/header.php';
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .btn-portfolio:hover {
@@ -429,7 +429,7 @@ include 'includes/header.php';
     font-weight: 600;
     text-decoration: none;
     border: 2px solid #fff;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .btn-portfolio-outline:hover {
@@ -461,7 +461,7 @@ include 'includes/header.php';
     border-radius: 20px;
     padding: 40px 30px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-    transition: all 0.4s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .stat-card-animated:hover {

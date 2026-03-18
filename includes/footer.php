@@ -178,7 +178,7 @@ $instagram = $settings['instagram_url'] ?? '#';
                         width: 60px !important;
                         height: 60px !important;
                         box-shadow: 0 4px 20px rgba(13, 110, 253, 0.5) !important;
-                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                        transition: transform 0.2s ease-out !important;
                     }
                     .chat-toggle-button:hover {
                         transform: scale(1.1) !important;

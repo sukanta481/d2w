@@ -420,10 +420,14 @@ body {
 
 .header-icon-btn {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     font-size: 1.3rem;
     color: var(--dark);
+    text-decoration: none;
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;

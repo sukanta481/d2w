@@ -306,7 +306,7 @@ include 'includes/header.php';
     border-radius: 15px;
     font-size: 0.85rem;
     margin: 5px 5px 5px 0;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 .post-tags .tag-badge:hover {
