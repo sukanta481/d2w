@@ -703,15 +703,16 @@ try {
 $pageTitle = 'Inspection Masters';
 $basePath = '../';
 include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/_responsive.php';
 ?>
 
-<div class="admin-content">
+<div class="admin-content inspection-page inspection-masters-page">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
             <h1 class="page-title">Inspection Masters</h1>
             <p class="page-subtitle">Manage banks, branches, sources, payment modes & accounts</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="inspection-toolbar">
             <div class="dropdown">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-download me-2"></i>Download
@@ -784,19 +785,22 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-plus me-1"></i>Add Bank
                     </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table" id="table-banks">
+                <div class="table-responsive inspection-table-wrap">
+                    <div class="inspection-table-mobile-note">Bank records are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table" id="table-banks">
                         <thead><tr><th>#</th><th>Bank Name</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
                             <?php if (!empty($banks)): ?>
                                 <?php foreach ($banks as $i => $bank): ?>
                                     <tr>
-                                        <td><?php echo $i + 1; ?></td>
-                                        <td><strong><?php echo htmlspecialchars($bank['bank_name']); ?></strong></td>
-                                        <td><span class="badge bg-<?php echo $bank['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($bank['status']); ?></span></td>
-                                        <td>
+                                        <td data-label="#"><?php echo $i + 1; ?></td>
+                                        <td data-label="Bank Name"><strong><?php echo htmlspecialchars($bank['bank_name']); ?></strong></td>
+                                        <td data-label="Status"><span class="badge bg-<?php echo $bank['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($bank['status']); ?></span></td>
+                                        <td data-label="Actions">
+                                            <div class="inspection-actions">
                                             <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editBankModal<?php echo $bank['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteBankModal<?php echo $bank['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Bank Modal -->
@@ -842,20 +846,23 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-plus me-1"></i>Add Branch
                     </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table" id="table-branches">
+                <div class="table-responsive inspection-table-wrap">
+                    <div class="inspection-table-mobile-note">Branch records are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table" id="table-branches">
                         <thead><tr><th>#</th><th>Bank</th><th>Branch Name</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
                             <?php if (!empty($branches)): ?>
                                 <?php foreach ($branches as $i => $branch): ?>
                                     <tr>
-                                        <td><?php echo $i + 1; ?></td>
-                                        <td><span class="badge bg-info"><?php echo htmlspecialchars($branch['bank_name']); ?></span></td>
-                                        <td><strong><?php echo htmlspecialchars($branch['branch_name']); ?></strong></td>
-                                        <td><span class="badge bg-<?php echo $branch['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($branch['status']); ?></span></td>
-                                        <td>
+                                        <td data-label="#"><?php echo $i + 1; ?></td>
+                                        <td data-label="Bank"><span class="badge bg-info"><?php echo htmlspecialchars($branch['bank_name']); ?></span></td>
+                                        <td data-label="Branch Name"><strong><?php echo htmlspecialchars($branch['branch_name']); ?></strong></td>
+                                        <td data-label="Status"><span class="badge bg-<?php echo $branch['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($branch['status']); ?></span></td>
+                                        <td data-label="Actions">
+                                            <div class="inspection-actions">
                                             <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editBranchModal<?php echo $branch['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteBranchModal<?php echo $branch['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Branch Modal -->
@@ -908,20 +915,23 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-plus me-1"></i>Add Source
                     </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table" id="table-sources">
+                <div class="table-responsive inspection-table-wrap">
+                    <div class="inspection-table-mobile-note">Source records are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table" id="table-sources">
                         <thead><tr><th>#</th><th>Source Name</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
                             <?php if (!empty($sources)): ?>
                                 <?php foreach ($sources as $i => $source): ?>
                                     <tr>
-                                        <td><?php echo $i + 1; ?></td>
-                                        <td><strong><?php echo htmlspecialchars($source['source_name']); ?></strong></td>
-                                        <td><?php echo $source['phone'] ? htmlspecialchars($source['phone']) : '<span class="text-muted">-</span>'; ?></td>
-                                        <td><span class="badge bg-<?php echo $source['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($source['status']); ?></span></td>
-                                        <td>
+                                        <td data-label="#"><?php echo $i + 1; ?></td>
+                                        <td data-label="Source Name"><strong><?php echo htmlspecialchars($source['source_name']); ?></strong></td>
+                                        <td data-label="Phone"><?php echo $source['phone'] ? htmlspecialchars($source['phone']) : '<span class="text-muted">-</span>'; ?></td>
+                                        <td data-label="Status"><span class="badge bg-<?php echo $source['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($source['status']); ?></span></td>
+                                        <td data-label="Actions">
+                                            <div class="inspection-actions">
                                             <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editSourceModal<?php echo $source['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteSourceModal<?php echo $source['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Source Modal -->
@@ -968,19 +978,22 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-plus me-1"></i>Add Payment Mode
                     </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table" id="table-payment-modes">
+                <div class="table-responsive inspection-table-wrap">
+                    <div class="inspection-table-mobile-note">Payment mode records are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table" id="table-payment-modes">
                         <thead><tr><th>#</th><th>Mode Name</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
                             <?php if (!empty($paymentModes)): ?>
                                 <?php foreach ($paymentModes as $i => $mode): ?>
                                     <tr>
-                                        <td><?php echo $i + 1; ?></td>
-                                        <td><strong><?php echo htmlspecialchars($mode['mode_name']); ?></strong></td>
-                                        <td><span class="badge bg-<?php echo $mode['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($mode['status']); ?></span></td>
-                                        <td>
+                                        <td data-label="#"><?php echo $i + 1; ?></td>
+                                        <td data-label="Mode Name"><strong><?php echo htmlspecialchars($mode['mode_name']); ?></strong></td>
+                                        <td data-label="Status"><span class="badge bg-<?php echo $mode['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($mode['status']); ?></span></td>
+                                        <td data-label="Actions">
+                                            <div class="inspection-actions">
                                             <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editModeModal<?php echo $mode['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteModeModal<?php echo $mode['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Mode Modal -->
@@ -1026,22 +1039,25 @@ include __DIR__ . '/../includes/header.php';
                         <i class="fas fa-plus me-1"></i>Add Account
                     </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="data-table" id="table-accounts">
+                <div class="table-responsive inspection-table-wrap">
+                    <div class="inspection-table-mobile-note">Account records are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table" id="table-accounts">
                         <thead><tr><th>#</th><th>Account Name</th><th>Bank</th><th>Account No.</th><th>IFSC</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody>
                             <?php if (!empty($accounts)): ?>
                                 <?php foreach ($accounts as $i => $acc): ?>
                                     <tr>
-                                        <td><?php echo $i + 1; ?></td>
-                                        <td><strong><?php echo htmlspecialchars($acc['account_name']); ?></strong></td>
-                                        <td><?php echo htmlspecialchars($acc['bank_name']); ?></td>
-                                        <td><code><?php echo htmlspecialchars($acc['account_number']); ?></code></td>
-                                        <td><?php echo $acc['ifsc_code'] ? htmlspecialchars($acc['ifsc_code']) : '<span class="text-muted">-</span>'; ?></td>
-                                        <td><span class="badge bg-<?php echo $acc['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($acc['status']); ?></span></td>
-                                        <td>
+                                        <td data-label="#"><?php echo $i + 1; ?></td>
+                                        <td data-label="Account Name"><strong><?php echo htmlspecialchars($acc['account_name']); ?></strong></td>
+                                        <td data-label="Bank"><?php echo htmlspecialchars($acc['bank_name']); ?></td>
+                                        <td data-label="Account No."><code><?php echo htmlspecialchars($acc['account_number']); ?></code></td>
+                                        <td data-label="IFSC"><?php echo $acc['ifsc_code'] ? htmlspecialchars($acc['ifsc_code']) : '<span class="text-muted">-</span>'; ?></td>
+                                        <td data-label="Status"><span class="badge bg-<?php echo $acc['status'] === 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($acc['status']); ?></span></td>
+                                        <td data-label="Actions">
+                                            <div class="inspection-actions">
                                             <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editAccountModal<?php echo $acc['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                             <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal<?php echo $acc['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Account Modal -->
@@ -1086,7 +1102,7 @@ include __DIR__ . '/../includes/header.php';
     </div><!-- /content-card -->
 </div><!-- /admin-content -->
 
-<div class="modal fade" id="bulkImportMastersModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="bulkImportMastersModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" enctype="multipart/form-data">
@@ -1146,7 +1162,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add Bank Modal -->
-<div class="modal fade" id="addBankModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addBankModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content"><form method="POST">
         <div class="modal-header"><h5 class="modal-title">Add Bank</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
@@ -1157,7 +1173,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add Branch Modal -->
-<div class="modal fade" id="addBranchModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addBranchModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content"><form method="POST">
         <div class="modal-header"><h5 class="modal-title">Add Branch</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
@@ -1176,7 +1192,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add Source Modal -->
-<div class="modal fade" id="addSourceModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addSourceModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content"><form method="POST">
         <div class="modal-header"><h5 class="modal-title">Add Source</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
@@ -1188,7 +1204,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add Payment Mode Modal -->
-<div class="modal fade" id="addPaymentModeModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addPaymentModeModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content"><form method="POST">
         <div class="modal-header"><h5 class="modal-title">Add Payment Mode</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
@@ -1199,7 +1215,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add Account Modal -->
-<div class="modal fade" id="addAccountModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addAccountModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content"><form method="POST">
         <div class="modal-header"><h5 class="modal-title">Add Bank Account</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">

@@ -15,6 +15,17 @@ $filterDateBasis = $_GET['date_basis'] ?? 'updated';
 $monthStart = "{$filterYear}-{$filterMonth}-01";
 $monthEnd = date('Y-m-t', strtotime($monthStart));
 $dateField = $filterDateBasis === 'file' ? 'f.file_date' : 'DATE(f.updated_at)';
+$baseFilesQuery = [
+    'date_from' => $monthStart,
+    'date_to' => $monthEnd,
+];
+if ($filterType) {
+    $baseFilesQuery['file_type'] = $filterType;
+}
+$allFilesUrl = 'files.php?' . http_build_query($baseFilesQuery);
+$pendingFilesQuery = $baseFilesQuery;
+$pendingFilesQuery['status_group'] = 'pending';
+$pendingFilesUrl = 'files.php?' . http_build_query($pendingFilesQuery);
 
 try {
     $monthWhere = "WHERE {$dateField} BETWEEN :start AND :end";
@@ -75,19 +86,22 @@ try {
 $pageTitle = 'Inspection Dashboard';
 $basePath = '../';
 include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/_responsive.php';
 ?>
 
-<div class="admin-content">
+<div class="admin-content inspection-page inspection-dashboard-page">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
             <h1 class="page-title">Inspection Dashboard</h1>
             <p class="page-subtitle"><?php echo date('F Y', strtotime($monthStart)); ?> Overview</p>
         </div>
-        <a href="files.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i>New File</a>
+        <div class="inspection-toolbar">
+            <a href="files.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i>New File</a>
+        </div>
     </div>
 
     <!-- Month/Year Filter -->
-    <form method="GET" class="row mb-4 g-2">
+    <form method="GET" class="row mb-4 g-2 inspection-filter-form">
         <div class="col-auto">
             <select name="month" class="form-select">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
@@ -127,30 +141,30 @@ include __DIR__ . '/../includes/header.php';
 
     <!-- Stat Cards -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $totalFiles; ?></div><div class="stat-label">Total Files</div></div>
                 <div class="stat-icon primary"><i class="fas fa-folder-open"></i></div>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value">&#8377;<?php echo number_format($totalEarnings, 0); ?></div><div class="stat-label">Total Earnings</div></div>
                 <div class="stat-icon success"><i class="fas fa-rupee-sign"></i></div>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="<?php echo htmlspecialchars($pendingFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $pendingPayments; ?></div><div class="stat-label">Pending Payments</div></div>
                 <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
             </div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $activeSources; ?></div><div class="stat-label">Active Sources</div></div>
                 <div class="stat-icon info"><i class="fas fa-users"></i></div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="row mt-4">
@@ -159,21 +173,22 @@ include __DIR__ . '/../includes/header.php';
             <div class="content-card">
                 <div class="card-header-flex"><h5>Source-wise Summary</h5></div>
                 <div class="table-responsive">
-                    <table class="data-table">
+                    <div class="inspection-table-mobile-note">Source summary is shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table">
                         <thead><tr><th>Source</th><th>Files</th><th>Earnings</th></tr></thead>
                         <tbody>
                             <?php if (!empty($sourceSummary)): ?>
                                 <?php foreach ($sourceSummary as $row): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($row['source_name']); ?></td>
-                                        <td><span class="badge bg-primary"><?php echo $row['file_count']; ?></span></td>
-                                        <td><strong>&#8377;<?php echo number_format($row['total_earnings'], 0); ?></strong></td>
+                                        <td data-label="Source"><?php echo htmlspecialchars($row['source_name']); ?></td>
+                                        <td data-label="Files"><span class="badge bg-primary"><?php echo $row['file_count']; ?></span></td>
+                                        <td data-label="Earnings"><strong>&#8377;<?php echo number_format($row['total_earnings'], 0); ?></strong></td>
                                     </tr>
                                 <?php endforeach; ?>
                                 <tr class="table-light">
-                                    <td><strong>Total</strong></td>
-                                    <td><strong><?php echo array_sum(array_column($sourceSummary, 'file_count')); ?></strong></td>
-                                    <td><strong>&#8377;<?php echo number_format(array_sum(array_column($sourceSummary, 'total_earnings')), 0); ?></strong></td>
+                                    <td data-label="Source"><strong>Total</strong></td>
+                                    <td data-label="Files"><strong><?php echo array_sum(array_column($sourceSummary, 'file_count')); ?></strong></td>
+                                    <td data-label="Earnings"><strong>&#8377;<?php echo number_format(array_sum(array_column($sourceSummary, 'total_earnings')), 0); ?></strong></td>
                                 </tr>
                             <?php else: ?>
                                 <tr><td colspan="3" class="text-center text-muted py-3">No data for this period</td></tr>
@@ -192,19 +207,20 @@ include __DIR__ . '/../includes/header.php';
                     <a href="files.php" class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="table-responsive">
-                    <table class="data-table">
+                    <div class="inspection-table-mobile-note">Recent files are shown as stacked cards on mobile.</div>
+                    <table class="data-table inspection-table">
                         <thead><tr><th>File #</th><th>Date</th><th>Customer</th><th>Bank</th><th>Type</th><th>Commission</th><th>Status</th></tr></thead>
                         <tbody>
                             <?php if (!empty($recentFiles)): ?>
                                 <?php foreach ($recentFiles as $file): ?>
                                     <tr>
-                                        <td><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
-                                        <td><?php echo date('d M', strtotime($file['file_date'])); ?></td>
-                                        <td><?php echo htmlspecialchars($file['customer_name']); ?></td>
-                                        <td><small><?php echo htmlspecialchars($file['bank_name']); ?></small></td>
-                                        <td><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span></td>
-                                        <td>&#8377;<?php echo number_format($file['commission'], 0); ?></td>
-                                        <td><?php
+                                        <td data-label="File #"><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
+                                        <td data-label="Date"><?php echo date('d M', strtotime($file['file_date'])); ?></td>
+                                        <td data-label="Customer"><?php echo htmlspecialchars($file['customer_name']); ?></td>
+                                        <td data-label="Bank"><small><?php echo htmlspecialchars($file['bank_name']); ?></small></td>
+                                        <td data-label="Type"><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span></td>
+                                        <td data-label="Commission">&#8377;<?php echo number_format($file['commission'], 0); ?></td>
+                                        <td data-label="Status"><?php
                                             if ($file['file_type'] === 'office') {
                                                 echo '<span class="text-muted">NA</span>';
                                             } else {

@@ -1013,6 +1013,7 @@ $offset = ($page - 1) * $perPage;
 
 $typeFilter = $_GET['file_type'] ?? '';
 $statusFilter = $_GET['payment_status'] ?? '';
+$statusGroupFilter = $_GET['status_group'] ?? '';
 $bankFilter = $_GET['bank_id'] ?? '';
 $sourceFilter = $_GET['source_id'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
@@ -1024,7 +1025,12 @@ try {
     $params = [];
 
     if ($typeFilter) { $where .= " AND f.file_type = :type"; $params[':type'] = $typeFilter; }
-    if ($statusFilter) { $where .= " AND f.payment_status = :status"; $params[':status'] = $statusFilter; }
+    if ($statusGroupFilter === 'pending') {
+        $where .= " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
+    } elseif ($statusFilter) {
+        $where .= " AND f.payment_status = :status";
+        $params[':status'] = $statusFilter;
+    }
     if ($bankFilter) { $where .= " AND f.bank_id = :bank"; $params[':bank'] = $bankFilter; }
     if ($sourceFilter) { $where .= " AND f.source_id = :source"; $params[':source'] = $sourceFilter; }
     if ($dateFrom) { $where .= " AND f.file_date >= :dfrom"; $params[':dfrom'] = $dateFrom; }
@@ -1079,15 +1085,16 @@ $queryString = http_build_query($queryParams);
 $pageTitle = 'Inspection Files';
 $basePath = '../';
 include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/_responsive.php';
 ?>
 
-<div class="admin-content">
+<div class="admin-content inspection-page inspection-files-page">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
             <h1 class="page-title">Inspection Files</h1>
             <p class="page-subtitle">Manage property inspection cases</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="inspection-toolbar">
             <a href="files.php?download=inspection-files-export" class="btn btn-outline-secondary">
                 <i class="fas fa-download me-2"></i>Download Files
             </a>
@@ -1140,9 +1147,9 @@ include __DIR__ . '/../includes/header.php';
 
     <div class="content-card">
         <!-- Filters -->
-        <form method="GET" class="row mb-4 g-2">
+        <form method="GET" class="row mb-4 g-2 inspection-filter-form">
             <div class="col-md-3">
-                <div class="d-flex gap-2">
+                <div class="inspection-search-row">
                     <input type="text" name="search" class="form-control" placeholder="Search name, file#, address..." value="<?php echo htmlspecialchars($searchQuery); ?>">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
                 </div>
@@ -1176,8 +1183,9 @@ include __DIR__ . '/../includes/header.php';
         </form>
 
         <!-- Files Table -->
-        <div class="table-responsive">
-            <table class="data-table">
+        <div class="table-responsive inspection-table-wrap">
+            <div class="inspection-table-mobile-note">Files are shown as stacked cards on mobile for easier reading and actions.</div>
+            <table class="data-table inspection-table">
                 <thead>
                     <tr>
                         <th>File #</th><th>Date</th><th>Type</th><th>Customer</th>
@@ -1189,20 +1197,72 @@ include __DIR__ . '/../includes/header.php';
                     <?php if (!empty($files)): ?>
                         <?php foreach ($files as $file): ?>
                             <tr>
-                                <td><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
-                                <td><?php echo $file['file_date'] ? date('d M Y', strtotime($file['file_date'])) : '<span class="text-muted">-</span>'; ?></td>
-                                <td><?php if ($file['file_type']): ?><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span><?php else: ?><span class="text-muted">-</span><?php endif; ?>
+                                <td data-label="File #">
+                                    <strong class="inspection-file-number-desktop"><?php echo htmlspecialchars($file['file_number']); ?></strong>
+                                    <div class="inspection-mobile-file-card">
+                                        <div class="inspection-mobile-file-top">
+                                            <div>
+                                                <div class="inspection-mobile-file-label">Date</div>
+                                                <div class="inspection-mobile-file-value"><?php echo $file['file_date'] ? date('d M Y', strtotime($file['file_date'])) : '-'; ?></div>
+                                            </div>
+                                            <details class="inspection-mobile-actions-menu">
+                                                <summary class="inspection-mobile-actions-toggle" aria-label="More actions">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </summary>
+                                                <div class="inspection-mobile-actions-list">
+                                                    <button type="button" class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#viewFileModal<?php echo $file['id']; ?>" title="View"><i class="fas fa-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editFileModal<?php echo $file['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteFileModal<?php echo $file['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </div>
+                                            </details>
+                                        </div>
+                                        <div class="inspection-mobile-file-block">
+                                            <div class="inspection-mobile-file-label">Customer</div>
+                                            <div class="inspection-mobile-file-value"><?php echo htmlspecialchars($file['customer_name'] ?: '-'); ?></div>
+                                        </div>
+                                        <div class="inspection-mobile-file-block">
+                                            <div class="inspection-mobile-file-label">Bank / Branch</div>
+                                            <div class="inspection-mobile-file-value">
+                                                <?php echo $file['bank_name'] ? htmlspecialchars($file['bank_name']) : '-'; ?>
+                                                <?php if ($file['branch_name']): ?>
+                                                    <br><small><?php echo htmlspecialchars($file['branch_name']); ?></small>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div class="inspection-mobile-file-grid">
+                                            <div class="inspection-mobile-file-block">
+                                                <div class="inspection-mobile-file-label">Source</div>
+                                                <div class="inspection-mobile-file-value"><?php echo htmlspecialchars($file['source_name'] ?: '-'); ?></div>
+                                            </div>
+                                            <div class="inspection-mobile-file-block">
+                                                <div class="inspection-mobile-file-label">Payment</div>
+                                                <div class="inspection-mobile-file-value">
+                                                    <?php
+                                                        if ($file['file_type'] === 'office') {
+                                                            echo '<span class="text-muted">NA</span>';
+                                                        } else {
+                                                            $colors = ['due' => 'danger', 'paid' => 'success', 'partially' => 'warning'];
+                                                            echo '<span class="badge bg-' . ($colors[$file['payment_status']] ?? 'secondary') . '">' . ucfirst($file['payment_status'] ?? '-') . '</span>';
+                                                        }
+                                                    ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Date"><?php echo $file['file_date'] ? date('d M Y', strtotime($file['file_date'])) : '<span class="text-muted">-</span>'; ?></td>
+                                <td data-label="Type"><?php if ($file['file_type']): ?><span class="badge bg-<?php echo $file['file_type'] === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type']); ?></span><?php else: ?><span class="text-muted">-</span><?php endif; ?>
                                     <?php if ($file['location']): ?><br><small class="text-muted"><?php echo $file['location'] === 'kolkata' ? 'Kolkata' : 'Out of Kolkata'; ?></small><?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <?php echo htmlspecialchars($file['customer_name']); ?>
                                     <?php if ($file['customer_phone']): ?><br><small class="text-muted"><i class="fas fa-phone"></i> <?php echo htmlspecialchars($file['customer_phone']); ?></small><?php endif; ?>
                                 </td>
-                                <td><?php echo $file['bank_name'] ? htmlspecialchars($file['bank_name']) : '<span class="text-muted">-</span>'; ?><?php if ($file['branch_name']): ?><br><small class="text-muted"><?php echo htmlspecialchars($file['branch_name']); ?></small><?php endif; ?></td>
-                                <td><?php echo $file['fees'] !== null ? '&#8377;' . number_format($file['fees'], 0) : '<span class="text-muted">NA</span>'; ?></td>
-                                <td>&#8377;<?php echo number_format($file['commission'], 0); ?></td>
-                                <td><strong>&#8377;<?php echo number_format($file['gross_amount'], 0); ?></strong></td>
-                                <td><?php
+                                <td data-label="Bank / Branch"><?php echo $file['bank_name'] ? htmlspecialchars($file['bank_name']) : '<span class="text-muted">-</span>'; ?><?php if ($file['branch_name']): ?><br><small class="text-muted"><?php echo htmlspecialchars($file['branch_name']); ?></small><?php endif; ?></td>
+                                <td data-label="Fees"><?php echo $file['fees'] !== null ? '&#8377;' . number_format($file['fees'], 0) : '<span class="text-muted">NA</span>'; ?></td>
+                                <td data-label="Commission">&#8377;<?php echo number_format($file['commission'], 0); ?></td>
+                                <td data-label="Gross"><strong>&#8377;<?php echo number_format($file['gross_amount'], 0); ?></strong></td>
+                                <td data-label="Payment"><?php
                                     if ($file['file_type'] === 'office') {
                                         echo '<span class="text-muted">NA</span>';
                                     } else {
@@ -1210,15 +1270,17 @@ include __DIR__ . '/../includes/header.php';
                                         echo '<span class="badge bg-' . ($colors[$file['payment_status']] ?? 'secondary') . '">' . ucfirst($file['payment_status'] ?? '-') . '</span>';
                                     }
                                 ?></td>
-                                <td>
+                                <td data-label="Actions">
+                                    <div class="inspection-actions">
                                     <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#viewFileModal<?php echo $file['id']; ?>" title="View"><i class="fas fa-eye"></i></button>
                                     <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#editFileModal<?php echo $file['id']; ?>" title="Edit"><i class="fas fa-edit"></i></button>
                                     <button class="btn btn-sm btn-icon text-danger" data-bs-toggle="modal" data-bs-target="#deleteFileModal<?php echo $file['id']; ?>" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </div>
                                 </td>
                             </tr>
 
                             <!-- View File Modal -->
-                            <div class="modal fade" id="viewFileModal<?php echo $file['id']; ?>" tabindex="-1">
+                            <div class="modal fade inspection-modal" id="viewFileModal<?php echo $file['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-lg"><div class="modal-content">
                                     <div class="modal-header"><h5 class="modal-title">File: <?php echo htmlspecialchars($file['file_number']); ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                     <div class="modal-body">
@@ -1264,7 +1326,7 @@ include __DIR__ . '/../includes/header.php';
                             </div>
 
                             <!-- Edit File Modal -->
-                            <div class="modal fade" id="editFileModal<?php echo $file['id']; ?>" tabindex="-1">
+                            <div class="modal fade inspection-modal" id="editFileModal<?php echo $file['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" id="editForm<?php echo $file['id']; ?>">
                                     <input type="hidden" name="file_id" value="<?php echo $file['id']; ?>">
                                     <div class="modal-header"><h5 class="modal-title">Edit: <?php echo htmlspecialchars($file['file_number']); ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -1366,7 +1428,7 @@ include __DIR__ . '/../includes/header.php';
                             </div>
 
                             <!-- Delete File Modal -->
-                            <div class="modal fade" id="deleteFileModal<?php echo $file['id']; ?>" tabindex="-1">
+                            <div class="modal fade inspection-modal" id="deleteFileModal<?php echo $file['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog"><div class="modal-content"><form method="POST">
                                     <input type="hidden" name="delete_file" value="1"><input type="hidden" name="file_id" value="<?php echo $file['id']; ?>">
                                     <div class="modal-header"><h5 class="modal-title">Delete File</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -1407,7 +1469,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Bulk Import Modal -->
-<div class="modal fade" id="bulkImportModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="bulkImportModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" enctype="multipart/form-data">
@@ -1446,7 +1508,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Add File Modal -->
-<div class="modal fade" id="addFileModal" tabindex="-1">
+<div class="modal fade inspection-modal" id="addFileModal" tabindex="-1">
     <div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" id="addForm">
         <div class="modal-header"><h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Create New Inspection File</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
