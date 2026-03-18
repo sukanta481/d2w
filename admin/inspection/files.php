@@ -8,6 +8,64 @@ $db = $database->connect();
 
 $successMessage = '';
 $errorMessage = '';
+$errorDetails = [];
+
+function storeBulkImportErrorReport($rows) {
+    $_SESSION['inspection_import_error_report'] = $rows;
+}
+
+function getBulkImportErrorReportCsv($rows) {
+    $headers = ['row_number', 'error_message'];
+    foreach ($rows as $row) {
+        foreach (($row['data'] ?? []) as $key => $value) {
+            if (!in_array($key, $headers, true)) {
+                $headers[] = $key;
+            }
+        }
+    }
+
+    $stream = fopen('php://temp', 'r+');
+    fputcsv($stream, $headers);
+
+    foreach ($rows as $row) {
+        $csvRow = [];
+        foreach ($headers as $header) {
+            if ($header === 'row_number') {
+                $csvRow[] = $row['row'] ?? '';
+            } elseif ($header === 'error_message') {
+                $csvRow[] = $row['message'] ?? '';
+            } else {
+                $csvRow[] = $row['data'][$header] ?? '';
+            }
+        }
+        fputcsv($stream, $csvRow);
+    }
+
+    rewind($stream);
+    $csv = stream_get_contents($stream);
+    fclose($stream);
+
+    return $csv;
+}
+
+function downloadCsvResponse($filename, $headers, $rows) {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=' . $filename);
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Pragma: no-cache');
+
+    $stream = fopen('php://output', 'w');
+    fputcsv($stream, $headers);
+    foreach ($rows as $row) {
+        $csvRow = [];
+        foreach ($headers as $header) {
+            $csvRow[] = $row[$header] ?? '';
+        }
+        fputcsv($stream, $csvRow);
+    }
+    fclose($stream);
+    exit;
+}
 
 // Generate next file number: INS-YYYY-NNNN
 function generateFileNumber($db) {
@@ -21,6 +79,47 @@ function generateFileNumber($db) {
         $num = 1;
     }
     return sprintf("INS-%s-%04d", $year, $num);
+}
+
+function tableColumnExists($db, $tableName, $columnName) {
+    static $columnCache = [];
+    $cacheKey = $tableName . '.' . $columnName;
+    if (array_key_exists($cacheKey, $columnCache)) {
+        return $columnCache[$cacheKey];
+    }
+
+    $stmt = $db->prepare("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name");
+    $stmt->execute([
+        ':table_name' => $tableName,
+        ':column_name' => $columnName,
+    ]);
+    $columnCache[$cacheKey] = ((int)$stmt->fetchColumn()) > 0;
+
+    return $columnCache[$cacheKey];
+}
+
+function formatBulkImportRowError($message) {
+    $friendly = $message;
+
+    if (strpos($message, 'Unknown branch') !== false && strpos($message, 'for the selected bank') !== false) {
+        $friendly = $message . ' Check the Branches master list or make sure the bank name in Excel matches that branch.';
+    } elseif (strpos($message, 'Unknown bank') !== false) {
+        $friendly = $message . ' Add this bank in Inspection Masters first, or correct the bank name in Excel.';
+    } elseif (strpos($message, 'Unknown source') !== false) {
+        $friendly = $message . ' Add this source in Inspection Masters first, or correct the source name in Excel.';
+    } elseif (strpos($message, 'Unknown payment mode') !== false) {
+        $friendly = $message . ' Add this payment mode in Inspection Masters first, or correct the payment mode name in Excel.';
+    } elseif (strpos($message, 'Unknown received account') !== false) {
+        $friendly = $message . ' Add this account in Inspection Masters first, or correct the account name in Excel.';
+    } elseif (strpos($message, 'Selected branch does not belong to the selected bank') !== false) {
+        $friendly = 'The selected branch does not belong to the bank given in that row. Please check the bank and branch columns.';
+    } elseif (strpos($message, 'Invalid date') !== false) {
+        $friendly = $message . ' Use a valid date like 2026-03-19.';
+    } elseif (strpos($message, 'Duplicate entry') !== false) {
+        $friendly = 'This row would create a duplicate file number. Please change the file number or leave it blank for auto-generation.';
+    }
+
+    return $friendly;
 }
 
 // Server-side commission/amount calculation
@@ -58,6 +157,341 @@ function calculateAmounts($data) {
     return $result;
 }
 
+function normalizeImportKey($value) {
+    $value = trim((string)$value);
+    $value = preg_replace('/^\xEF\xBB\xBF/', '', $value);
+    $value = strtolower($value);
+    $value = preg_replace('/[^a-z0-9]+/', '_', $value);
+    return trim($value, '_');
+}
+
+function isImportEmptyValue($value) {
+    $normalized = normalizeImportKey($value);
+    return $normalized === '' || in_array($normalized, ['na', 'n_a', 'null', 'none', 'nil', 'not_applicable', 'dash'], true) || trim((string)$value) === '-';
+}
+
+function getImportColumnMap() {
+    return [
+        'file_number' => ['file_number', 'file_no', 'file'],
+        'file_date' => ['file_date', 'date'],
+        'file_type' => ['file_type', 'type'],
+        'location' => ['location'],
+        'customer_name' => ['customer_name', 'customer'],
+        'customer_phone' => ['customer_phone', 'phone', 'mobile'],
+        'property_address' => ['property_address', 'address'],
+        'property_value' => ['property_value'],
+        'bank_id' => ['bank_id'],
+        'bank_name' => ['bank_name', 'bank'],
+        'branch_id' => ['branch_id'],
+        'branch_name' => ['branch_name', 'branch'],
+        'source_id' => ['source_id'],
+        'source_name' => ['source_name', 'source'],
+        'fees' => ['fees', 'fee'],
+        'report_status' => ['report_status'],
+        'report_status_date' => ['report_status_date', 'status_date', 'last_updated_date'],
+        'payment_mode_id' => ['payment_mode_id'],
+        'payment_mode' => ['payment_mode', 'payment_mode_name', 'mode_name'],
+        'payment_status' => ['payment_status'],
+        'payment_status_date' => ['payment_status_date', 'payment_date'],
+        'amount' => ['amount', 'amount_received'],
+        'paid_to_office' => ['paid_to_office'],
+        'extra_amount' => ['extra_amount', 'extra'],
+        'received_account_id' => ['received_account_id'],
+        'received_account' => ['received_account', 'received_in', 'account_name'],
+        'notes' => ['notes', 'remark', 'remarks'],
+    ];
+}
+
+function mapImportHeaders(array $headers) {
+    $map = [];
+    $aliases = getImportColumnMap();
+
+    foreach ($headers as $index => $header) {
+        $normalized = normalizeImportKey($header);
+        $canonical = null;
+
+        foreach ($aliases as $field => $fieldAliases) {
+            if (in_array($normalized, $fieldAliases, true)) {
+                $canonical = $field;
+                break;
+            }
+        }
+
+        $map[$index] = $canonical ?: $normalized;
+    }
+
+    return $map;
+}
+
+function buildImportedRows(array $headers, array $rawRows) {
+    $mappedHeaders = mapImportHeaders($headers);
+    $rows = [];
+
+    foreach ($rawRows as $row) {
+        $assoc = [];
+        foreach ($mappedHeaders as $index => $field) {
+            if (!$field) {
+                continue;
+            }
+            $assoc[$field] = isset($row[$index]) ? trim((string)$row[$index]) : '';
+        }
+        $rows[] = $assoc;
+    }
+
+    return $rows;
+}
+
+function readCsvImportRows($path) {
+    $handle = fopen($path, 'r');
+    if (!$handle) {
+        throw new Exception('Could not open uploaded CSV file.');
+    }
+
+    $headers = fgetcsv($handle);
+    if ($headers === false) {
+        fclose($handle);
+        return [];
+    }
+
+    $rows = [];
+    while (($data = fgetcsv($handle)) !== false) {
+        $rows[] = $data;
+    }
+    fclose($handle);
+
+    return buildImportedRows($headers, $rows);
+}
+
+function xlsxColumnIndex($cellRef) {
+    $letters = preg_replace('/[^A-Z]/', '', strtoupper($cellRef));
+    $index = 0;
+    for ($i = 0; $i < strlen($letters); $i++) {
+        $index = ($index * 26) + (ord($letters[$i]) - 64);
+    }
+    return max(0, $index - 1);
+}
+
+function readXlsxImportRows($path) {
+    if (!class_exists('ZipArchive')) {
+        throw new Exception('XLSX import requires the PHP Zip extension. Please use CSV or enable ZipArchive.');
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($path) !== true) {
+        throw new Exception('Could not open uploaded XLSX file.');
+    }
+
+    $sharedStrings = [];
+    $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
+    if ($sharedStringsXml !== false) {
+        $xml = @simplexml_load_string($sharedStringsXml);
+        if ($xml && isset($xml->si)) {
+            foreach ($xml->si as $item) {
+                $text = '';
+                if (isset($item->t)) {
+                    $text = (string)$item->t;
+                } elseif (isset($item->r)) {
+                    foreach ($item->r as $run) {
+                        $text .= (string)$run->t;
+                    }
+                }
+                $sharedStrings[] = $text;
+            }
+        }
+    }
+
+    $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+    $zip->close();
+
+    if ($sheetXml === false) {
+        throw new Exception('Could not read the first worksheet from the XLSX file.');
+    }
+
+    $sheet = @simplexml_load_string($sheetXml);
+    if (!$sheet || !isset($sheet->sheetData->row)) {
+        return [];
+    }
+
+    $headers = [];
+    $rows = [];
+    $isHeaderRow = true;
+
+    foreach ($sheet->sheetData->row as $row) {
+        $cells = [];
+        foreach ($row->c as $cell) {
+            $index = xlsxColumnIndex((string)$cell['r']);
+            $type = (string)$cell['t'];
+            $value = '';
+
+            if ($type === 'inlineStr') {
+                $value = (string)$cell->is->t;
+            } else {
+                $rawValue = isset($cell->v) ? (string)$cell->v : '';
+                if ($type === 's') {
+                    $value = $sharedStrings[(int)$rawValue] ?? '';
+                } else {
+                    $value = $rawValue;
+                }
+            }
+
+            $cells[$index] = $value;
+        }
+
+        if (empty($cells)) {
+            continue;
+        }
+
+        ksort($cells);
+        $maxIndex = max(array_keys($cells));
+        $flatRow = [];
+        for ($i = 0; $i <= $maxIndex; $i++) {
+            $flatRow[$i] = $cells[$i] ?? '';
+        }
+
+        if ($isHeaderRow) {
+            $headers = $flatRow;
+            $isHeaderRow = false;
+            continue;
+        }
+
+        $rows[] = $flatRow;
+    }
+
+    return buildImportedRows($headers, $rows);
+}
+
+function readImportedSpreadsheet($path, $originalName) {
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    if ($extension === 'csv') {
+        return readCsvImportRows($path);
+    }
+    if ($extension === 'xlsx') {
+        return readXlsxImportRows($path);
+    }
+
+    throw new Exception('Only CSV and XLSX files are supported for bulk import.');
+}
+
+function isImportRowBlank(array $row) {
+    foreach ($row as $value) {
+        if (!isImportEmptyValue($value)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function normalizeLookupName($value) {
+    return normalizeImportKey($value);
+}
+
+function parseImportedDate($value) {
+    $value = trim((string)$value);
+    if (isImportEmptyValue($value)) {
+        return null;
+    }
+
+    if (is_numeric($value) && (float)$value > 20000) {
+        $timestamp = (((int)$value) - 25569) * 86400;
+        return gmdate('Y-m-d', $timestamp);
+    }
+
+    $formats = ['Y-m-d', 'd-m-Y', 'd/m/Y', 'm/d/Y', 'd.m.Y', 'Y/m/d'];
+    foreach ($formats as $format) {
+        $date = DateTime::createFromFormat($format, $value);
+        if ($date instanceof DateTime) {
+            return $date->format('Y-m-d');
+        }
+    }
+
+    $timestamp = strtotime($value);
+    if ($timestamp !== false) {
+        return date('Y-m-d', $timestamp);
+    }
+
+    throw new Exception("Invalid date '{$value}'. Use YYYY-MM-DD in the sheet.");
+}
+
+function buildImportedTimestampFromDate($value) {
+    $date = parseImportedDate($value);
+    return $date ? ($date . ' 00:00:00') : null;
+}
+
+function parseImportedEnum($value, array $allowedMap, $label) {
+    $value = trim((string)$value);
+    if (isImportEmptyValue($value)) {
+        return null;
+    }
+
+    $normalized = normalizeLookupName($value);
+    if (!array_key_exists($normalized, $allowedMap)) {
+        throw new Exception("Invalid {$label} '{$value}'.");
+    }
+
+    return $allowedMap[$normalized];
+}
+
+function parseImportedDecimal($value) {
+    $value = trim((string)$value);
+    if (isImportEmptyValue($value)) {
+        return null;
+    }
+
+    $value = str_replace([',', ' '], '', $value);
+    if (!is_numeric($value)) {
+        throw new Exception("Invalid number '{$value}'.");
+    }
+
+    return round((float)$value, 2);
+}
+
+function findLookupId($value, array $byId, array $byName, $label) {
+    $value = trim((string)$value);
+    if (isImportEmptyValue($value)) {
+        return null;
+    }
+
+    if (ctype_digit($value)) {
+        $id = (int)$value;
+        if (!isset($byId[$id])) {
+            throw new Exception("Unknown {$label} id '{$value}'.");
+        }
+        return $id;
+    }
+
+    $normalized = normalizeLookupName($value);
+    if (!isset($byName[$normalized])) {
+        throw new Exception("Unknown {$label} '{$value}'.");
+    }
+
+    return $byName[$normalized];
+}
+
+function buildImportTemplateCsv() {
+    $headers = [
+        'file_date', 'file_type', 'location', 'customer_name', 'customer_phone',
+        'property_address', 'property_value', 'bank_name', 'branch_name', 'source_name',
+        'fees', 'report_status', 'report_status_date', 'payment_mode', 'payment_status', 'payment_status_date', 'amount',
+        'paid_to_office', 'extra_amount', 'received_account', 'notes'
+    ];
+
+    $sample = [
+        date('Y-m-d'), 'self', '', 'Sample Customer', '9876543210',
+        'Sample Address', '2500000', 'Sample Bank', 'Main Branch', 'Referral',
+        '1500', 'draft', date('Y-m-d'), 'Cash', 'due', date('Y-m-d'), '',
+        'due', '0', 'Main Account', 'Optional note'
+    ];
+
+    $stream = fopen('php://temp', 'r+');
+    fputcsv($stream, $headers);
+    fputcsv($stream, $sample);
+    rewind($stream);
+    $csv = stream_get_contents($stream);
+    fclose($stream);
+
+    return $csv;
+}
+
 // Handle AJAX: get branches by bank
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'branches' && isset($_GET['bank_id'])) {
     header('Content-Type: application/json');
@@ -69,6 +503,379 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'branches' && isset($_GET['bank_id
         echo json_encode([]);
     }
     exit;
+}
+
+if (isset($_GET['download']) && $_GET['download'] === 'inspection-import-template') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=inspection_import_template.csv');
+    echo buildImportTemplateCsv();
+    exit;
+}
+
+if (isset($_GET['download']) && $_GET['download'] === 'inspection-import-errors') {
+    $reportRows = $_SESSION['inspection_import_error_report'] ?? [];
+    if (empty($reportRows)) {
+        http_response_code(404);
+        exit('No import error report available.');
+    }
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=inspection_import_errors.csv');
+    echo getBulkImportErrorReportCsv($reportRows);
+    exit;
+}
+
+if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export') {
+    $stmt = $db->query("SELECT
+            f.id, f.file_number, f.file_date, f.file_type, f.location, f.customer_name, f.customer_phone,
+            f.property_address, f.property_value, ib.bank_name, ibr.branch_name, isrc.source_name,
+            f.fees, f.report_status, " . (tableColumnExists($db, 'inspection_files', 'report_status_date') ? 'f.report_status_date,' : 'NULL AS report_status_date,') . "
+            ipm.mode_name AS payment_mode, f.payment_status, " . (tableColumnExists($db, 'inspection_files', 'payment_status_date') ? 'f.payment_status_date,' : 'NULL AS payment_status_date,') . "
+            f.amount, f.paid_to_office, f.office_amount, f.commission, f.extra_amount, f.gross_amount,
+            ima.account_name AS received_account, f.notes, f.created_at, f.updated_at
+        FROM inspection_files f
+        LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
+        LEFT JOIN inspection_branches ibr ON f.branch_id = ibr.id
+        LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
+        LEFT JOIN inspection_payment_modes ipm ON f.payment_mode_id = ipm.id
+        LEFT JOIN inspection_my_accounts ima ON f.received_account_id = ima.id
+        ORDER BY f.file_date DESC, f.id DESC");
+    $rows = $stmt->fetchAll();
+    $headers = [
+        'id', 'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone',
+        'property_address', 'property_value', 'bank_name', 'branch_name', 'source_name', 'fees',
+        'report_status', 'report_status_date', 'payment_mode', 'payment_status', 'payment_status_date',
+        'amount', 'paid_to_office', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
+        'received_account', 'notes', 'created_at', 'updated_at'
+    ];
+    downloadCsvResponse('inspection_files_export.csv', $headers, $rows);
+}
+
+// ===== BULK IMPORT FILES =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files'])) {
+    try {
+        unset($_SESSION['inspection_import_error_report']);
+
+        if (empty($_FILES['import_file']['tmp_name']) || !is_uploaded_file($_FILES['import_file']['tmp_name'])) {
+            throw new Exception('Please choose a CSV or XLSX file to import.');
+        }
+
+        $rows = readImportedSpreadsheet($_FILES['import_file']['tmp_name'], $_FILES['import_file']['name'] ?? '');
+        if (empty($rows)) {
+            throw new Exception('The uploaded sheet is empty.');
+        }
+
+        $bankRows = $db->query("SELECT id, bank_name FROM inspection_banks WHERE status = 'active'")->fetchAll();
+        $banksById = [];
+        $banksByName = [];
+        foreach ($bankRows as $bank) {
+            $banksById[(int)$bank['id']] = $bank;
+            $banksByName[normalizeLookupName($bank['bank_name'])] = (int)$bank['id'];
+        }
+
+        $branchRows = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE status = 'active'")->fetchAll();
+        $branchesById = [];
+        $branchesByBankName = [];
+        $branchesByName = [];
+        foreach ($branchRows as $branch) {
+            $branchId = (int)$branch['id'];
+            $bankId = (int)$branch['bank_id'];
+            $normalizedBranchName = normalizeLookupName($branch['branch_name']);
+            $branchesById[$branchId] = ['id' => $branchId, 'bank_id' => $bankId, 'branch_name' => $branch['branch_name']];
+            $branchesByBankName[$bankId][$normalizedBranchName] = $branchId;
+            $branchesByName[$normalizedBranchName][] = $branchId;
+        }
+
+        $sourceRows = $db->query("SELECT id, source_name FROM inspection_sources WHERE status = 'active'")->fetchAll();
+        $sourcesById = [];
+        $sourcesByName = [];
+        foreach ($sourceRows as $source) {
+            $sourcesById[(int)$source['id']] = $source;
+            $sourcesByName[normalizeLookupName($source['source_name'])] = (int)$source['id'];
+        }
+
+        $modeRows = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE status = 'active'")->fetchAll();
+        $modesById = [];
+        $modesByName = [];
+        foreach ($modeRows as $mode) {
+            $modesById[(int)$mode['id']] = $mode;
+            $modesByName[normalizeLookupName($mode['mode_name'])] = (int)$mode['id'];
+        }
+
+        $accountRows = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE status = 'active'")->fetchAll();
+        $accountsById = [];
+        $accountsByName = [];
+        foreach ($accountRows as $account) {
+            $accountsById[(int)$account['id']] = $account;
+            $accountsByName[normalizeLookupName($account['account_name'])] = (int)$account['id'];
+        }
+
+        $hasReportStatusDate = tableColumnExists($db, 'inspection_files', 'report_status_date');
+        $hasPaymentStatusDate = tableColumnExists($db, 'inspection_files', 'payment_status_date');
+
+        $insertColumns = [
+            'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone', 'property_address', 'property_value',
+            'bank_id', 'branch_id', 'source_id', 'fees', 'report_status'
+        ];
+        if ($hasReportStatusDate) {
+            $insertColumns[] = 'report_status_date';
+        }
+        $insertColumns = array_merge($insertColumns, ['payment_mode_id', 'payment_status']);
+        if ($hasPaymentStatusDate) {
+            $insertColumns[] = 'payment_status_date';
+        }
+        $insertColumns = array_merge($insertColumns, [
+            'amount', 'paid_to_office', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
+            'received_account_id', 'notes', 'updated_at'
+        ]);
+
+        $insertPlaceholders = array_map(static function ($column) {
+            return ':' . $column;
+        }, $insertColumns);
+
+        $insertStmt = $db->prepare(
+            'INSERT INTO inspection_files (' . implode(', ', $insertColumns) . ')
+             VALUES (' . implode(', ', $insertPlaceholders) . ')'
+        );
+
+        $db->beginTransaction();
+        $importedCount = 0;
+        $skippedCount = 0;
+        $rowErrors = [];
+
+        foreach ($rows as $index => $row) {
+            $sheetRowNumber = $index + 2;
+
+            if (isImportRowBlank($row)) {
+                $skippedCount++;
+                continue;
+            }
+
+            try {
+                $bankId = null;
+                $branchId = null;
+                $sourceId = null;
+                $paymentModeId = null;
+                $receivedAccountId = null;
+
+                if (!isImportEmptyValue($row['bank_id'] ?? '') || !isImportEmptyValue($row['bank_name'] ?? '')) {
+                    $bankId = !isImportEmptyValue($row['bank_id'] ?? '')
+                        ? findLookupId($row['bank_id'], $banksById, $banksByName, 'bank')
+                        : findLookupId($row['bank_name'], $banksById, $banksByName, 'bank');
+                }
+
+                if (!isImportEmptyValue($row['branch_id'] ?? '')) {
+                    $branchId = findLookupId($row['branch_id'], $branchesById, [], 'branch');
+                    if ($bankId === null) {
+                        $bankId = $branchesById[$branchId]['bank_id'];
+                    }
+                } elseif (!isImportEmptyValue($row['branch_name'] ?? '')) {
+                    $normalizedBranchName = normalizeLookupName($row['branch_name']);
+                    if ($bankId !== null) {
+                        if (!isset($branchesByBankName[$bankId][$normalizedBranchName])) {
+                            throw new Exception("Unknown branch '{$row['branch_name']}' for the selected bank.");
+                        }
+                        $branchId = $branchesByBankName[$bankId][$normalizedBranchName];
+                    } else {
+                        $matches = $branchesByName[$normalizedBranchName] ?? [];
+                        if (count($matches) === 1) {
+                            $branchId = $matches[0];
+                            $bankId = $branchesById[$branchId]['bank_id'];
+                        } elseif (count($matches) > 1) {
+                            throw new Exception("Branch '{$row['branch_name']}' matches multiple banks. Please include bank_name.");
+                        } else {
+                            throw new Exception("Unknown branch '{$row['branch_name']}'.");
+                        }
+                    }
+                }
+
+                if ($bankId !== null && $branchId !== null && $branchesById[$branchId]['bank_id'] !== $bankId) {
+                    throw new Exception('Selected branch does not belong to the selected bank.');
+                }
+
+                if (!isImportEmptyValue($row['source_id'] ?? '') || !isImportEmptyValue($row['source_name'] ?? '')) {
+                    $sourceId = !isImportEmptyValue($row['source_id'] ?? '')
+                        ? findLookupId($row['source_id'], $sourcesById, [], 'source')
+                        : findLookupId($row['source_name'], $sourcesById, $sourcesByName, 'source');
+                }
+
+                if (!isImportEmptyValue($row['payment_mode_id'] ?? '') || !isImportEmptyValue($row['payment_mode'] ?? '')) {
+                    $paymentModeId = !isImportEmptyValue($row['payment_mode_id'] ?? '')
+                        ? findLookupId($row['payment_mode_id'], $modesById, [], 'payment mode')
+                        : findLookupId($row['payment_mode'], $modesById, $modesByName, 'payment mode');
+                }
+
+                if (!isImportEmptyValue($row['received_account_id'] ?? '') || !isImportEmptyValue($row['received_account'] ?? '')) {
+                    $receivedAccountId = !isImportEmptyValue($row['received_account_id'] ?? '')
+                        ? findLookupId($row['received_account_id'], $accountsById, [], 'received account')
+                        : findLookupId($row['received_account'], $accountsById, $accountsByName, 'received account');
+                }
+
+                $importData = [
+                    'file_type' => parseImportedEnum($row['file_type'] ?? '', [
+                        'office' => 'office',
+                        'self' => 'self',
+                    ], 'file type'),
+                    'location' => parseImportedEnum($row['location'] ?? '', [
+                        'kolkata' => 'kolkata',
+                        'out_of_kolkata' => 'out_of_kolkata',
+                        'out_of_kolkata_city' => 'out_of_kolkata',
+                        'out_of_kolkata_' => 'out_of_kolkata',
+                        'out_of_kolkata_area' => 'out_of_kolkata',
+                        'out_of_kolkata_branch' => 'out_of_kolkata',
+                        'out_of_kolkata_location' => 'out_of_kolkata',
+                        'out_of_kolkata_side' => 'out_of_kolkata',
+                        'out_of_kolkata_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_region' => 'out_of_kolkata',
+                        'out_of_kolkata_town' => 'out_of_kolkata',
+                        'out_of_kolkata_district' => 'out_of_kolkata',
+                        'out_of_kolkata_place' => 'out_of_kolkata',
+                        'out_of_kolkata_outside' => 'out_of_kolkata',
+                        'out_of_kolkata_' => 'out_of_kolkata',
+                        'out_of_kolkata_kolkata' => 'out_of_kolkata',
+                        'out_of_kolkata_out_of_kolkata' => 'out_of_kolkata',
+                        'out_of_kolkata_city_area' => 'out_of_kolkata',
+                        'out_of_kolkata_city_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_town_area' => 'out_of_kolkata',
+                        'out_of_kolkata_town_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_place_area' => 'out_of_kolkata',
+                        'out_of_kolkata_place_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_region_area' => 'out_of_kolkata',
+                        'out_of_kolkata_region_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_district_area' => 'out_of_kolkata',
+                        'out_of_kolkata_district_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_side_area' => 'out_of_kolkata',
+                        'out_of_kolkata_side_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_location_area' => 'out_of_kolkata',
+                        'out_of_kolkata_location_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_branch_area' => 'out_of_kolkata',
+                        'out_of_kolkata_branch_zone' => 'out_of_kolkata',
+                        'out_of_kolkata_outside_area' => 'out_of_kolkata',
+                        'out_of_kolkata_outside_zone' => 'out_of_kolkata',
+                        'outofkolkata' => 'out_of_kolkata',
+                        'out_of_kolkata' => 'out_of_kolkata',
+                    ], 'location'),
+                    'fees' => parseImportedDecimal($row['fees'] ?? ''),
+                    'report_status' => parseImportedEnum($row['report_status'] ?? '', [
+                        'draft' => 'draft',
+                        'final_soft' => 'final_soft',
+                        'finalsoft' => 'final_soft',
+                        'final_soft_copy' => 'final_soft',
+                        'finalsoftcopy' => 'final_soft',
+                        'final_hard' => 'final_hard',
+                        'finalhard' => 'final_hard',
+                        'final_hard_copy' => 'final_hard',
+                        'finalhardcopy' => 'final_hard',
+                    ], 'report status'),
+                    'payment_mode_id' => $paymentModeId,
+                    'payment_status' => parseImportedEnum($row['payment_status'] ?? '', [
+                        'due' => 'due',
+                        'paid' => 'paid',
+                        'partially' => 'partially',
+                        'partial' => 'partially',
+                    ], 'payment status'),
+                    'amount' => parseImportedDecimal($row['amount'] ?? ''),
+                    'paid_to_office' => parseImportedEnum($row['paid_to_office'] ?? '', [
+                        'paid' => 'paid',
+                        'due' => 'due',
+                    ], 'paid to office'),
+                    'extra_amount' => parseImportedDecimal($row['extra_amount'] ?? '') ?? 0,
+                ];
+                $reportStatusDate = parseImportedDate($row['report_status_date'] ?? '');
+                $paymentStatusDate = parseImportedDate($row['payment_status_date'] ?? '');
+                $updatedAt = null;
+                if ($paymentStatusDate) {
+                    $updatedAt = $paymentStatusDate . ' 00:00:00';
+                } elseif ($reportStatusDate) {
+                    $updatedAt = $reportStatusDate . ' 00:00:00';
+                }
+
+                $calc = calculateAmounts($importData);
+                $fileNumber = trim((string)($row['file_number'] ?? '')) ?: generateFileNumber($db);
+
+                $insertParams = [
+                    ':file_number' => $fileNumber,
+                    ':file_date' => parseImportedDate($row['file_date'] ?? ''),
+                    ':file_type' => $importData['file_type'],
+                    ':location' => $calc['location'],
+                    ':customer_name' => trim((string)($row['customer_name'] ?? '')) ?: null,
+                    ':customer_phone' => trim((string)($row['customer_phone'] ?? '')) ?: null,
+                    ':property_address' => trim((string)($row['property_address'] ?? '')) ?: null,
+                    ':property_value' => parseImportedDecimal($row['property_value'] ?? ''),
+                    ':bank_id' => $bankId,
+                    ':branch_id' => $branchId,
+                    ':source_id' => $sourceId,
+                    ':fees' => $calc['fees'],
+                    ':report_status' => $calc['report_status'],
+                    ':payment_mode_id' => $calc['payment_mode_id'],
+                    ':payment_status' => $calc['payment_status'],
+                    ':amount' => $calc['amount'],
+                    ':paid_to_office' => $calc['paid_to_office'],
+                    ':office_amount' => $calc['office_amount'],
+                    ':commission' => $calc['commission'],
+                    ':extra_amount' => $calc['extra_amount'],
+                    ':gross_amount' => $calc['gross_amount'],
+                    ':received_account_id' => $receivedAccountId,
+                    ':notes' => trim((string)($row['notes'] ?? '')) ?: null,
+                    ':updated_at' => $updatedAt ?: date('Y-m-d H:i:s'),
+                ];
+
+                if ($hasReportStatusDate) {
+                    $insertParams[':report_status_date'] = $reportStatusDate;
+                }
+                if ($hasPaymentStatusDate) {
+                    $insertParams[':payment_status_date'] = $paymentStatusDate;
+                }
+
+                $insertStmt->execute($insertParams);
+
+                $importedCount++;
+            } catch (Exception $rowError) {
+                $rowErrors[] = [
+                    'row' => $sheetRowNumber,
+                    'message' => formatBulkImportRowError($rowError->getMessage()),
+                    'data' => $row,
+                ];
+            }
+        }
+
+        if ($importedCount > 0) {
+            $db->commit();
+            $auth->logActivity($auth->getUserId(), 'create', 'inspection_files', null, "Bulk imported {$importedCount} inspection files");
+        } else {
+            $db->rollBack();
+        }
+
+        if (!empty($rowErrors)) {
+            storeBulkImportErrorReport($rowErrors);
+            $errorMessage = $importedCount > 0
+                ? 'Import finished with some problems. Valid rows were uploaded, and invalid rows were skipped.'
+                : 'Bulk import could not be completed. No rows were uploaded because every row had a problem.';
+            $errorDetails = array_slice($rowErrors, 0, 8);
+            if (count($rowErrors) > 8) {
+                $errorDetails[] = [
+                    'row' => null,
+                    'message' => (count($rowErrors) - 8) . ' more row(s) also have issues.',
+                    'data' => [],
+                ];
+            }
+        }
+
+        if ($importedCount > 0) {
+            $successMessage = "Imported {$importedCount} inspection files successfully.";
+            if ($skippedCount > 0) {
+                $successMessage .= " Skipped {$skippedCount} blank row(s).";
+            }
+            if (!empty($rowErrors)) {
+                $successMessage .= ' Some invalid rows were skipped.';
+            }
+        }
+    } catch (Exception $e) {
+        if ($db && $db->inTransaction()) {
+            $db->rollBack();
+        }
+        $errorMessage = "Import error: " . $e->getMessage();
+    }
 }
 
 // ===== ADD FILE =====
@@ -150,7 +957,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
             fees = :fees, report_status = :report_status, payment_mode_id = :payment_mode_id,
             payment_status = :payment_status, amount = :amount, paid_to_office = :paid_to_office,
             office_amount = :office_amount, commission = :commission, extra_amount = :extra_amount,
-            gross_amount = :gross_amount, received_account_id = :received_account_id, notes = :notes
+            gross_amount = :gross_amount, received_account_id = :received_account_id, notes = :notes,
+            updated_at = CURRENT_TIMESTAMP
             WHERE id = :id");
 
         $stmt->execute([
@@ -279,9 +1087,17 @@ include __DIR__ . '/../includes/header.php';
             <h1 class="page-title">Inspection Files</h1>
             <p class="page-subtitle">Manage property inspection cases</p>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFileModal">
-            <i class="fas fa-plus me-2"></i>New File
-        </button>
+        <div class="d-flex gap-2">
+            <a href="files.php?download=inspection-files-export" class="btn btn-outline-secondary">
+                <i class="fas fa-download me-2"></i>Download Files
+            </a>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkImportModal">
+                <i class="fas fa-file-import me-2"></i>Bulk Import
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFileModal">
+                <i class="fas fa-plus me-2"></i>New File
+            </button>
+        </div>
     </div>
 
     <?php if ($successMessage): ?>
@@ -291,9 +1107,34 @@ include __DIR__ . '/../includes/header.php';
         </div>
     <?php endif; ?>
     <?php if ($errorMessage): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i><?php echo $errorMessage; ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="border border-danger-subtle bg-danger-subtle text-danger rounded p-3 mb-4 position-relative shadow-sm" role="alert">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" aria-label="Close" onclick="this.parentElement.remove();"></button>
+            <div class="d-flex align-items-start pe-4">
+                <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                <div>
+                    <div class="fw-semibold"><?php echo htmlspecialchars($errorMessage); ?></div>
+                    <?php if (!empty($_SESSION['inspection_import_error_report'])): ?>
+                        <div class="mt-2">
+                            <a href="files.php?download=inspection-import-errors" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-download me-1"></i>Download Error Report
+                            </a>
+                            <small class="ms-2 text-danger">Open the CSV in Excel to review the skipped rows and their problems.</small>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (!empty($errorDetails)): ?>
+                        <ul class="mb-0 mt-2 ps-3">
+                            <?php foreach ($errorDetails as $detail): ?>
+                                <li>
+                                    <?php if (!empty($detail['row'])): ?>
+                                        <strong>Row <?php echo (int)$detail['row']; ?>:</strong>
+                                    <?php endif; ?>
+                                    <?php echo htmlspecialchars($detail['message']); ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 
@@ -562,6 +1403,45 @@ include __DIR__ . '/../includes/header.php';
         <?php endif; ?>
 
         <div class="text-center text-muted mt-2"><small>Showing <?php echo count($files); ?> of <?php echo $totalFiles; ?> files</small></div>
+    </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div class="modal fade" id="bulkImportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-import me-2"></i>Bulk Import Inspection Files</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <strong>Supported files:</strong> CSV and XLSX
+                        <br>
+                        <small>Use existing bank, branch, source, payment mode, and received account names from the masters section.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Sheet</label>
+                        <input type="file" name="import_file" class="form-control" accept=".csv,.xlsx" required>
+                    </div>
+                    <div class="small text-muted">
+                        Required-style columns can be kept simple:
+                        <br>`file_date`, `file_type`, `customer_name`, `bank_name`, `branch_name`, `source_name`
+                        <br>Optional columns include `fees`, `report_status`, `report_status_date`, `payment_status`, `payment_status_date`, `payment_mode`, `received_account`, `notes`, and more.
+                    </div>
+                    <div class="mt-3">
+                        <a href="files.php?download=inspection-import-template" class="btn btn-sm btn-light border">
+                            <i class="fas fa-download me-1"></i>Download Template
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="bulk_import_files" class="btn btn-primary">Import Files</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

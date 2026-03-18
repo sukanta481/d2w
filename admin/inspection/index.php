@@ -10,12 +10,14 @@ $db = $database->connect();
 $filterMonth = $_GET['month'] ?? date('m');
 $filterYear = $_GET['year'] ?? date('Y');
 $filterType = $_GET['file_type'] ?? '';
+$filterDateBasis = $_GET['date_basis'] ?? 'updated';
 
 $monthStart = "{$filterYear}-{$filterMonth}-01";
 $monthEnd = date('Y-m-t', strtotime($monthStart));
+$dateField = $filterDateBasis === 'file' ? 'f.file_date' : 'DATE(f.updated_at)';
 
 try {
-    $monthWhere = "WHERE f.file_date BETWEEN :start AND :end";
+    $monthWhere = "WHERE {$dateField} BETWEEN :start AND :end";
     $monthParams = [':start' => $monthStart, ':end' => $monthEnd];
 
     if ($filterType) {
@@ -107,6 +109,12 @@ include __DIR__ . '/../includes/header.php';
                 <option value="">All Types</option>
                 <option value="office" <?php echo $filterType === 'office' ? 'selected' : ''; ?>>Office</option>
                 <option value="self" <?php echo $filterType === 'self' ? 'selected' : ''; ?>>Self</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="date_basis" class="form-select">
+                <option value="updated" <?php echo $filterDateBasis === 'updated' ? 'selected' : ''; ?>>Updated Month</option>
+                <option value="file" <?php echo $filterDateBasis === 'file' ? 'selected' : ''; ?>>File Date Month</option>
             </select>
         </div>
         <div class="col-auto">

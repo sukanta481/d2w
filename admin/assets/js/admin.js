@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-dismiss alerts
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
+        if (alert.dataset.autoDismiss === 'false' || alert.classList.contains('alert-persistent')) {
+            return;
+        }
         setTimeout(() => {
             const bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();

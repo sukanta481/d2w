@@ -10,5 +10,8 @@ ALTER TABLE inspection_files
     MODIFY bank_id INT DEFAULT NULL,
     MODIFY branch_id INT DEFAULT NULL,
     MODIFY source_id INT DEFAULT NULL,
+    ADD COLUMN report_status_date DATE DEFAULT NULL AFTER report_status,
+    ADD COLUMN payment_status_date DATE DEFAULT NULL AFTER payment_status,
     MODIFY commission DECIMAL(10,2) DEFAULT 0,
-    MODIFY gross_amount DECIMAL(10,2) DEFAULT 0;
+    MODIFY gross_amount DECIMAL(10,2) DEFAULT 0,
+    MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
