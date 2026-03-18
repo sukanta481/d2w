@@ -8,6 +8,7 @@ $db = $database->connect();
 
 $successMessage = '';
 $errorMessage = '';
+$errorDetails = [];
 
 function downloadCsvResponse($filename, $headers, $rows) {
     header('Content-Type: text/csv; charset=utf-8');
@@ -26,6 +27,25 @@ function downloadCsvResponse($filename, $headers, $rows) {
     }
     fclose($stream);
     exit;
+}
+
+function formatMastersImportError($message, $importType) {
+    if (strpos($message, 'Duplicate') !== false || strpos($message, 'already exists') !== false) {
+        $labels = [
+            'banks' => 'Bank already exists.',
+            'branches' => 'Branch already exists for this bank.',
+            'sources' => 'Source already exists.',
+            'payment_modes' => 'Payment mode already exists.',
+            'accounts' => 'Account already exists or has duplicate details.',
+        ];
+        return $labels[$importType] ?? 'This row already exists.';
+    }
+
+    if (strpos($message, 'Unknown bank') !== false) {
+        return $message . ' Please add that bank first or fix the bank name in Excel.';
+    }
+
+    return $message;
 }
 
 function normalizeImportKey($value) {
@@ -341,9 +361,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_masters']
                     $stmt->execute([':name' => $name, ':status' => importStatusValue($row['status'] ?? 'active')]);
                     $importedCount++;
                 } catch (Exception $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 } catch (PDOException $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . (strpos($e->getMessage(), 'Duplicate') !== false ? 'Bank already exists.' : $e->getMessage());
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 }
             }
         } elseif ($importType === 'branches') {
@@ -372,9 +392,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_masters']
                     ]);
                     $importedCount++;
                 } catch (Exception $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 } catch (PDOException $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . (strpos($e->getMessage(), 'Duplicate') !== false ? 'Branch already exists for this bank.' : $e->getMessage());
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 }
             }
         } elseif ($importType === 'sources') {
@@ -393,9 +413,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_masters']
                     ]);
                     $importedCount++;
                 } catch (Exception $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 } catch (PDOException $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . (strpos($e->getMessage(), 'Duplicate') !== false ? 'Source already exists.' : $e->getMessage());
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 }
             }
         } elseif ($importType === 'payment_modes') {
@@ -410,9 +430,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_masters']
                     $stmt->execute([':name' => $name, ':status' => importStatusValue($row['status'] ?? 'active')]);
                     $importedCount++;
                 } catch (Exception $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 } catch (PDOException $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . (strpos($e->getMessage(), 'Duplicate') !== false ? 'Payment mode already exists.' : $e->getMessage());
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 }
             }
         } elseif ($importType === 'accounts') {
@@ -435,27 +455,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_masters']
                     ]);
                     $importedCount++;
                 } catch (Exception $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 } catch (PDOException $e) {
-                    $rowErrors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
+                    $rowErrors[] = ['row' => $index + 2, 'message' => formatMastersImportError($e->getMessage(), $importType)];
                 }
             }
         } else {
             throw new Exception('Please select a valid master type to import.');
         }
 
-        if (!empty($rowErrors)) {
-            $db->rollBack();
-            $errorMessage = 'Bulk import failed. ' . implode(' ', array_slice($rowErrors, 0, 5));
-            if (count($rowErrors) > 5) {
-                $errorMessage .= ' More rows also failed.';
-            }
-        } else {
+        if ($importedCount > 0) {
             $db->commit();
             $auth->logActivity($auth->getUserId(), 'create', null, null, "Bulk imported {$importedCount} {$importType}");
+        } else {
+            $db->rollBack();
+        }
+
+        if (!empty($rowErrors)) {
+            $errorMessage = $importedCount > 0
+                ? 'Import finished with some problems. Valid rows were imported, and invalid rows were skipped.'
+                : 'Bulk import failed. No rows were imported because every row had a problem.';
+            $errorDetails = array_slice($rowErrors, 0, 8);
+            if (count($rowErrors) > 8) {
+                $errorDetails[] = ['row' => null, 'message' => (count($rowErrors) - 8) . ' more row(s) also have issues.'];
+            }
+        }
+
+        if ($importedCount > 0) {
             $successMessage = "Imported {$importedCount} {$importType} successfully.";
             if ($skippedCount > 0) {
                 $successMessage .= " Skipped {$skippedCount} blank row(s).";
+            }
+            if (!empty($rowErrors)) {
+                $successMessage .= ' Some rows were skipped.';
             }
         }
     } catch (Exception $e) {
@@ -706,9 +738,26 @@ include __DIR__ . '/../includes/header.php';
         </div>
     <?php endif; ?>
     <?php if ($errorMessage): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i><?php echo $errorMessage; ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="border border-danger-subtle bg-danger-subtle text-danger rounded p-3 mb-4 position-relative shadow-sm" role="alert">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" aria-label="Close" onclick="this.parentElement.remove();"></button>
+            <div class="d-flex align-items-start pe-4">
+                <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                <div>
+                    <div class="fw-semibold"><?php echo htmlspecialchars($errorMessage); ?></div>
+                    <?php if (!empty($errorDetails)): ?>
+                        <ul class="mb-0 mt-2 ps-3">
+                            <?php foreach ($errorDetails as $detail): ?>
+                                <li>
+                                    <?php if (!empty($detail['row'])): ?>
+                                        <strong>Row <?php echo (int)$detail['row']; ?>:</strong>
+                                    <?php endif; ?>
+                                    <?php echo htmlspecialchars($detail['message']); ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 
