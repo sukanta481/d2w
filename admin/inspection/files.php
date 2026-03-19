@@ -104,6 +104,47 @@ function getActiveLikeStatusCondition($alias = '') {
     return "({$prefix}status = 'active' OR {$prefix}status IS NULL OR {$prefix}status = '')";
 }
 
+function paymentModeRequiresCommissionPending($db, $paymentModeId) {
+    static $modeCache = [];
+
+    $paymentModeId = (int)$paymentModeId;
+    if ($paymentModeId <= 0) {
+        return false;
+    }
+
+    if (array_key_exists($paymentModeId, $modeCache)) {
+        return $modeCache[$paymentModeId];
+    }
+
+    $stmt = $db->prepare("SELECT mode_name FROM inspection_payment_modes WHERE id = :id LIMIT 1");
+    $stmt->execute([':id' => $paymentModeId]);
+    $modeName = strtolower(trim((string)$stmt->fetchColumn()));
+    $modeCache[$paymentModeId] = $modeName !== '' && strpos($modeName, 'gst') !== false;
+
+    return $modeCache[$paymentModeId];
+}
+
+function resolveCommissionPendingValue($db, $hasColumn, $fileType, $paymentModeId, $paidToOffice, $inputValue) {
+    if (!$hasColumn) {
+        return null;
+    }
+
+    if ($fileType !== 'self') {
+        return null;
+    }
+
+    if (!paymentModeRequiresCommissionPending($db, $paymentModeId) || $paidToOffice !== 'paid') {
+        return null;
+    }
+
+    $normalized = strtolower(trim((string)$inputValue));
+    if (!in_array($normalized, ['yes', 'no'], true)) {
+        throw new Exception('Please select Commission Pending as Yes or No for GST payment mode when Paid to Office is marked Paid.');
+    }
+
+    return $normalized;
+}
+
 function formatBulkImportRowError($message) {
     $friendly = $message;
 
@@ -537,7 +578,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export')
             f.property_address, f.property_value, ib.bank_name, ibr.branch_name, isrc.source_name,
             f.fees, f.report_status, " . (tableColumnExists($db, 'inspection_files', 'report_status_date') ? 'f.report_status_date,' : 'NULL AS report_status_date,') . "
             ipm.mode_name AS payment_mode, f.payment_status, " . (tableColumnExists($db, 'inspection_files', 'payment_status_date') ? 'f.payment_status_date,' : 'NULL AS payment_status_date,') . "
-            f.amount, f.paid_to_office, f.office_amount, f.commission, f.extra_amount, f.gross_amount,
+            f.amount, f.paid_to_office, " . ($hasCommissionPendingColumn ? 'f.commission_pending,' : 'NULL AS commission_pending,') . " f.office_amount, f.commission, f.extra_amount, f.gross_amount,
             ima.account_name AS received_account, f.notes, f.created_at, f.updated_at
         FROM inspection_files f
         LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
@@ -551,11 +592,15 @@ if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export')
         'id', 'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone',
         'property_address', 'property_value', 'bank_name', 'branch_name', 'source_name', 'fees',
         'report_status', 'report_status_date', 'payment_mode', 'payment_status', 'payment_status_date',
-        'amount', 'paid_to_office', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
+        'amount', 'paid_to_office', 'commission_pending', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
         'received_account', 'notes', 'created_at', 'updated_at'
     ];
     downloadCsvResponse('inspection_files_export.csv', $headers, $rows);
 }
+
+$hasReportStatusDateColumn = tableColumnExists($db, 'inspection_files', 'report_status_date');
+$hasPaymentStatusDateColumn = tableColumnExists($db, 'inspection_files', 'payment_status_date');
+$hasCommissionPendingColumn = tableColumnExists($db, 'inspection_files', 'commission_pending');
 
 // ===== BULK IMPORT FILES =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files'])) {
@@ -889,6 +934,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
     try {
         unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
+        $paymentStatusDate = $hasPaymentStatusDateColumn && !empty($_POST['payment_status_date']) ? $_POST['payment_status_date'] : null;
+        $commissionPending = resolveCommissionPendingValue(
+            $db,
+            $hasCommissionPendingColumn,
+            $_POST['file_type'] ?? '',
+            $calc['payment_mode_id'],
+            $calc['paid_to_office'],
+            $_POST['commission_pending'] ?? ''
+        );
 
         // Validate branch belongs to bank (only if both are provided)
         if (!empty($_POST['bank_id']) && !empty($_POST['branch_id'])) {
@@ -899,14 +953,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
             }
         }
 
-        $stmt = $db->prepare("INSERT INTO inspection_files
-            (file_number, file_date, file_type, location, customer_name, customer_phone, property_address, property_value,
-             bank_id, branch_id, source_id, fees, report_status, payment_mode_id, payment_status, amount,
-             paid_to_office, office_amount, commission, extra_amount, gross_amount, received_account_id, notes)
-            VALUES
-            (:file_number, :file_date, :file_type, :location, :customer_name, :customer_phone, :property_address, :property_value,
-             :bank_id, :branch_id, :source_id, :fees, :report_status, :payment_mode_id, :payment_status, :amount,
-             :paid_to_office, :office_amount, :commission, :extra_amount, :gross_amount, :received_account_id, :notes)");
+        $insertColumns = [
+            'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone', 'property_address', 'property_value',
+            'bank_id', 'branch_id', 'source_id', 'fees', 'report_status', 'payment_mode_id', 'payment_status'
+        ];
+        if ($hasPaymentStatusDateColumn) {
+            $insertColumns[] = 'payment_status_date';
+        }
+        $insertColumns = array_merge($insertColumns, [
+            'amount', 'paid_to_office'
+        ]);
+        if ($hasCommissionPendingColumn) {
+            $insertColumns[] = 'commission_pending';
+        }
+        $insertColumns = array_merge($insertColumns, ['office_amount', 'commission', 'extra_amount', 'gross_amount', 'received_account_id', 'notes']);
+        $insertPlaceholders = array_map(static function ($column) {
+            return ':' . $column;
+        }, $insertColumns);
+
+        $stmt = $db->prepare("INSERT INTO inspection_files (" . implode(', ', $insertColumns) . ")
+            VALUES (" . implode(', ', $insertPlaceholders) . ")");
 
         $baseParams = [
             ':file_date' => !empty($_POST['file_date']) ? $_POST['file_date'] : null,
@@ -932,6 +998,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
             ':received_account_id' => !empty($_POST['received_account_id']) ? $_POST['received_account_id'] : null,
             ':notes' => trim($_POST['notes']) ?: null,
         ];
+        if ($hasPaymentStatusDateColumn) {
+            $baseParams[':payment_status_date'] = $paymentStatusDate;
+        }
+        if ($hasCommissionPendingColumn) {
+            $baseParams[':commission_pending'] = $commissionPending;
+        }
 
         $fileNumber = null;
         $inserted = false;
@@ -965,6 +1037,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
     try {
         unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
+        $paymentStatusDate = $hasPaymentStatusDateColumn && !empty($_POST['payment_status_date']) ? $_POST['payment_status_date'] : null;
+        $commissionPending = resolveCommissionPendingValue(
+            $db,
+            $hasCommissionPendingColumn,
+            $_POST['file_type'] ?? '',
+            $calc['payment_mode_id'],
+            $calc['paid_to_office'],
+            $_POST['commission_pending'] ?? ''
+        );
 
         // Validate branch belongs to bank (only if both are provided)
         if (!empty($_POST['bank_id']) && !empty($_POST['branch_id'])) {
@@ -975,19 +1056,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
             }
         }
 
+        $updateParts = [
+            "file_date = :file_date", "file_type = :file_type", "location = :location",
+            "customer_name = :customer_name", "customer_phone = :customer_phone",
+            "property_address = :property_address", "property_value = :property_value",
+            "bank_id = :bank_id", "branch_id = :branch_id", "source_id = :source_id",
+            "fees = :fees", "report_status = :report_status", "payment_mode_id = :payment_mode_id",
+            "payment_status = :payment_status"
+        ];
+        if ($hasPaymentStatusDateColumn) {
+            $updateParts[] = "payment_status_date = :payment_status_date";
+        }
+        $updateParts = array_merge($updateParts, [
+            "amount = :amount", "paid_to_office = :paid_to_office"
+        ]);
+        if ($hasCommissionPendingColumn) {
+            $updateParts[] = "commission_pending = :commission_pending";
+        }
+        $updateParts = array_merge($updateParts, [
+            "office_amount = :office_amount", "commission = :commission", "extra_amount = :extra_amount",
+            "gross_amount = :gross_amount", "received_account_id = :received_account_id", "notes = :notes",
+            "updated_at = CURRENT_TIMESTAMP"
+        ]);
+
         $stmt = $db->prepare("UPDATE inspection_files SET
-            file_date = :file_date, file_type = :file_type, location = :location,
-            customer_name = :customer_name, customer_phone = :customer_phone,
-            property_address = :property_address, property_value = :property_value,
-            bank_id = :bank_id, branch_id = :branch_id, source_id = :source_id,
-            fees = :fees, report_status = :report_status, payment_mode_id = :payment_mode_id,
-            payment_status = :payment_status, amount = :amount, paid_to_office = :paid_to_office,
-            office_amount = :office_amount, commission = :commission, extra_amount = :extra_amount,
-            gross_amount = :gross_amount, received_account_id = :received_account_id, notes = :notes,
-            updated_at = CURRENT_TIMESTAMP
+            " . implode(",\n            ", $updateParts) . "
             WHERE id = :id");
 
-        $stmt->execute([
+        $updateParams = [
             ':file_date' => !empty($_POST['file_date']) ? $_POST['file_date'] : null,
             ':file_type' => !empty($_POST['file_type']) ? $_POST['file_type'] : null,
             ':location' => $calc['location'],
@@ -1011,7 +1107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
             ':received_account_id' => !empty($_POST['received_account_id']) ? $_POST['received_account_id'] : null,
             ':notes' => trim($_POST['notes']) ?: null,
             ':id' => $_POST['file_id'],
-        ]);
+        ];
+        if ($hasPaymentStatusDateColumn) {
+            $updateParams[':payment_status_date'] = $paymentStatusDate;
+        }
+        if ($hasCommissionPendingColumn) {
+            $updateParams[':commission_pending'] = $commissionPending;
+        }
+
+        $stmt->execute($updateParams);
 
         $auth->logActivity($auth->getUserId(), 'update', 'inspection_files', $_POST['file_id'], "Updated file");
         $successMessage = "File updated successfully!";
@@ -1082,6 +1186,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_update_files']))
                 if (!in_array($paymentStatusValue, ['due', 'paid'], true)) {
                     throw new Exception('Please choose a valid payment status for the selected files.');
                 }
+                $bulkPaymentStatusDate = trim((string)($_POST['bulk_payment_status_date'] ?? ''));
+                if ($hasPaymentStatusDateColumn && $bulkPaymentStatusDate === '') {
+                    throw new Exception('Please provide a payment status date for the selected files.');
+                }
 
                 $skippedStmt = $db->prepare("SELECT COUNT(*) FROM inspection_files WHERE id IN ({$idListSql}) AND file_type = 'office'");
                 $skippedStmt->execute($idParams);
@@ -1098,9 +1206,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_update_files']))
                     $updateSql = "UPDATE inspection_files
                         SET payment_status = :bulk_value,
                             amount = CASE WHEN :bulk_value = 'paid' THEN fees ELSE NULL END,
-                            payment_status_date = CURRENT_DATE,
+                            payment_status_date = :bulk_payment_status_date,
                             updated_at = CURRENT_TIMESTAMP
                         WHERE id IN ({$idListSql}) AND file_type = 'self'";
+                    $updateParams[':bulk_payment_status_date'] = $bulkPaymentStatusDate;
                 }
             } elseif ($bulkAction === 'report_status') {
                 $reportStatusValue = trim((string)($_POST['bulk_report_status'] ?? ''));
@@ -1173,16 +1282,67 @@ $offset = ($page - 1) * $perPage;
 
 $typeFilter = $_GET['file_type'] ?? '';
 $statusFilter = $_GET['payment_status'] ?? '';
+$reportStatusFilter = $_GET['report_status'] ?? '';
 $statusGroupFilter = $_GET['status_group'] ?? '';
 $bankFilter = $_GET['bank_id'] ?? '';
 $sourceFilter = $_GET['source_id'] ?? '';
-$searchQuery = $_GET['search'] ?? '';
+$paymentModeFilter = $_GET['payment_mode_id'] ?? '';
+$paidToOfficeFilter = $_GET['paid_to_office'] ?? '';
+$commissionPendingFilter = $_GET['commission_pending'] ?? '';
+$locationFilter = $_GET['location'] ?? '';
+$searchQuery = trim((string)($_GET['search'] ?? ''));
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
-$dateBasis = $_GET['date_basis'] ?? 'file';
+$dateBasis = $_GET['date_basis'] ?? 'updated';
+$dashboardMetric = $_GET['metric'] ?? '';
+
+$hasSearchOnly = $searchQuery !== ''
+    && $typeFilter === ''
+    && $statusFilter === ''
+    && $reportStatusFilter === ''
+    && $statusGroupFilter === ''
+    && $bankFilter === ''
+    && $sourceFilter === ''
+    && $paymentModeFilter === ''
+    && $paidToOfficeFilter === ''
+    && $commissionPendingFilter === ''
+    && $locationFilter === ''
+    && $dateFrom === ''
+    && $dateTo === '';
+
+$hasAnyExplicitFilter = $typeFilter !== ''
+    || $statusFilter !== ''
+    || $reportStatusFilter !== ''
+    || $statusGroupFilter !== ''
+    || $bankFilter !== ''
+    || $sourceFilter !== ''
+    || $paymentModeFilter !== ''
+    || $paidToOfficeFilter !== ''
+    || $commissionPendingFilter !== ''
+    || $locationFilter !== ''
+    || $searchQuery !== ''
+    || $dateFrom !== ''
+    || $dateTo !== ''
+    || !empty($_GET['date_basis']);
+
+if (!$hasAnyExplicitFilter) {
+    $dateFrom = date('Y-m-01');
+    $dateTo = date('Y-m-t');
+    $dateBasis = 'updated';
+} elseif ($hasSearchOnly) {
+    $dateFrom = '';
+    $dateTo = '';
+}
+
 $dateField = $dateBasis === 'updated' ? 'DATE(f.updated_at)' : 'f.file_date';
 
 try {
+    $fromSql = "FROM inspection_files f
+              LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
+              LEFT JOIN inspection_branches ibr ON f.branch_id = ibr.id
+              LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
+              LEFT JOIN inspection_payment_modes ipm ON f.payment_mode_id = ipm.id
+              LEFT JOIN inspection_my_accounts ima ON f.received_account_id = ima.id";
     $where = "WHERE 1=1";
     $params = [];
 
@@ -1193,27 +1353,79 @@ try {
         $where .= " AND f.payment_status = :status";
         $params[':status'] = $statusFilter;
     }
+    if ($reportStatusFilter) { $where .= " AND f.report_status = :report_status"; $params[':report_status'] = $reportStatusFilter; }
     if ($bankFilter) { $where .= " AND f.bank_id = :bank"; $params[':bank'] = $bankFilter; }
     if ($sourceFilter) { $where .= " AND f.source_id = :source"; $params[':source'] = $sourceFilter; }
+    if ($paymentModeFilter) { $where .= " AND f.payment_mode_id = :payment_mode"; $params[':payment_mode'] = $paymentModeFilter; }
+    if ($paidToOfficeFilter) { $where .= " AND f.paid_to_office = :paid_to_office"; $params[':paid_to_office'] = $paidToOfficeFilter; }
+    if ($commissionPendingFilter) { $where .= " AND f.commission_pending = :commission_pending"; $params[':commission_pending'] = $commissionPendingFilter; }
+    if ($locationFilter) { $where .= " AND f.location = :location"; $params[':location'] = $locationFilter; }
     if ($dateFrom) { $where .= " AND {$dateField} >= :dfrom"; $params[':dfrom'] = $dateFrom; }
     if ($dateTo) { $where .= " AND {$dateField} <= :dto"; $params[':dto'] = $dateTo; }
-    if ($searchQuery) {
-        $where .= " AND (f.customer_name LIKE :search OR f.file_number LIKE :search OR f.property_address LIKE :search)";
-        $params[':search'] = "%{$searchQuery}%";
+    if ($searchQuery !== '') {
+        $searchLower = '%' . strtolower($searchQuery) . '%';
+        $searchCompact = '%' . strtolower(preg_replace('/\s+/', '', $searchQuery)) . '%';
+        $where .= " AND (
+            LOWER(COALESCE(f.customer_name, '')) LIKE :sf1 OR
+            LOWER(COALESCE(f.customer_phone, '')) LIKE :sf2 OR
+            LOWER(COALESCE(f.file_number, '')) LIKE :sf3 OR
+            LOWER(COALESCE(f.property_address, '')) LIKE :sf4 OR
+            LOWER(COALESCE(ib.bank_name, '')) LIKE :sf5 OR
+            LOWER(COALESCE(ibr.branch_name, '')) LIKE :sf6 OR
+            LOWER(COALESCE(isrc.source_name, '')) LIKE :sf7 OR
+            LOWER(COALESCE(ipm.mode_name, '')) LIKE :sf8 OR
+            REPLACE(LOWER(COALESCE(f.customer_name, '')), ' ', '') LIKE :sc1 OR
+            REPLACE(LOWER(COALESCE(isrc.source_name, '')), ' ', '') LIKE :sc2 OR
+            REPLACE(LOWER(COALESCE(ib.bank_name, '')), ' ', '') LIKE :sc3 OR
+            REPLACE(LOWER(COALESCE(ibr.branch_name, '')), ' ', '') LIKE :sc4
+        )";
+        for ($i = 1; $i <= 8; $i++) { $params[":sf{$i}"] = $searchLower; }
+        for ($i = 1; $i <= 4; $i++) { $params[":sc{$i}"] = $searchCompact; }
+
+        $searchTokens = preg_split('/\s+/', $searchQuery) ?: [];
+        foreach ($searchTokens as $index => $token) {
+            $token = trim($token);
+            if ($token === '') {
+                continue;
+            }
+
+            $tokenVal = '%' . strtolower($token) . '%';
+            $where .= " AND (
+                LOWER(COALESCE(f.customer_name, '')) LIKE :st{$index}_1 OR
+                LOWER(COALESCE(f.customer_phone, '')) LIKE :st{$index}_2 OR
+                LOWER(COALESCE(f.file_number, '')) LIKE :st{$index}_3 OR
+                LOWER(COALESCE(f.property_address, '')) LIKE :st{$index}_4 OR
+                LOWER(COALESCE(ib.bank_name, '')) LIKE :st{$index}_5 OR
+                LOWER(COALESCE(ibr.branch_name, '')) LIKE :st{$index}_6 OR
+                LOWER(COALESCE(isrc.source_name, '')) LIKE :st{$index}_7 OR
+                LOWER(COALESCE(ipm.mode_name, '')) LIKE :st{$index}_8
+            )";
+            for ($j = 1; $j <= 8; $j++) { $params[":st{$index}_{$j}"] = $tokenVal; }
+        }
     }
 
-    $countStmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$where}");
+    $countStmt = $db->prepare("SELECT COUNT(*) as total {$fromSql} {$where}");
     $countStmt->execute($params);
     $totalFiles = $countStmt->fetch()['total'];
     $totalPages = max(1, ceil($totalFiles / $perPage));
 
+    $summaryStmt = $db->prepare("SELECT
+            COUNT(*) AS total_files,
+            COALESCE(SUM(f.gross_amount), 0) AS total_earnings,
+            SUM(CASE WHEN f.file_type = 'self' AND f.payment_status IN ('due', 'partially') THEN 1 ELSE 0 END) AS pending_payments,
+            COUNT(DISTINCT CASE WHEN f.source_id IS NOT NULL THEN f.source_id END) AS active_sources
+        {$fromSql}
+        {$where}");
+    $summaryStmt->execute($params);
+    $filteredSummary = $summaryStmt->fetch() ?: [
+        'total_files' => 0,
+        'total_earnings' => 0,
+        'pending_payments' => 0,
+        'active_sources' => 0,
+    ];
+
     $query = "SELECT f.*, ib.bank_name, ibr.branch_name, isrc.source_name, ipm.mode_name, ima.account_name as received_account_name
-              FROM inspection_files f
-              LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
-              LEFT JOIN inspection_branches ibr ON f.branch_id = ibr.id
-              LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
-              LEFT JOIN inspection_payment_modes ipm ON f.payment_mode_id = ipm.id
-              LEFT JOIN inspection_my_accounts ima ON f.received_account_id = ima.id
+              {$fromSql}
               {$where}
               ORDER BY f.file_date DESC, f.id DESC
               LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
@@ -1236,6 +1448,7 @@ try {
 } catch(PDOException $e) {
     $files = $banks = $branches = $branchesByBank = $sources = $paymentModes = $myAccounts = [];
     $totalFiles = 0; $totalPages = 1;
+    $filteredSummary = ['total_files' => 0, 'total_earnings' => 0, 'pending_payments' => 0, 'active_sources' => 0];
     error_log("Files fetch error: " . $e->getMessage());
 }
 
@@ -1308,41 +1521,144 @@ include __DIR__ . '/_responsive.php';
     <?php endif; ?>
 
     <div class="content-card">
+        <?php
+            $summaryCards = [
+                'total_files' => ['label' => 'Filtered Files', 'value' => (int)($filteredSummary['total_files'] ?? 0), 'prefix' => ''],
+                'total_earnings' => ['label' => 'Filtered Earnings', 'value' => number_format((float)($filteredSummary['total_earnings'] ?? 0), 0), 'prefix' => '&#8377;'],
+                'pending_payments' => ['label' => 'Pending Payments', 'value' => (int)($filteredSummary['pending_payments'] ?? 0), 'prefix' => ''],
+                'active_sources' => ['label' => 'Active Sources', 'value' => (int)($filteredSummary['active_sources'] ?? 0), 'prefix' => ''],
+            ];
+        ?>
+        <div class="row g-2 mb-3">
+            <?php foreach ($summaryCards as $metricKey => $metric): ?>
+                <div class="col-lg-3 col-md-6">
+                    <div class="border rounded-3 p-3 h-100 <?php echo $dashboardMetric === $metricKey ? 'border-primary bg-primary-subtle' : 'bg-light-subtle'; ?>">
+                        <div class="small text-muted"><?php echo htmlspecialchars($metric['label']); ?></div>
+                        <div class="fs-4 fw-bold"><?php echo $metric['prefix']; ?><?php echo $metric['value']; ?></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
         <!-- Filters -->
-        <form method="GET" class="row mb-4 g-2 inspection-filter-form">
-            <input type="hidden" name="date_basis" value="<?php echo htmlspecialchars($dateBasis); ?>">
-            <div class="col-md-3">
-                <div class="inspection-search-row">
-                    <input type="text" name="search" class="form-control" placeholder="Search name, file#, address..." value="<?php echo htmlspecialchars($searchQuery); ?>">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+        <form method="GET" class="mb-4 inspection-filter-form">
+            <?php if ($dashboardMetric): ?>
+                <input type="hidden" name="metric" value="<?php echo htmlspecialchars($dashboardMetric); ?>">
+            <?php endif; ?>
+            <div class="border rounded-3 p-3 bg-light-subtle">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div>
+                        <div class="fw-semibold">Advanced Filters</div>
+                        <div class="text-muted small">Use multiple conditions together to narrow down the file list.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply Filters</button>
+                        <a href="files.php" class="btn btn-secondary"><i class="fas fa-redo me-1"></i>Reset</a>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control" placeholder="Name, phone, file#, bank, branch..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Date Basis</label>
+                        <select name="date_basis" class="form-select">
+                            <option value="file" <?php echo $dateBasis === 'file' ? 'selected' : ''; ?>>File Date</option>
+                            <option value="updated" <?php echo $dateBasis === 'updated' ? 'selected' : ''; ?>>Updated Date</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="date_from" class="form-control" value="<?php echo htmlspecialchars($dateFrom); ?>">
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="date_to" class="form-control" value="<?php echo htmlspecialchars($dateTo); ?>">
+                    </div>
+                    <div class="col-lg-1 col-md-6">
+                        <label class="form-label">Type</label>
+                        <select name="file_type" class="form-select">
+                            <option value="">All</option>
+                            <option value="office" <?php echo $typeFilter === 'office' ? 'selected' : ''; ?>>Office</option>
+                            <option value="self" <?php echo $typeFilter === 'self' ? 'selected' : ''; ?>>Self</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Payment Status</label>
+                        <select name="payment_status" class="form-select">
+                            <option value="">All</option>
+                            <option value="due" <?php echo $statusFilter === 'due' ? 'selected' : ''; ?>>Due</option>
+                            <option value="paid" <?php echo $statusFilter === 'paid' ? 'selected' : ''; ?>>Paid</option>
+                            <option value="partially" <?php echo $statusFilter === 'partially' ? 'selected' : ''; ?>>Partial</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Bank</label>
+                        <select name="bank_id" class="form-select">
+                            <option value="">All Banks</option>
+                            <?php foreach ($banks as $b): ?>
+                                <option value="<?php echo $b['id']; ?>" <?php echo $bankFilter == $b['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($b['bank_name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Source</label>
+                        <select name="source_id" class="form-select">
+                            <option value="">All Sources</option>
+                            <?php foreach ($sources as $s): ?>
+                                <option value="<?php echo $s['id']; ?>" <?php echo $sourceFilter == $s['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($s['source_name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Report Status</label>
+                        <select name="report_status" class="form-select">
+                            <option value="">All</option>
+                            <option value="draft" <?php echo $reportStatusFilter === 'draft' ? 'selected' : ''; ?>>Draft</option>
+                            <option value="final_soft" <?php echo $reportStatusFilter === 'final_soft' ? 'selected' : ''; ?>>Final Soft Copy</option>
+                            <option value="final_hard" <?php echo $reportStatusFilter === 'final_hard' ? 'selected' : ''; ?>>Final Hard Copy</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Payment Mode</label>
+                        <select name="payment_mode_id" class="form-select">
+                            <option value="">All Modes</option>
+                            <?php foreach ($paymentModes as $pm): ?>
+                                <option value="<?php echo $pm['id']; ?>" <?php echo $paymentModeFilter == $pm['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($pm['mode_name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Paid to Office</label>
+                        <select name="paid_to_office" class="form-select">
+                            <option value="">All</option>
+                            <option value="paid" <?php echo $paidToOfficeFilter === 'paid' ? 'selected' : ''; ?>>Paid</option>
+                            <option value="due" <?php echo $paidToOfficeFilter === 'due' ? 'selected' : ''; ?>>Due</option>
+                        </select>
+                    </div>
+                    <?php if ($hasCommissionPendingColumn): ?>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Commission Pending</label>
+                        <select name="commission_pending" class="form-select">
+                            <option value="">All</option>
+                            <option value="yes" <?php echo $commissionPendingFilter === 'yes' ? 'selected' : ''; ?>>Yes</option>
+                            <option value="no" <?php echo $commissionPendingFilter === 'no' ? 'selected' : ''; ?>>No</option>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">Location</label>
+                        <select name="location" class="form-select">
+                            <option value="">All</option>
+                            <option value="kolkata" <?php echo $locationFilter === 'kolkata' ? 'selected' : ''; ?>>Kolkata</option>
+                            <option value="out_of_kolkata" <?php echo $locationFilter === 'out_of_kolkata' ? 'selected' : ''; ?>>Out of Kolkata</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-2"><input type="date" name="date_from" class="form-control" value="<?php echo htmlspecialchars($dateFrom); ?>" placeholder="From"></div>
-            <div class="col-md-2"><input type="date" name="date_to" class="form-control" value="<?php echo htmlspecialchars($dateTo); ?>" placeholder="To"></div>
-            <div class="col-md-1">
-                <select name="file_type" class="form-select">
-                    <option value="">Type</option>
-                    <option value="office" <?php echo $typeFilter === 'office' ? 'selected' : ''; ?>>Office</option>
-                    <option value="self" <?php echo $typeFilter === 'self' ? 'selected' : ''; ?>>Self</option>
-                </select>
-            </div>
-            <div class="col-md-1">
-                <select name="payment_status" class="form-select">
-                    <option value="">Status</option>
-                    <option value="due" <?php echo $statusFilter === 'due' ? 'selected' : ''; ?>>Due</option>
-                    <option value="paid" <?php echo $statusFilter === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                    <option value="partially" <?php echo $statusFilter === 'partially' ? 'selected' : ''; ?>>Partial</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="bank_id" class="form-select">
-                    <option value="">All Banks</option>
-                    <?php foreach ($banks as $b): ?>
-                        <option value="<?php echo $b['id']; ?>" <?php echo $bankFilter == $b['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($b['bank_name']); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="col-md-1"><a href="files.php" class="btn btn-secondary w-100" title="Reset"><i class="fas fa-redo"></i></a></div>
         </form>
 
         <!-- Files Table -->
@@ -1366,6 +1682,12 @@ include __DIR__ . '/_responsive.php';
                     <option value="paid">Paid</option>
                 </select>
             </div>
+            <?php if ($hasPaymentStatusDateColumn): ?>
+            <div class="bulk-action-field" data-bulk-field="payment_status" style="display:none; min-width: 190px;">
+                <label for="bulkPaymentStatusDate" class="form-label mb-1">Status Date</label>
+                <input type="date" name="bulk_payment_status_date" id="bulkPaymentStatusDate" class="form-control" form="bulkFilesForm" value="<?php echo date('Y-m-d'); ?>">
+            </div>
+            <?php endif; ?>
             <div class="bulk-action-field" data-bulk-field="report_status" style="display:none; min-width: 220px;">
                 <label for="bulkReportStatus" class="form-label mb-1">Report Status</label>
                 <select name="bulk_report_status" id="bulkReportStatus" class="form-select" form="bulkFilesForm">
@@ -1533,6 +1855,9 @@ include __DIR__ . '/_responsive.php';
                                             ?></div>
                                             <div class="col-md-3 mb-3"><strong>Amount Received:</strong><br><?php echo $file['amount'] !== null ? '&#8377;' . number_format($file['amount'], 2) : 'NA'; ?></div>
                                             <div class="col-md-3 mb-3"><strong>Paid to Office:</strong><br><?php echo $file['paid_to_office'] ? ucfirst($file['paid_to_office']) : 'NA'; ?></div>
+                                            <?php if ($hasCommissionPendingColumn): ?>
+                                            <div class="col-md-3 mb-3"><strong>Commission Pending:</strong><br><?php echo $file['commission_pending'] ? ucfirst($file['commission_pending']) : 'NA'; ?></div>
+                                            <?php endif; ?>
                                             <div class="col-md-3 mb-3"><strong>Office Amount:</strong><br><?php echo $file['office_amount'] !== null ? '&#8377;' . number_format($file['office_amount'], 2) : 'NA'; ?></div>
                                             <div class="col-md-3 mb-3"><strong>Received In:</strong><br><?php echo $file['received_account_name'] ?? '-'; ?></div>
                                         </div>
@@ -1624,6 +1949,9 @@ include __DIR__ . '/_responsive.php';
                                                     <option value="partially" <?php echo $file['payment_status'] === 'partially' ? 'selected' : ''; ?>>Partially</option>
                                                 </select>
                                             </div>
+                                            <?php if ($hasPaymentStatusDateColumn): ?>
+                                            <div class="col-md-3 mb-3"><label class="form-label">Payment Status Date</label><input type="date" name="payment_status_date" class="form-control" value="<?php echo htmlspecialchars($file['payment_status_date'] ?? ''); ?>"></div>
+                                            <?php endif; ?>
                                             <div class="col-md-3 mb-3"><label class="form-label">Amount Received (&#8377;)</label><input type="number" name="amount" class="form-control" step="0.01" value="<?php echo $file['amount']; ?>"></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Paid to Office</label>
                                                 <select name="paid_to_office" class="form-select">
@@ -1632,6 +1960,16 @@ include __DIR__ . '/_responsive.php';
                                                     <option value="due" <?php echo $file['paid_to_office'] === 'due' ? 'selected' : ''; ?>>Due</option>
                                                 </select>
                                             </div>
+                                            <?php if ($hasCommissionPendingColumn): ?>
+                                            <div class="col-md-3 mb-3 commission-pending-field" style="display:none;">
+                                                <label class="form-label">Commission Pending</label>
+                                                <select name="commission_pending" class="form-select" data-initial-value="<?php echo htmlspecialchars($file['commission_pending'] ?? ''); ?>">
+                                                    <option value="">Select</option>
+                                                    <option value="yes" <?php echo ($file['commission_pending'] ?? '') === 'yes' ? 'selected' : ''; ?>>Yes</option>
+                                                    <option value="no" <?php echo ($file['commission_pending'] ?? '') === 'no' ? 'selected' : ''; ?>>No</option>
+                                                </select>
+                                            </div>
+                                            <?php endif; ?>
                                             <div class="col-md-3 mb-3"><label class="form-label">Office Amount (&#8377;)</label><input type="number" name="office_amount" class="form-control" step="0.01" value="<?php echo $file['office_amount']; ?>" readonly></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Commission (&#8377;)</label><input type="number" name="commission" class="form-control" step="0.01" value="<?php echo $file['commission']; ?>" readonly></div>
                                             <div class="col-md-3 mb-3"><label class="form-label">Extra Amount (&#8377;)</label><input type="number" name="extra_amount" class="form-control" step="0.01" value="<?php echo $file['extra_amount']; ?>"></div>
@@ -1802,6 +2140,9 @@ include __DIR__ . '/_responsive.php';
                         <option value="partially">Partially</option>
                     </select>
                 </div>
+                <?php if ($hasPaymentStatusDateColumn): ?>
+                <div class="col-md-3 mb-3"><label class="form-label">Payment Status Date</label><input type="date" name="payment_status_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" disabled></div>
+                <?php endif; ?>
                 <div class="col-md-3 mb-3"><label class="form-label">Amount Received (&#8377;)</label><input type="number" name="amount" class="form-control" step="0.01" placeholder="0.00" disabled></div>
                 <div class="col-md-3 mb-3"><label class="form-label">Paid to Office</label>
                     <select name="paid_to_office" class="form-select" disabled>
@@ -1810,6 +2151,16 @@ include __DIR__ . '/_responsive.php';
                         <option value="due">Due</option>
                     </select>
                 </div>
+                <?php if ($hasCommissionPendingColumn): ?>
+                <div class="col-md-3 mb-3 commission-pending-field" style="display:none;">
+                    <label class="form-label">Commission Pending</label>
+                    <select name="commission_pending" class="form-select" disabled>
+                        <option value="">Select</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <?php endif; ?>
                 <div class="col-md-3 mb-3"><label class="form-label">Office Amount (&#8377;)</label><input type="number" name="office_amount" class="form-control" step="0.01" readonly></div>
                 <div class="col-md-3 mb-3"><label class="form-label">Commission (&#8377;)</label><input type="number" name="commission" class="form-control" step="0.01" readonly></div>
                 <div class="col-md-3 mb-3"><label class="form-label">Extra Amount (&#8377;)</label><input type="number" name="extra_amount" class="form-control" step="0.01" placeholder="0.00" value="0"></div>
@@ -1839,8 +2190,11 @@ function initFileForm(formEl) {
     const reportStatus = formEl.querySelector('[name="report_status"]');
     const paymentMode = formEl.querySelector('[name="payment_mode_id"]');
     const paymentStatus = formEl.querySelector('[name="payment_status"]');
+    const paymentStatusDate = formEl.querySelector('[name="payment_status_date"]');
     const amount = formEl.querySelector('[name="amount"]');
     const paidToOffice = formEl.querySelector('[name="paid_to_office"]');
+    const commissionPendingWrap = formEl.querySelector('.commission-pending-field');
+    const commissionPending = formEl.querySelector('[name="commission_pending"]');
     const officeAmount = formEl.querySelector('[name="office_amount"]');
     const commission = formEl.querySelector('[name="commission"]');
     const extraAmount = formEl.querySelector('[name="extra_amount"]');
@@ -1859,20 +2213,28 @@ function initFileForm(formEl) {
         reportStatus.disabled = isOffice;
         paymentMode.disabled = isOffice;
         paymentStatus.disabled = isOffice;
+        if (paymentStatusDate) paymentStatusDate.disabled = isOffice;
         paidToOffice.disabled = isOffice;
+        if (commissionPending) commissionPending.disabled = isOffice;
 
         if (isOffice) {
             fees.value = '';
             reportStatus.value = '';
             paymentMode.value = '';
             paymentStatus.value = '';
+            if (paymentStatusDate) paymentStatusDate.value = '';
             amount.value = '';
             amount.disabled = true;
             paidToOffice.value = '';
+            if (commissionPending) commissionPending.value = '';
             officeAmount.value = '';
         } else if (isSelf) {
+            if (paymentStatusDate && !paymentStatusDate.value) {
+                paymentStatusDate.value = new Date().toISOString().slice(0, 10);
+            }
             toggleAmount();
         }
+        toggleCommissionPending();
         calcCommission();
     }
 
@@ -1886,6 +2248,27 @@ function initFileForm(formEl) {
         } else {
             amount.disabled = true;
             amount.value = '';
+        }
+    }
+
+    function isGstPaymentModeSelected() {
+        if (!paymentMode || !paymentMode.value) return false;
+        const selectedOption = paymentMode.options[paymentMode.selectedIndex];
+        const modeLabel = selectedOption ? selectedOption.textContent.toLowerCase() : '';
+        return modeLabel.includes('gst');
+    }
+
+    function toggleCommissionPending() {
+        if (!commissionPendingWrap || !commissionPending) return;
+
+        const shouldShow = fileType.value === 'self' && isGstPaymentModeSelected() && paidToOffice.value === 'paid';
+        commissionPendingWrap.style.display = shouldShow ? '' : 'none';
+        commissionPending.disabled = !shouldShow;
+
+        if (!shouldShow) {
+            commissionPending.value = '';
+        } else if (!commissionPending.value && commissionPending.dataset.initialValue) {
+            commissionPending.value = commissionPending.dataset.initialValue;
         }
     }
 
@@ -1927,6 +2310,8 @@ function initFileForm(formEl) {
     location.addEventListener('change', calcCommission);
     fees.addEventListener('input', () => { calcCommission(); toggleAmount(); });
     paymentStatus.addEventListener('change', toggleAmount);
+    paymentMode.addEventListener('change', toggleCommissionPending);
+    paidToOffice.addEventListener('change', toggleCommissionPending);
     extraAmount.addEventListener('input', calcCommission);
     bankSelect.addEventListener('change', () => {
         branchSelect.dataset.selected = '';
@@ -1935,6 +2320,7 @@ function initFileForm(formEl) {
 
     // Initialize on load
     if (fileType.value) toggleFields();
+    else toggleCommissionPending();
 
     // Load branches for edit forms whenever a bank is already selected.
     if (bankSelect.value) {
@@ -2028,7 +2414,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (actionSelect.value === 'payment_status') {
-            return !!document.getElementById('bulkPaymentStatus').value;
+            const statusValue = !!document.getElementById('bulkPaymentStatus').value;
+            const statusDateInput = document.getElementById('bulkPaymentStatusDate');
+            const statusDateValue = statusDateInput ? !!statusDateInput.value : true;
+            return statusValue && statusDateValue;
         }
 
         if (actionSelect.value === 'report_status') {
@@ -2082,6 +2471,10 @@ document.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('change', updateBulkUi);
         }
     });
+    const bulkPaymentStatusDate = document.getElementById('bulkPaymentStatusDate');
+    if (bulkPaymentStatusDate) {
+        bulkPaymentStatusDate.addEventListener('change', updateBulkUi);
+    }
 
     bulkForm.addEventListener('submit', event => {
         const selectedIds = getUniqueSelectedIds();

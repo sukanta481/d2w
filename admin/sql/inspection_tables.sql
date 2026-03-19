@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS inspection_files (
     payment_status_date DATE DEFAULT NULL,
     amount DECIMAL(10,2) DEFAULT NULL,
     paid_to_office ENUM('paid','due') DEFAULT NULL,
+    commission_pending ENUM('yes','no') DEFAULT NULL,
     office_amount DECIMAL(10,2) DEFAULT NULL,
     commission DECIMAL(10,2) DEFAULT 0,
     extra_amount DECIMAL(10,2) DEFAULT 0,

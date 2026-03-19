@@ -27,6 +27,10 @@ $allFilesUrl = 'files.php?' . http_build_query($baseFilesQuery);
 $pendingFilesQuery = $baseFilesQuery;
 $pendingFilesQuery['status_group'] = 'pending';
 $pendingFilesUrl = 'files.php?' . http_build_query($pendingFilesQuery);
+$totalFilesUrl = 'files.php?' . http_build_query($baseFilesQuery + ['metric' => 'total_files']);
+$totalEarningsUrl = 'files.php?' . http_build_query($baseFilesQuery + ['metric' => 'total_earnings']);
+$activeSourcesUrl = 'files.php?' . http_build_query($baseFilesQuery + ['metric' => 'active_sources']);
+$pendingMetricUrl = 'files.php?' . http_build_query($pendingFilesQuery + ['metric' => 'pending_payments']);
 
 try {
     $monthWhere = "WHERE {$dateField} BETWEEN :start AND :end";
@@ -142,25 +146,25 @@ include __DIR__ . '/_responsive.php';
 
     <!-- Stat Cards -->
     <div class="stats-grid">
-        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
+        <a href="<?php echo htmlspecialchars($totalFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $totalFiles; ?></div><div class="stat-label">Total Files</div></div>
                 <div class="stat-icon primary"><i class="fas fa-folder-open"></i></div>
             </div>
         </a>
-        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
+        <a href="<?php echo htmlspecialchars($totalEarningsUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value">&#8377;<?php echo number_format($totalEarnings, 0); ?></div><div class="stat-label">Total Earnings</div></div>
                 <div class="stat-icon success"><i class="fas fa-rupee-sign"></i></div>
             </div>
         </a>
-        <a href="<?php echo htmlspecialchars($pendingFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
+        <a href="<?php echo htmlspecialchars($pendingMetricUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $pendingPayments; ?></div><div class="stat-label">Pending Payments</div></div>
                 <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
             </div>
         </a>
-        <a href="<?php echo htmlspecialchars($allFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
+        <a href="<?php echo htmlspecialchars($activeSourcesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $activeSources; ?></div><div class="stat-label">Active Sources</div></div>
                 <div class="stat-icon info"><i class="fas fa-users"></i></div>
