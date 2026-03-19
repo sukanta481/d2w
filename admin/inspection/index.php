@@ -6,20 +6,22 @@ require_once __DIR__ . '/../config/database.php';
 $database = new Database();
 $db = $database->connect();
 
-// Month/Year filter
-$filterMonth = $_GET['month'] ?? date('m');
-$filterYear = $_GET['year'] ?? date('Y');
+// Filters
+$filterMonth = $_GET['month'] ?? '';
+$filterYear = $_GET['year'] ?? '';
 $filterType = $_GET['file_type'] ?? '';
-$filterDateBasis = $_GET['date_basis'] ?? 'updated';
+$filterDateBasis = $_GET['date_basis'] ?? 'file';
+$hasDateFilter = ($filterMonth !== '' && $filterYear !== '');
 
-$monthStart = "{$filterYear}-{$filterMonth}-01";
-$monthEnd = date('Y-m-t', strtotime($monthStart));
 $dateField = $filterDateBasis === 'file' ? 'f.file_date' : 'DATE(f.updated_at)';
-$baseFilesQuery = [
-    'date_from' => $monthStart,
-    'date_to' => $monthEnd,
-    'date_basis' => $filterDateBasis,
-];
+$baseFilesQuery = [];
+if ($hasDateFilter) {
+    $monthStart = "{$filterYear}-{$filterMonth}-01";
+    $monthEnd = date('Y-m-t', strtotime($monthStart));
+    $baseFilesQuery['date_from'] = $monthStart;
+    $baseFilesQuery['date_to'] = $monthEnd;
+    $baseFilesQuery['date_basis'] = $filterDateBasis;
+}
 if ($filterType) {
     $baseFilesQuery['file_type'] = $filterType;
 }
@@ -33,43 +35,49 @@ $activeSourcesUrl = 'files.php?' . http_build_query($baseFilesQuery + ['metric' 
 $pendingMetricUrl = 'files.php?' . http_build_query($pendingFilesQuery + ['metric' => 'pending_payments']);
 
 try {
-    $monthWhere = "WHERE {$dateField} BETWEEN :start AND :end";
-    $monthParams = [':start' => $monthStart, ':end' => $monthEnd];
+    $where = "WHERE 1=1";
+    $params = [];
+
+    if ($hasDateFilter) {
+        $where .= " AND {$dateField} BETWEEN :start AND :end";
+        $params[':start'] = $monthStart;
+        $params[':end'] = $monthEnd;
+    }
 
     if ($filterType) {
-        $monthWhere .= " AND f.file_type = :type";
-        $monthParams[':type'] = $filterType;
+        $where .= " AND f.file_type = :type";
+        $params[':type'] = $filterType;
     }
 
     // Stat 1: Total Files
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$monthWhere}");
-    $stmt->execute($monthParams);
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$where}");
+    $stmt->execute($params);
     $totalFiles = $stmt->fetch()['total'];
 
     // Stat 2: Total Earnings (gross_amount)
-    $stmt = $db->prepare("SELECT COALESCE(SUM(f.gross_amount), 0) as total FROM inspection_files f {$monthWhere}");
-    $stmt->execute($monthParams);
+    $stmt = $db->prepare("SELECT COALESCE(SUM(f.gross_amount), 0) as total FROM inspection_files f {$where}");
+    $stmt->execute($params);
     $totalEarnings = $stmt->fetch()['total'];
 
     // Stat 3: Pending Payments (self files with due/partially)
-    $pendingWhere = $monthWhere . " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
+    $pendingWhere = $where . " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$pendingWhere}");
-    $stmt->execute($monthParams);
+    $stmt->execute($params);
     $pendingPayments = $stmt->fetch()['total'];
 
     // Stat 4: Active Sources
-    $stmt = $db->prepare("SELECT COUNT(DISTINCT f.source_id) as total FROM inspection_files f {$monthWhere}");
-    $stmt->execute($monthParams);
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT f.source_id) as total FROM inspection_files f {$where}");
+    $stmt->execute($params);
     $activeSources = $stmt->fetch()['total'];
 
     // Source-wise summary
     $stmt = $db->prepare("SELECT isrc.source_name, COUNT(*) as file_count, COALESCE(SUM(f.gross_amount), 0) as total_earnings
         FROM inspection_files f
         JOIN inspection_sources isrc ON f.source_id = isrc.id
-        {$monthWhere}
+        {$where}
         GROUP BY f.source_id, isrc.source_name
         ORDER BY total_earnings DESC");
-    $stmt->execute($monthParams);
+    $stmt->execute($params);
     $sourceSummary = $stmt->fetchAll();
 
     // Recent 10 files
@@ -77,9 +85,9 @@ try {
         FROM inspection_files f
         LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
         LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
-        {$monthWhere}
+        {$where}
         ORDER BY f.file_date DESC, f.id DESC LIMIT 10");
-    $stmt->execute($monthParams);
+    $stmt->execute($params);
     $recentFiles = $stmt->fetchAll();
 
 } catch(PDOException $e) {
@@ -98,7 +106,7 @@ include __DIR__ . '/_responsive.php';
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
             <h1 class="page-title">Inspection Dashboard</h1>
-            <p class="page-subtitle"><?php echo date('F Y', strtotime($monthStart)); ?> Overview</p>
+            <p class="page-subtitle"><?php echo $hasDateFilter ? date('F Y', strtotime($monthStart)) . ' Overview' : 'All Time Overview'; ?></p>
         </div>
         <div class="inspection-toolbar">
             <a href="files.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i>New File</a>
@@ -109,6 +117,7 @@ include __DIR__ . '/_responsive.php';
     <form method="GET" class="row mb-4 g-2 inspection-filter-form">
         <div class="col-auto">
             <select name="month" class="form-select">
+                <option value="">All Months</option>
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                     <option value="<?php echo str_pad($m, 2, '0', STR_PAD_LEFT); ?>" <?php echo $filterMonth == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : ''; ?>>
                         <?php echo date('F', mktime(0, 0, 0, $m, 1)); ?>
@@ -118,8 +127,9 @@ include __DIR__ . '/_responsive.php';
         </div>
         <div class="col-auto">
             <select name="year" class="form-select">
-                <?php for ($y = date('Y'); $y >= 2020; $y--): ?>
-                    <option value="<?php echo $y; ?>" <?php echo $filterYear == $y ? 'selected' : ''; ?>><?php echo $y; ?></option>
+                <option value="">All Years</option>
+                <?php for ($y = date('Y') + 1; $y >= 2020; $y--): ?>
+                    <option value="<?php echo $y; ?>" <?php echo $filterYear == (string)$y ? 'selected' : ''; ?>><?php echo $y; ?></option>
                 <?php endfor; ?>
             </select>
         </div>

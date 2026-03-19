@@ -1326,9 +1326,10 @@ $hasAnyExplicitFilter = $typeFilter !== ''
     || !empty($_GET['date_basis']);
 
 if (!$hasAnyExplicitFilter) {
-    $dateFrom = date('Y-m-01');
-    $dateTo = date('Y-m-t');
-    $dateBasis = 'updated';
+    // Show all records by default - no date restriction
+    $dateFrom = '';
+    $dateTo = '';
+    $dateBasis = 'file_date';
 } elseif ($hasSearchOnly) {
     $dateFrom = '';
     $dateTo = '';
