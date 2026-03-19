@@ -1310,6 +1310,7 @@ $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
 $dateBasis = $_GET['date_basis'] ?? 'updated';
 $dashboardMetric = $_GET['metric'] ?? '';
+$sortOrder = $_GET['sort'] ?? 'newest';
 
 $hasSearchOnly = $searchQuery !== ''
     && $typeFilter === ''
@@ -1440,10 +1441,24 @@ try {
         'active_sources' => 0,
     ];
 
+    // Dynamic sorting
+    $orderByMap = [
+        'newest' => 'f.file_date DESC, f.id DESC',
+        'oldest' => 'f.file_date ASC, f.id ASC',
+        'recently_updated' => 'f.updated_at DESC, f.id DESC',
+        'amount_high' => 'f.gross_amount DESC, f.id DESC',
+        'amount_low' => 'f.gross_amount ASC, f.id DESC',
+        'customer_az' => 'f.customer_name ASC, f.id DESC',
+        'customer_za' => 'f.customer_name DESC, f.id DESC',
+        'file_no_desc' => 'f.file_number DESC',
+        'file_no_asc' => 'f.file_number ASC',
+    ];
+    $orderBy = $orderByMap[$sortOrder] ?? $orderByMap['newest'];
+
     $query = "SELECT f.*, ib.bank_name, ibr.branch_name, isrc.source_name, ipm.mode_name, ima.account_name as received_account_name
               {$fromSql}
               {$where}
-              ORDER BY f.file_date DESC, f.id DESC
+              ORDER BY {$orderBy}
               LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
 
     $stmt = $db->prepare($query);
@@ -1729,6 +1744,38 @@ include __DIR__ . '/_responsive.php';
             </div>
             <div class="text-muted small" id="bulkSelectedCount">0 file(s) selected</div>
         </div>
+        <!-- Sort Bar -->
+        <?php
+        // Build current filter params for sort links
+        $sortBaseParams = $_GET;
+        unset($sortBaseParams['sort'], $sortBaseParams['page']);
+        $sortQueryString = http_build_query($sortBaseParams);
+        $sortOptions = [
+            'newest' => ['label' => 'Date: New → Old', 'icon' => 'fa-sort-amount-down'],
+            'oldest' => ['label' => 'Date: Old → New', 'icon' => 'fa-sort-amount-up'],
+            'recently_updated' => ['label' => 'Recently Updated', 'icon' => 'fa-clock'],
+            'amount_high' => ['label' => 'Gross: High → Low', 'icon' => 'fa-sort-numeric-down'],
+            'amount_low' => ['label' => 'Gross: Low → High', 'icon' => 'fa-sort-numeric-up'],
+            'customer_az' => ['label' => 'Customer: A → Z', 'icon' => 'fa-sort-alpha-down'],
+            'customer_za' => ['label' => 'Customer: Z → A', 'icon' => 'fa-sort-alpha-up'],
+            'file_no_desc' => ['label' => 'File #: Latest', 'icon' => 'fa-hashtag'],
+            'file_no_asc' => ['label' => 'File #: Earliest', 'icon' => 'fa-hashtag'],
+        ];
+        ?>
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+            <div class="text-muted small"><?php echo number_format($totalFiles); ?> file(s) found</div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small"><i class="fas fa-sort me-1"></i>Sort by:</span>
+                <select id="sortOrderSelect" class="form-select form-select-sm" style="width: auto; min-width: 180px;">
+                    <?php foreach ($sortOptions as $key => $opt): ?>
+                        <option value="<?php echo $key; ?>" <?php echo $sortOrder === $key ? 'selected' : ''; ?>>
+                            <?php echo $opt['label']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+
         <div class="table-responsive inspection-table-wrap">
             <div class="inspection-table-mobile-note">Files are shown as stacked cards on mobile for easier reading and actions.</div>
             <table class="data-table inspection-table">
@@ -2537,6 +2584,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toggleActionFields();
     updateBulkUi();
+
+    // Sort dropdown
+    const sortSelect = document.getElementById('sortOrderSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+    }
 });
 </script>
 
