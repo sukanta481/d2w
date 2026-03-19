@@ -99,6 +99,11 @@ function tableColumnExists($db, $tableName, $columnName) {
     return $columnCache[$cacheKey];
 }
 
+function getActiveLikeStatusCondition($alias = '') {
+    $prefix = $alias ? rtrim($alias, '.') . '.' : '';
+    return "({$prefix}status = 'active' OR {$prefix}status IS NULL OR {$prefix}status = '')";
+}
+
 function formatBulkImportRowError($message) {
     $friendly = $message;
 
@@ -497,7 +502,7 @@ function buildImportTemplateCsv() {
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'branches' && isset($_GET['bank_id'])) {
     header('Content-Type: application/json');
     try {
-        $stmt = $db->prepare("SELECT id, branch_name FROM inspection_branches WHERE bank_id = :bank_id AND status = 'active' ORDER BY branch_name");
+        $stmt = $db->prepare("SELECT id, branch_name FROM inspection_branches WHERE bank_id = :bank_id AND " . getActiveLikeStatusCondition() . " ORDER BY branch_name");
         $stmt->execute([':bank_id' => intval($_GET['bank_id'])]);
         echo json_encode($stmt->fetchAll());
     } catch(Exception $e) {
@@ -566,7 +571,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
             throw new Exception('The uploaded sheet is empty.');
         }
 
-        $bankRows = $db->query("SELECT id, bank_name FROM inspection_banks WHERE status = 'active'")->fetchAll();
+        $bankRows = $db->query("SELECT id, bank_name FROM inspection_banks WHERE " . getActiveLikeStatusCondition() . "")->fetchAll();
         $banksById = [];
         $banksByName = [];
         foreach ($bankRows as $bank) {
@@ -574,7 +579,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
             $banksByName[normalizeLookupName($bank['bank_name'])] = (int)$bank['id'];
         }
 
-        $branchRows = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE status = 'active'")->fetchAll();
+        $branchRows = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE " . getActiveLikeStatusCondition() . "")->fetchAll();
         $branchesById = [];
         $branchesByBankName = [];
         $branchesByName = [];
@@ -587,7 +592,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
             $branchesByName[$normalizedBranchName][] = $branchId;
         }
 
-        $sourceRows = $db->query("SELECT id, source_name FROM inspection_sources WHERE status = 'active'")->fetchAll();
+        $sourceRows = $db->query("SELECT id, source_name FROM inspection_sources WHERE " . getActiveLikeStatusCondition() . "")->fetchAll();
         $sourcesById = [];
         $sourcesByName = [];
         foreach ($sourceRows as $source) {
@@ -595,7 +600,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
             $sourcesByName[normalizeLookupName($source['source_name'])] = (int)$source['id'];
         }
 
-        $modeRows = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE status = 'active'")->fetchAll();
+        $modeRows = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE " . getActiveLikeStatusCondition() . "")->fetchAll();
         $modesById = [];
         $modesByName = [];
         foreach ($modeRows as $mode) {
@@ -603,7 +608,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
             $modesByName[normalizeLookupName($mode['mode_name'])] = (int)$mode['id'];
         }
 
-        $accountRows = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE status = 'active'")->fetchAll();
+        $accountRows = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE " . getActiveLikeStatusCondition() . "")->fetchAll();
         $accountsById = [];
         $accountsByName = [];
         foreach ($accountRows as $account) {
@@ -1084,16 +1089,16 @@ try {
     $stmt->execute($params);
     $files = $stmt->fetchAll();
 
-    $banks = $db->query("SELECT id, bank_name FROM inspection_banks WHERE status = 'active' ORDER BY bank_name")->fetchAll();
-    $branches = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE status = 'active' ORDER BY branch_name")->fetchAll();
+    $banks = $db->query("SELECT id, bank_name FROM inspection_banks WHERE " . getActiveLikeStatusCondition() . " ORDER BY bank_name")->fetchAll();
+    $branches = $db->query("SELECT id, bank_id, branch_name FROM inspection_branches WHERE " . getActiveLikeStatusCondition() . " ORDER BY branch_name")->fetchAll();
     $branchesByBank = [];
     foreach ($branches as $branch) {
         $branchesByBank[$branch['bank_id']][] = $branch;
     }
 
-    $sources = $db->query("SELECT id, source_name FROM inspection_sources WHERE status = 'active' ORDER BY source_name")->fetchAll();
-    $paymentModes = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE status = 'active' ORDER BY mode_name")->fetchAll();
-    $myAccounts = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE status = 'active' ORDER BY account_name")->fetchAll();
+    $sources = $db->query("SELECT id, source_name FROM inspection_sources WHERE " . getActiveLikeStatusCondition() . " ORDER BY source_name")->fetchAll();
+    $paymentModes = $db->query("SELECT id, mode_name FROM inspection_payment_modes WHERE " . getActiveLikeStatusCondition() . " ORDER BY mode_name")->fetchAll();
+    $myAccounts = $db->query("SELECT id, account_name FROM inspection_my_accounts WHERE " . getActiveLikeStatusCondition() . " ORDER BY account_name")->fetchAll();
 
 } catch(PDOException $e) {
     $files = $banks = $branches = $branchesByBank = $sources = $paymentModes = $myAccounts = [];
