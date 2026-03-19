@@ -1033,6 +1033,139 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_file'])) {
     }
 }
 
+// ===== BULK ACTIONS =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_update_files'])) {
+    try {
+        unset($_SESSION['inspection_import_error_report']);
+
+        $selectedIds = array_values(array_unique(array_filter(array_map('intval', $_POST['selected_file_ids'] ?? []))));
+        if (empty($selectedIds)) {
+            throw new Exception('Please select at least one file first.');
+        }
+
+        $bulkAction = trim((string)($_POST['bulk_action'] ?? ''));
+        $allowedActions = ['delete', 'payment_status', 'report_status', 'paid_to_office'];
+        if (!in_array($bulkAction, $allowedActions, true)) {
+            throw new Exception('Please choose a valid bulk action.');
+        }
+
+        $placeholders = [];
+        $idParams = [];
+        foreach ($selectedIds as $index => $selectedId) {
+            $key = ':id' . $index;
+            $placeholders[] = $key;
+            $idParams[$key] = $selectedId;
+        }
+        $idListSql = implode(', ', $placeholders);
+
+        $db->beginTransaction();
+
+        if ($bulkAction === 'delete') {
+            $stmt = $db->prepare("DELETE FROM inspection_files WHERE id IN ({$idListSql})");
+            $stmt->execute($idParams);
+            $affectedRows = $stmt->rowCount();
+
+            foreach ($selectedIds as $selectedId) {
+                $auth->logActivity($auth->getUserId(), 'delete', 'inspection_files', $selectedId, 'Bulk deleted file');
+            }
+
+            $db->commit();
+            $successMessage = "{$affectedRows} file(s) deleted successfully.";
+        } else {
+            $updateSql = '';
+            $updateParams = $idParams;
+            $affectedRows = 0;
+            $officeRowsSkipped = 0;
+
+            if ($bulkAction === 'payment_status') {
+                $paymentStatusValue = trim((string)($_POST['bulk_payment_status'] ?? ''));
+                if (!in_array($paymentStatusValue, ['due', 'paid'], true)) {
+                    throw new Exception('Please choose a valid payment status for the selected files.');
+                }
+
+                $skippedStmt = $db->prepare("SELECT COUNT(*) FROM inspection_files WHERE id IN ({$idListSql}) AND file_type = 'office'");
+                $skippedStmt->execute($idParams);
+                $officeRowsSkipped = (int)$skippedStmt->fetchColumn();
+
+                $updateSql = "UPDATE inspection_files
+                    SET payment_status = :bulk_value,
+                        amount = CASE WHEN :bulk_value = 'paid' THEN fees ELSE NULL END,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id IN ({$idListSql}) AND file_type = 'self'";
+                $updateParams[':bulk_value'] = $paymentStatusValue;
+
+                if (tableColumnExists($db, 'inspection_files', 'payment_status_date')) {
+                    $updateSql = "UPDATE inspection_files
+                        SET payment_status = :bulk_value,
+                            amount = CASE WHEN :bulk_value = 'paid' THEN fees ELSE NULL END,
+                            payment_status_date = CURRENT_DATE,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id IN ({$idListSql}) AND file_type = 'self'";
+                }
+            } elseif ($bulkAction === 'report_status') {
+                $reportStatusValue = trim((string)($_POST['bulk_report_status'] ?? ''));
+                if (!in_array($reportStatusValue, ['draft', 'final_soft', 'final_hard'], true)) {
+                    throw new Exception('Please choose a valid report status for the selected files.');
+                }
+
+                $updateSql = "UPDATE inspection_files
+                    SET report_status = :bulk_value,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id IN ({$idListSql})";
+                $updateParams[':bulk_value'] = $reportStatusValue;
+
+                if (tableColumnExists($db, 'inspection_files', 'report_status_date')) {
+                    $updateSql = "UPDATE inspection_files
+                        SET report_status = :bulk_value,
+                            report_status_date = CURRENT_DATE,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id IN ({$idListSql})";
+                }
+            } elseif ($bulkAction === 'paid_to_office') {
+                $paidToOfficeValue = trim((string)($_POST['bulk_paid_to_office'] ?? ''));
+                if (!in_array($paidToOfficeValue, ['paid', 'due'], true)) {
+                    throw new Exception('Please choose a valid Paid to Office value.');
+                }
+
+                $skippedStmt = $db->prepare("SELECT COUNT(*) FROM inspection_files WHERE id IN ({$idListSql}) AND file_type = 'office'");
+                $skippedStmt->execute($idParams);
+                $officeRowsSkipped = (int)$skippedStmt->fetchColumn();
+
+                $updateSql = "UPDATE inspection_files
+                    SET paid_to_office = :bulk_value,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id IN ({$idListSql}) AND file_type = 'self'";
+                $updateParams[':bulk_value'] = $paidToOfficeValue;
+            }
+
+            $stmt = $db->prepare($updateSql);
+            $stmt->execute($updateParams);
+            $affectedRows = $stmt->rowCount();
+
+            foreach ($selectedIds as $selectedId) {
+                $auth->logActivity($auth->getUserId(), 'update', 'inspection_files', $selectedId, 'Bulk updated file');
+            }
+
+            $db->commit();
+
+            $actionLabels = [
+                'payment_status' => 'Payment status',
+                'report_status' => 'Report status',
+                'paid_to_office' => 'Paid to office',
+            ];
+            $successMessage = ($actionLabels[$bulkAction] ?? 'Bulk action') . " updated for {$affectedRows} file(s).";
+            if ($officeRowsSkipped > 0) {
+                $successMessage .= " Skipped {$officeRowsSkipped} office file(s) where that action does not apply.";
+            }
+        }
+    } catch (Exception $e) {
+        if ($db && $db->inTransaction()) {
+            $db->rollBack();
+        }
+        $errorMessage = 'Error: ' . $e->getMessage();
+    }
+}
+
 // ===== FILTERS & PAGINATION =====
 $page = max(1, intval($_GET['page'] ?? 1));
 $perPage = 25;
@@ -1213,12 +1346,63 @@ include __DIR__ . '/_responsive.php';
         </form>
 
         <!-- Files Table -->
+        <form method="POST" id="bulkFilesForm"></form>
+        <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+            <div class="flex-grow-1" style="min-width: 220px;">
+                <label for="bulkAction" class="form-label mb-1">Bulk Action</label>
+                <select name="bulk_action" id="bulkAction" class="form-select" form="bulkFilesForm">
+                    <option value="">Choose action</option>
+                    <option value="payment_status">Change Payment Status</option>
+                    <option value="report_status">Change Report Status</option>
+                    <option value="paid_to_office">Change Paid to Office</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+            </div>
+            <div class="bulk-action-field" data-bulk-field="payment_status" style="display:none; min-width: 200px;">
+                <label for="bulkPaymentStatus" class="form-label mb-1">Payment Status</label>
+                <select name="bulk_payment_status" id="bulkPaymentStatus" class="form-select" form="bulkFilesForm">
+                    <option value="">Select payment status</option>
+                    <option value="due">Due</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+            <div class="bulk-action-field" data-bulk-field="report_status" style="display:none; min-width: 220px;">
+                <label for="bulkReportStatus" class="form-label mb-1">Report Status</label>
+                <select name="bulk_report_status" id="bulkReportStatus" class="form-select" form="bulkFilesForm">
+                    <option value="">Select report status</option>
+                    <option value="draft">Draft</option>
+                    <option value="final_soft">Final Soft Copy</option>
+                    <option value="final_hard">Final Hard Copy</option>
+                </select>
+            </div>
+            <div class="bulk-action-field" data-bulk-field="paid_to_office" style="display:none; min-width: 200px;">
+                <label for="bulkPaidToOffice" class="form-label mb-1">Paid to Office</label>
+                <select name="bulk_paid_to_office" id="bulkPaidToOffice" class="form-select" form="bulkFilesForm">
+                    <option value="">Select value</option>
+                    <option value="paid">Paid</option>
+                    <option value="due">Due</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label mb-1 d-block">&nbsp;</label>
+                <button type="submit" name="bulk_update_files" class="btn btn-outline-primary" id="bulkApplyButton" form="bulkFilesForm" disabled>
+                    <i class="fas fa-tasks me-1"></i>Apply
+                </button>
+            </div>
+            <div class="text-muted small" id="bulkSelectedCount">0 file(s) selected</div>
+        </div>
         <div class="table-responsive inspection-table-wrap">
             <div class="inspection-table-mobile-note">Files are shown as stacked cards on mobile for easier reading and actions.</div>
             <table class="data-table inspection-table">
                 <thead>
                     <tr>
-                        <th>File #</th><th>Date</th><th>Type</th><th>Customer</th>
+                        <th>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="checkbox" class="form-check-input mt-0" id="selectAllFiles" aria-label="Select all files on this page">
+                                <span>File #</span>
+                            </div>
+                        </th>
+                        <th>Date</th><th>Type</th><th>Customer</th>
                         <th>Bank / Branch</th><th>Fees</th><th>Commission</th>
                         <th>Gross</th><th>Payment</th><th>Actions</th>
                     </tr>
@@ -1228,9 +1412,19 @@ include __DIR__ . '/_responsive.php';
                         <?php foreach ($files as $file): ?>
                             <tr>
                                 <td data-label="File #">
-                                    <strong class="inspection-file-number-desktop"><?php echo htmlspecialchars($file['file_number']); ?></strong>
+                                    <div class="d-flex align-items-center gap-2 inspection-file-select-wrap">
+                                        <input type="checkbox" class="form-check-input bulk-file-checkbox mt-0" name="selected_file_ids[]" value="<?php echo (int)$file['id']; ?>" form="bulkFilesForm" aria-label="Select file <?php echo htmlspecialchars($file['file_number']); ?>">
+                                        <strong class="inspection-file-number-desktop"><?php echo htmlspecialchars($file['file_number']); ?></strong>
+                                    </div>
                                     <div class="inspection-mobile-file-card">
                                         <div class="inspection-mobile-file-top">
+                                            <div class="d-flex align-items-start gap-2">
+                                                <input type="checkbox" class="form-check-input bulk-file-checkbox mt-1" name="selected_file_ids[]" value="<?php echo (int)$file['id']; ?>" form="bulkFilesForm" aria-label="Select file <?php echo htmlspecialchars($file['file_number']); ?>">
+                                                <div>
+                                                    <div class="inspection-mobile-file-label">File #</div>
+                                                    <div class="inspection-mobile-file-value"><?php echo htmlspecialchars($file['file_number']); ?></div>
+                                                </div>
+                                            </div>
                                             <div>
                                                 <div class="inspection-mobile-file-label">Date</div>
                                                 <div class="inspection-mobile-file-value"><?php echo $file['file_date'] ? date('d M Y', strtotime($file['file_date'])) : '-'; ?></div>
@@ -1783,6 +1977,126 @@ document.querySelectorAll('[id^="editFileModal"]').forEach(modal => {
             }
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const bulkForm = document.getElementById('bulkFilesForm');
+    const actionSelect = document.getElementById('bulkAction');
+    const selectAll = document.getElementById('selectAllFiles');
+    const applyButton = document.getElementById('bulkApplyButton');
+    const countLabel = document.getElementById('bulkSelectedCount');
+    const actionFields = document.querySelectorAll('.bulk-action-field');
+    const allCheckboxes = Array.from(document.querySelectorAll('.bulk-file-checkbox'));
+
+    if (!bulkForm || !actionSelect || !applyButton || !countLabel || allCheckboxes.length === 0) {
+        return;
+    }
+
+    function getUniqueSelectedIds() {
+        const selected = new Set();
+        allCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                selected.add(checkbox.value);
+            }
+        });
+        return Array.from(selected);
+    }
+
+    function syncCheckboxGroup(changedCheckbox) {
+        allCheckboxes.forEach(checkbox => {
+            if (checkbox !== changedCheckbox && checkbox.value === changedCheckbox.value) {
+                checkbox.checked = changedCheckbox.checked;
+            }
+        });
+    }
+
+    function toggleActionFields() {
+        const selectedAction = actionSelect.value;
+        actionFields.forEach(field => {
+            const shouldShow = field.dataset.bulkField === selectedAction;
+            field.style.display = shouldShow ? '' : 'none';
+        });
+    }
+
+    function isActionValueValid() {
+        if (!actionSelect.value) {
+            return false;
+        }
+
+        if (actionSelect.value === 'delete') {
+            return true;
+        }
+
+        if (actionSelect.value === 'payment_status') {
+            return !!document.getElementById('bulkPaymentStatus').value;
+        }
+
+        if (actionSelect.value === 'report_status') {
+            return !!document.getElementById('bulkReportStatus').value;
+        }
+
+        if (actionSelect.value === 'paid_to_office') {
+            return !!document.getElementById('bulkPaidToOffice').value;
+        }
+
+        return false;
+    }
+
+    function updateBulkUi() {
+        const selectedIds = getUniqueSelectedIds();
+        countLabel.textContent = `${selectedIds.length} file(s) selected`;
+        applyButton.disabled = selectedIds.length === 0 || !isActionValueValid();
+
+        if (selectAll) {
+            const uniqueIds = Array.from(new Set(allCheckboxes.map(checkbox => checkbox.value)));
+            selectAll.checked = uniqueIds.length > 0 && selectedIds.length === uniqueIds.length;
+            selectAll.indeterminate = selectedIds.length > 0 && selectedIds.length < uniqueIds.length;
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const shouldCheck = this.checked;
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = shouldCheck;
+            });
+            updateBulkUi();
+        });
+    }
+
+    allCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            syncCheckboxGroup(this);
+            updateBulkUi();
+        });
+    });
+
+    actionSelect.addEventListener('change', () => {
+        toggleActionFields();
+        updateBulkUi();
+    });
+
+    ['bulkPaymentStatus', 'bulkReportStatus', 'bulkPaidToOffice'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', updateBulkUi);
+        }
+    });
+
+    bulkForm.addEventListener('submit', event => {
+        const selectedIds = getUniqueSelectedIds();
+        if (selectedIds.length === 0 || !isActionValueValid()) {
+            event.preventDefault();
+            return;
+        }
+
+        if (actionSelect.value === 'delete' && !confirm(`Delete ${selectedIds.length} selected file(s)? This cannot be undone.`)) {
+            event.preventDefault();
+        }
+    });
+
+    toggleActionFields();
+    updateBulkUi();
 });
 </script>
 
