@@ -11,7 +11,9 @@ $filterMonth = $_GET['month'] ?? '';
 $filterYear = $_GET['year'] ?? '';
 $filterType = $_GET['file_type'] ?? '';
 $filterDateBasis = $_GET['date_basis'] ?? 'file';
+$filterSort = $_GET['sort'] ?? 'newest';
 $hasDateFilter = ($filterMonth !== '' && $filterYear !== '');
+$sortOrder = ($filterSort === 'oldest') ? 'ASC' : 'DESC';
 
 $dateField = $filterDateBasis === 'file' ? 'f.file_date' : 'DATE(f.updated_at)';
 $baseFilesQuery = [];
@@ -86,7 +88,7 @@ try {
         LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
         LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
         {$where}
-        ORDER BY f.file_date DESC, f.id DESC LIMIT 10");
+        ORDER BY f.file_date {$sortOrder}, f.id {$sortOrder} LIMIT 10");
     $stmt->execute($params);
     $recentFiles = $stmt->fetchAll();
 
@@ -144,6 +146,12 @@ include __DIR__ . '/_responsive.php';
             <select name="date_basis" class="form-select">
                 <option value="updated" <?php echo $filterDateBasis === 'updated' ? 'selected' : ''; ?>>Updated Month</option>
                 <option value="file" <?php echo $filterDateBasis === 'file' ? 'selected' : ''; ?>>File Date Month</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="sort" class="form-select">
+                <option value="newest" <?php echo $filterSort === 'newest' ? 'selected' : ''; ?>>Newest First</option>
+                <option value="oldest" <?php echo $filterSort === 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
             </select>
         </div>
         <div class="col-auto">

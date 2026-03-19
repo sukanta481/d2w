@@ -578,7 +578,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export')
             f.property_address, f.property_value, ib.bank_name, ibr.branch_name, isrc.source_name,
             f.fees, f.report_status, " . (tableColumnExists($db, 'inspection_files', 'report_status_date') ? 'f.report_status_date,' : 'NULL AS report_status_date,') . "
             ipm.mode_name AS payment_mode, f.payment_status, " . (tableColumnExists($db, 'inspection_files', 'payment_status_date') ? 'f.payment_status_date,' : 'NULL AS payment_status_date,') . "
-            f.amount, f.paid_to_office, " . ($hasCommissionPendingColumn ? 'f.commission_pending,' : 'NULL AS commission_pending,') . " f.office_amount, f.commission, f.extra_amount, f.gross_amount,
+            f.amount, f.paid_to_office, " . ($hasPaidToOfficeDateColumn ? 'f.paid_to_office_date,' : 'NULL AS paid_to_office_date,') . " " . ($hasCommissionPendingColumn ? 'f.commission_pending,' : 'NULL AS commission_pending,') . " f.office_amount, f.commission, f.extra_amount, f.gross_amount,
             ima.account_name AS received_account, f.notes, f.created_at, f.updated_at
         FROM inspection_files f
         LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
@@ -600,6 +600,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export')
 
 $hasReportStatusDateColumn = tableColumnExists($db, 'inspection_files', 'report_status_date');
 $hasPaymentStatusDateColumn = tableColumnExists($db, 'inspection_files', 'payment_status_date');
+$hasPaidToOfficeDateColumn = tableColumnExists($db, 'inspection_files', 'paid_to_office_date');
 $hasCommissionPendingColumn = tableColumnExists($db, 'inspection_files', 'commission_pending');
 
 // ===== BULK IMPORT FILES =====
@@ -935,6 +936,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
         unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
         $paymentStatusDate = $hasPaymentStatusDateColumn && !empty($_POST['payment_status_date']) ? $_POST['payment_status_date'] : null;
+        $paidToOfficeDate = $hasPaidToOfficeDateColumn && !empty($_POST['paid_to_office_date']) ? $_POST['paid_to_office_date'] : null;
         $commissionPending = resolveCommissionPendingValue(
             $db,
             $hasCommissionPendingColumn,
@@ -963,6 +965,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
         $insertColumns = array_merge($insertColumns, [
             'amount', 'paid_to_office'
         ]);
+        if ($hasPaidToOfficeDateColumn) {
+            $insertColumns[] = 'paid_to_office_date';
+        }
         if ($hasCommissionPendingColumn) {
             $insertColumns[] = 'commission_pending';
         }
@@ -1001,6 +1006,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
         if ($hasPaymentStatusDateColumn) {
             $baseParams[':payment_status_date'] = $paymentStatusDate;
         }
+        if ($hasPaidToOfficeDateColumn) {
+            $baseParams[':paid_to_office_date'] = $paidToOfficeDate;
+        }
         if ($hasCommissionPendingColumn) {
             $baseParams[':commission_pending'] = $commissionPending;
         }
@@ -1038,6 +1046,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
         unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
         $paymentStatusDate = $hasPaymentStatusDateColumn && !empty($_POST['payment_status_date']) ? $_POST['payment_status_date'] : null;
+        $paidToOfficeDate = $hasPaidToOfficeDateColumn && !empty($_POST['paid_to_office_date']) ? $_POST['paid_to_office_date'] : null;
         $commissionPending = resolveCommissionPendingValue(
             $db,
             $hasCommissionPendingColumn,
@@ -1070,6 +1079,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
         $updateParts = array_merge($updateParts, [
             "amount = :amount", "paid_to_office = :paid_to_office"
         ]);
+        if ($hasPaidToOfficeDateColumn) {
+            $updateParts[] = "paid_to_office_date = :paid_to_office_date";
+        }
         if ($hasCommissionPendingColumn) {
             $updateParts[] = "commission_pending = :commission_pending";
         }
@@ -1110,6 +1122,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
         ];
         if ($hasPaymentStatusDateColumn) {
             $updateParams[':payment_status_date'] = $paymentStatusDate;
+        }
+        if ($hasPaidToOfficeDateColumn) {
+            $updateParams[':paid_to_office_date'] = $paidToOfficeDate;
         }
         if ($hasCommissionPendingColumn) {
             $updateParams[':commission_pending'] = $commissionPending;
@@ -1855,7 +1870,7 @@ include __DIR__ . '/_responsive.php';
                                                 } else { echo 'NA'; }
                                             ?></div>
                                             <div class="col-md-3 mb-3"><strong>Amount Received:</strong><br><?php echo $file['amount'] !== null ? '&#8377;' . number_format($file['amount'], 2) : 'NA'; ?></div>
-                                            <div class="col-md-3 mb-3"><strong>Paid to Office:</strong><br><?php echo $file['paid_to_office'] ? ucfirst($file['paid_to_office']) : 'NA'; ?></div>
+                                            <div class="col-md-3 mb-3"><strong>Paid to Office:</strong><br><?php echo $file['paid_to_office'] ? ucfirst($file['paid_to_office']) : 'NA'; ?><?php if (!empty($file['paid_to_office_date'])) echo '<br><small class="text-muted">' . date('d M Y', strtotime($file['paid_to_office_date'])) . '</small>'; ?></div>
                                             <?php if ($hasCommissionPendingColumn): ?>
                                             <div class="col-md-3 mb-3"><strong>Commission Pending:</strong><br><?php echo $file['commission_pending'] ? ucfirst($file['commission_pending']) : 'NA'; ?></div>
                                             <?php endif; ?>
@@ -1961,6 +1976,9 @@ include __DIR__ . '/_responsive.php';
                                                     <option value="due" <?php echo $file['paid_to_office'] === 'due' ? 'selected' : ''; ?>>Due</option>
                                                 </select>
                                             </div>
+                                            <?php if ($hasPaidToOfficeDateColumn): ?>
+                                            <div class="col-md-3 mb-3"><label class="form-label">Paid to Office Date</label><input type="date" name="paid_to_office_date" class="form-control" value="<?php echo htmlspecialchars($file['paid_to_office_date'] ?? ''); ?>"></div>
+                                            <?php endif; ?>
                                             <?php if ($hasCommissionPendingColumn): ?>
                                             <div class="col-md-3 mb-3 commission-pending-field" style="display:none;">
                                                 <label class="form-label">Commission Pending</label>
@@ -2152,6 +2170,9 @@ include __DIR__ . '/_responsive.php';
                         <option value="due">Due</option>
                     </select>
                 </div>
+                <?php if ($hasPaidToOfficeDateColumn): ?>
+                <div class="col-md-3 mb-3"><label class="form-label">Paid to Office Date</label><input type="date" name="paid_to_office_date" class="form-control" disabled></div>
+                <?php endif; ?>
                 <?php if ($hasCommissionPendingColumn): ?>
                 <div class="col-md-3 mb-3 commission-pending-field" style="display:none;">
                     <label class="form-label">Commission Pending</label>
@@ -2194,6 +2215,7 @@ function initFileForm(formEl) {
     const paymentStatusDate = formEl.querySelector('[name="payment_status_date"]');
     const amount = formEl.querySelector('[name="amount"]');
     const paidToOffice = formEl.querySelector('[name="paid_to_office"]');
+    const paidToOfficeDate = formEl.querySelector('[name="paid_to_office_date"]');
     const commissionPendingWrap = formEl.querySelector('.commission-pending-field');
     const commissionPending = formEl.querySelector('[name="commission_pending"]');
     const officeAmount = formEl.querySelector('[name="office_amount"]');
@@ -2216,6 +2238,7 @@ function initFileForm(formEl) {
         paymentStatus.disabled = isOffice;
         if (paymentStatusDate) paymentStatusDate.disabled = isOffice;
         paidToOffice.disabled = isOffice;
+        if (paidToOfficeDate) paidToOfficeDate.disabled = isOffice;
         if (commissionPending) commissionPending.disabled = isOffice;
 
         if (isOffice) {
@@ -2227,6 +2250,7 @@ function initFileForm(formEl) {
             amount.value = '';
             amount.disabled = true;
             paidToOffice.value = '';
+            if (paidToOfficeDate) { paidToOfficeDate.value = ''; paidToOfficeDate.disabled = true; }
             if (commissionPending) commissionPending.value = '';
             officeAmount.value = '';
         } else if (isSelf) {
@@ -2234,6 +2258,7 @@ function initFileForm(formEl) {
                 paymentStatusDate.value = new Date().toISOString().slice(0, 10);
             }
             toggleAmount();
+            togglePaidToOfficeDate();
         }
         toggleCommissionPending();
         calcCommission();
@@ -2249,6 +2274,27 @@ function initFileForm(formEl) {
         } else {
             amount.disabled = true;
             amount.value = '';
+        }
+        // Enable payment status date when status is paid or partially
+        if (paymentStatusDate) {
+            if (paymentStatus.value === 'paid' || paymentStatus.value === 'partially') {
+                paymentStatusDate.disabled = false;
+                if (!paymentStatusDate.value) paymentStatusDate.value = new Date().toISOString().slice(0, 10);
+            } else {
+                paymentStatusDate.disabled = true;
+                paymentStatusDate.value = '';
+            }
+        }
+    }
+
+    function togglePaidToOfficeDate() {
+        if (!paidToOfficeDate) return;
+        if (paidToOffice.value === 'paid') {
+            paidToOfficeDate.disabled = false;
+            if (!paidToOfficeDate.value) paidToOfficeDate.value = new Date().toISOString().slice(0, 10);
+        } else {
+            paidToOfficeDate.disabled = true;
+            paidToOfficeDate.value = '';
         }
     }
 
@@ -2312,7 +2358,7 @@ function initFileForm(formEl) {
     fees.addEventListener('input', () => { calcCommission(); toggleAmount(); });
     paymentStatus.addEventListener('change', toggleAmount);
     paymentMode.addEventListener('change', toggleCommissionPending);
-    paidToOffice.addEventListener('change', toggleCommissionPending);
+    paidToOffice.addEventListener('change', () => { togglePaidToOfficeDate(); toggleCommissionPending(); });
     extraAmount.addEventListener('input', calcCommission);
     bankSelect.addEventListener('change', () => {
         branchSelect.dataset.selected = '';
@@ -2321,7 +2367,7 @@ function initFileForm(formEl) {
 
     // Initialize on load
     if (fileType.value) toggleFields();
-    else toggleCommissionPending();
+    else { toggleCommissionPending(); togglePaidToOfficeDate(); }
 
     // Load branches for edit forms whenever a bank is already selected.
     if (bankSelect.value) {
