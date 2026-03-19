@@ -70,14 +70,15 @@ function downloadCsvResponse($filename, $headers, $rows) {
 // Generate next file number: INS-YYYY-NNNN
 function generateFileNumber($db) {
     $year = date('Y');
-    $stmt = $db->prepare("SELECT file_number FROM inspection_files WHERE file_number LIKE :prefix ORDER BY id DESC LIMIT 1");
-    $stmt->execute([':prefix' => "INS-{$year}-%"]);
-    $last = $stmt->fetch();
-    if ($last) {
-        $num = (int)substr($last['file_number'], -4) + 1;
-    } else {
-        $num = 1;
-    }
+    $stmt = $db->prepare("SELECT COALESCE(MAX(CAST(RIGHT(file_number, 4) AS UNSIGNED)), 0)
+        FROM inspection_files
+        WHERE file_number LIKE :prefix
+        AND file_number REGEXP :pattern");
+    $stmt->execute([
+        ':prefix' => "INS-{$year}-%",
+        ':pattern' => '^INS-' . $year . '-[0-9]{4}$',
+    ]);
+    $num = ((int)$stmt->fetchColumn()) + 1;
     return sprintf("INS-%s-%04d", $year, $num);
 }
 
@@ -881,8 +882,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_import_files']))
 // ===== ADD FILE =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
     try {
+        unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
-        $fileNumber = generateFileNumber($db);
 
         // Validate branch belongs to bank (only if both are provided)
         if (!empty($_POST['bank_id']) && !empty($_POST['branch_id'])) {
@@ -902,8 +903,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
              :bank_id, :branch_id, :source_id, :fees, :report_status, :payment_mode_id, :payment_status, :amount,
              :paid_to_office, :office_amount, :commission, :extra_amount, :gross_amount, :received_account_id, :notes)");
 
-        $stmt->execute([
-            ':file_number' => $fileNumber,
+        $baseParams = [
             ':file_date' => !empty($_POST['file_date']) ? $_POST['file_date'] : null,
             ':file_type' => !empty($_POST['file_type']) ? $_POST['file_type'] : null,
             ':location' => $calc['location'],
@@ -926,7 +926,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
             ':gross_amount' => $calc['gross_amount'],
             ':received_account_id' => !empty($_POST['received_account_id']) ? $_POST['received_account_id'] : null,
             ':notes' => trim($_POST['notes']) ?: null,
-        ]);
+        ];
+
+        $fileNumber = null;
+        $inserted = false;
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $fileNumber = generateFileNumber($db);
+            try {
+                $stmt->execute([':file_number' => $fileNumber] + $baseParams);
+                $inserted = true;
+                break;
+            } catch (PDOException $e) {
+                if (($e->errorInfo[1] ?? null) == 1062 && strpos($e->getMessage(), 'uk_file_number') !== false) {
+                    continue;
+                }
+                throw $e;
+            }
+        }
+
+        if (!$inserted) {
+            throw new Exception('Could not generate a unique file number. Please try again.');
+        }
 
         $auth->logActivity($auth->getUserId(), 'create', 'inspection_files', $db->lastInsertId(), "Created file {$fileNumber}");
         $successMessage = "File {$fileNumber} created successfully!";
@@ -938,6 +958,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_file'])) {
 // ===== UPDATE FILE =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
     try {
+        unset($_SESSION['inspection_import_error_report']);
         $calc = calculateAmounts($_POST);
 
         // Validate branch belongs to bank (only if both are provided)
@@ -997,6 +1018,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_file'])) {
 // ===== DELETE FILE =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_file'])) {
     try {
+        unset($_SESSION['inspection_import_error_report']);
         $stmt = $db->prepare("DELETE FROM inspection_files WHERE id = :id");
         $stmt->execute([':id' => $_POST['file_id']]);
         $auth->logActivity($auth->getUserId(), 'delete', 'inspection_files', $_POST['file_id'], "Deleted file");
@@ -1019,6 +1041,8 @@ $sourceFilter = $_GET['source_id'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
+$dateBasis = $_GET['date_basis'] ?? 'file';
+$dateField = $dateBasis === 'updated' ? 'DATE(f.updated_at)' : 'f.file_date';
 
 try {
     $where = "WHERE 1=1";
@@ -1033,8 +1057,8 @@ try {
     }
     if ($bankFilter) { $where .= " AND f.bank_id = :bank"; $params[':bank'] = $bankFilter; }
     if ($sourceFilter) { $where .= " AND f.source_id = :source"; $params[':source'] = $sourceFilter; }
-    if ($dateFrom) { $where .= " AND f.file_date >= :dfrom"; $params[':dfrom'] = $dateFrom; }
-    if ($dateTo) { $where .= " AND f.file_date <= :dto"; $params[':dto'] = $dateTo; }
+    if ($dateFrom) { $where .= " AND {$dateField} >= :dfrom"; $params[':dfrom'] = $dateFrom; }
+    if ($dateTo) { $where .= " AND {$dateField} <= :dto"; $params[':dto'] = $dateTo; }
     if ($searchQuery) {
         $where .= " AND (f.customer_name LIKE :search OR f.file_number LIKE :search OR f.property_address LIKE :search)";
         $params[':search'] = "%{$searchQuery}%";
@@ -1148,6 +1172,7 @@ include __DIR__ . '/_responsive.php';
     <div class="content-card">
         <!-- Filters -->
         <form method="GET" class="row mb-4 g-2 inspection-filter-form">
+            <input type="hidden" name="date_basis" value="<?php echo htmlspecialchars($dateBasis); ?>">
             <div class="col-md-3">
                 <div class="inspection-search-row">
                     <input type="text" name="search" class="form-control" placeholder="Search name, file#, address..." value="<?php echo htmlspecialchars($searchQuery); ?>">

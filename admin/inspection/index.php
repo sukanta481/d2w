@@ -18,6 +18,7 @@ $dateField = $filterDateBasis === 'file' ? 'f.file_date' : 'DATE(f.updated_at)';
 $baseFilesQuery = [
     'date_from' => $monthStart,
     'date_to' => $monthEnd,
+    'date_basis' => $filterDateBasis,
 ];
 if ($filterType) {
     $baseFilesQuery['file_type'] = $filterType;
