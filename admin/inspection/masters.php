@@ -1233,17 +1233,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('mastersSearch');
     if (!searchInput) return;
 
-    function updateSearchTarget() {
+    function getActiveTable() {
         const activePane = document.querySelector('.tab-pane.active.show');
-        const activeTable = activePane ? activePane.querySelector('table.data-table') : null;
+        return activePane ? activePane.querySelector('table.data-table') : null;
+    }
+
+    function applySearch() {
+        const activeTable = getActiveTable();
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
         searchInput.setAttribute('data-table', activeTable ? activeTable.id : '');
-        searchInput.dispatchEvent(new Event('keyup'));
+
+        if (!activeTable) return;
+
+        const rows = activeTable.querySelectorAll('tbody > tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    }
+
+    function updateSearchTarget() {
+        applySearch();
     }
 
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', updateSearchTarget);
     });
 
+    searchInput.addEventListener('input', applySearch);
     updateSearchTarget();
 });
 </script>
