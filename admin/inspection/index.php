@@ -51,23 +51,39 @@ try {
         $params[':type'] = $filterType;
     }
 
-    // Stat 1: Total Files
+    // Stat: Total Fees (all fees worked for)
+    $stmt = $db->prepare("SELECT COALESCE(SUM(f.fees), 0) as total FROM inspection_files f {$where}");
+    $stmt->execute($params);
+    $totalFees = $stmt->fetch()['total'];
+
+    // Stat: Total Office Earned (sum of office_amount)
+    $stmt = $db->prepare("SELECT COALESCE(SUM(f.office_amount), 0) as total FROM inspection_files f {$where}");
+    $stmt->execute($params);
+    $totalOfficeEarned = $stmt->fetch()['total'];
+
+    // Stat: Total Pending Amount (fees - amount for self files with due/partially)
+    $pendingAmtWhere = $where . " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
+    $stmt = $db->prepare("SELECT COALESCE(SUM(COALESCE(f.fees, 0) - COALESCE(f.amount, 0)), 0) as total FROM inspection_files f {$pendingAmtWhere}");
+    $stmt->execute($params);
+    $totalPendingAmount = $stmt->fetch()['total'];
+
+    // Stat: Total Files
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$where}");
     $stmt->execute($params);
     $totalFiles = $stmt->fetch()['total'];
 
-    // Stat 2: Total Earnings (gross_amount)
+    // Stat: Total Earnings (gross_amount)
     $stmt = $db->prepare("SELECT COALESCE(SUM(f.gross_amount), 0) as total FROM inspection_files f {$where}");
     $stmt->execute($params);
     $totalEarnings = $stmt->fetch()['total'];
 
-    // Stat 3: Pending Payments (self files with due/partially)
+    // Stat: Pending Payments count (self files with due/partially)
     $pendingWhere = $where . " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM inspection_files f {$pendingWhere}");
     $stmt->execute($params);
     $pendingPayments = $stmt->fetch()['total'];
 
-    // Stat 4: Active Sources
+    // Stat: Active Sources
     $stmt = $db->prepare("SELECT COUNT(DISTINCT f.source_id) as total FROM inspection_files f {$where}");
     $stmt->execute($params);
     $activeSources = $stmt->fetch()['total'];
@@ -93,7 +109,7 @@ try {
     $recentFiles = $stmt->fetchAll();
 
 } catch(PDOException $e) {
-    $totalFiles = $totalEarnings = $pendingPayments = $activeSources = 0;
+    $totalFees = $totalOfficeEarned = $totalPendingAmount = $totalFiles = $totalEarnings = $pendingPayments = $activeSources = 0;
     $sourceSummary = $recentFiles = [];
     error_log("Dashboard error: " . $e->getMessage());
 }
@@ -162,8 +178,26 @@ include __DIR__ . '/_responsive.php';
         </div>
     </form>
 
-    <!-- Stat Cards -->
-    <div class="stats-grid">
+    <!-- Stat Cards - Row 1 -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value">&#8377;<?php echo number_format($totalFees, 0); ?></div><div class="stat-label">Total Fees Worked</div></div>
+                <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;"><i class="fas fa-file-invoice-dollar"></i></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value">&#8377;<?php echo number_format($totalOfficeEarned, 0); ?></div><div class="stat-label">Office Earned</div></div>
+                <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-building"></i></div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div><div class="stat-value">&#8377;<?php echo number_format($totalPendingAmount, 0); ?></div><div class="stat-label">Pending Amount</div></div>
+                <div class="stat-icon" style="background: #fee2e2; color: #dc2626;"><i class="fas fa-exclamation-circle"></i></div>
+            </div>
+        </div>
         <a href="<?php echo htmlspecialchars($totalFilesUrl); ?>" class="stat-card text-decoration-none text-reset">
             <div class="stat-card-header">
                 <div><div class="stat-value"><?php echo $totalFiles; ?></div><div class="stat-label">Total Files</div></div>

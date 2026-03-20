@@ -1844,7 +1844,7 @@ include __DIR__ . '/_responsive.php';
                         </th>
                         <th>Date</th><th>Type</th><th>Customer</th>
                         <th>Bank / Branch</th><th>Fees</th><th>Commission</th>
-                        <th>Gross</th><th>Payment</th><th>Actions</th>
+                        <th>Gross</th><th>Payment</th><th>Paid to Office</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1932,6 +1932,19 @@ include __DIR__ . '/_responsive.php';
                                     } else {
                                         $colors = ['due' => 'danger', 'paid' => 'success', 'partially' => 'warning'];
                                         echo '<span class="badge bg-' . ($colors[$file['payment_status']] ?? 'secondary') . '">' . ucfirst($file['payment_status'] ?? '-') . '</span>';
+                                    }
+                                ?></td>
+                                <td data-label="Paid to Office"><?php
+                                    if ($file['file_type'] === 'office') {
+                                        echo '<span class="text-muted">NA</span>';
+                                    } elseif ($file['paid_to_office']) {
+                                        $ptoColors = ['paid' => 'success', 'due' => 'danger'];
+                                        echo '<span class="badge bg-' . ($ptoColors[$file['paid_to_office']] ?? 'secondary') . '">' . ucfirst($file['paid_to_office']) . '</span>';
+                                        if (!empty($file['paid_to_office_date'])) {
+                                            echo '<br><small class="text-muted">' . date('d M', strtotime($file['paid_to_office_date'])) . '</small>';
+                                        }
+                                    } else {
+                                        echo '<span class="text-muted">-</span>';
                                     }
                                 ?></td>
                                 <td data-label="Actions">
@@ -2122,7 +2135,7 @@ include __DIR__ . '/_responsive.php';
 
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="10" class="text-center text-muted py-5"><i class="fas fa-folder-open fa-3x mb-3 d-block"></i>No files found</td></tr>
+                        <tr><td colspan="11" class="text-center text-muted py-5"><i class="fas fa-folder-open fa-3x mb-3 d-block"></i>No files found</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
