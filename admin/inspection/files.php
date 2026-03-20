@@ -1296,15 +1296,22 @@ $perPage = 25;
 $offset = ($page - 1) * $perPage;
 
 $typeFilter = $_GET['file_type'] ?? '';
-$statusFilter = $_GET['payment_status'] ?? '';
-$reportStatusFilter = $_GET['report_status'] ?? '';
 $statusGroupFilter = $_GET['status_group'] ?? '';
-$bankFilter = $_GET['bank_id'] ?? '';
-$sourceFilter = $_GET['source_id'] ?? '';
-$paymentModeFilter = $_GET['payment_mode_id'] ?? '';
-$paidToOfficeFilter = $_GET['paid_to_office'] ?? '';
-$commissionPendingFilter = $_GET['commission_pending'] ?? '';
-$locationFilter = $_GET['location'] ?? '';
+
+// Multi-select filters: accept both string and array
+function getMultiFilter($key) {
+    $val = $_GET[$key] ?? '';
+    if (is_array($val)) return array_filter($val, fn($v) => $v !== '');
+    return $val !== '' ? [$val] : [];
+}
+$statusFilter = getMultiFilter('payment_status');
+$reportStatusFilter = getMultiFilter('report_status');
+$bankFilter = getMultiFilter('bank_id');
+$sourceFilter = getMultiFilter('source_id');
+$paymentModeFilter = getMultiFilter('payment_mode_id');
+$paidToOfficeFilter = getMultiFilter('paid_to_office');
+$commissionPendingFilter = getMultiFilter('commission_pending');
+$locationFilter = getMultiFilter('location');
 $searchQuery = trim((string)($_GET['search'] ?? ''));
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
@@ -1314,28 +1321,28 @@ $sortOrder = $_GET['sort'] ?? 'newest';
 
 $hasSearchOnly = $searchQuery !== ''
     && $typeFilter === ''
-    && $statusFilter === ''
-    && $reportStatusFilter === ''
+    && empty($statusFilter)
+    && empty($reportStatusFilter)
     && $statusGroupFilter === ''
-    && $bankFilter === ''
-    && $sourceFilter === ''
-    && $paymentModeFilter === ''
-    && $paidToOfficeFilter === ''
-    && $commissionPendingFilter === ''
-    && $locationFilter === ''
+    && empty($bankFilter)
+    && empty($sourceFilter)
+    && empty($paymentModeFilter)
+    && empty($paidToOfficeFilter)
+    && empty($commissionPendingFilter)
+    && empty($locationFilter)
     && $dateFrom === ''
     && $dateTo === '';
 
 $hasAnyExplicitFilter = $typeFilter !== ''
-    || $statusFilter !== ''
-    || $reportStatusFilter !== ''
+    || !empty($statusFilter)
+    || !empty($reportStatusFilter)
     || $statusGroupFilter !== ''
-    || $bankFilter !== ''
-    || $sourceFilter !== ''
-    || $paymentModeFilter !== ''
-    || $paidToOfficeFilter !== ''
-    || $commissionPendingFilter !== ''
-    || $locationFilter !== ''
+    || !empty($bankFilter)
+    || !empty($sourceFilter)
+    || !empty($paymentModeFilter)
+    || !empty($paidToOfficeFilter)
+    || !empty($commissionPendingFilter)
+    || !empty($locationFilter)
     || $searchQuery !== ''
     || $dateFrom !== ''
     || $dateTo !== ''
@@ -1366,17 +1373,46 @@ try {
     if ($typeFilter) { $where .= " AND f.file_type = :type"; $params[':type'] = $typeFilter; }
     if ($statusGroupFilter === 'pending') {
         $where .= " AND f.file_type = 'self' AND f.payment_status IN ('due', 'partially')";
-    } elseif ($statusFilter) {
-        $where .= " AND f.payment_status = :status";
-        $params[':status'] = $statusFilter;
+    } elseif (!empty($statusFilter)) {
+        $placeholders = [];
+        foreach ($statusFilter as $i => $v) { $k = ":status_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.payment_status IN (" . implode(',', $placeholders) . ")";
     }
-    if ($reportStatusFilter) { $where .= " AND f.report_status = :report_status"; $params[':report_status'] = $reportStatusFilter; }
-    if ($bankFilter) { $where .= " AND f.bank_id = :bank"; $params[':bank'] = $bankFilter; }
-    if ($sourceFilter) { $where .= " AND f.source_id = :source"; $params[':source'] = $sourceFilter; }
-    if ($paymentModeFilter) { $where .= " AND f.payment_mode_id = :payment_mode"; $params[':payment_mode'] = $paymentModeFilter; }
-    if ($paidToOfficeFilter) { $where .= " AND f.paid_to_office = :paid_to_office"; $params[':paid_to_office'] = $paidToOfficeFilter; }
-    if ($commissionPendingFilter) { $where .= " AND f.commission_pending = :commission_pending"; $params[':commission_pending'] = $commissionPendingFilter; }
-    if ($locationFilter) { $where .= " AND f.location = :location"; $params[':location'] = $locationFilter; }
+    if (!empty($reportStatusFilter)) {
+        $placeholders = [];
+        foreach ($reportStatusFilter as $i => $v) { $k = ":rs_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.report_status IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($bankFilter)) {
+        $placeholders = [];
+        foreach ($bankFilter as $i => $v) { $k = ":bank_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.bank_id IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($sourceFilter)) {
+        $placeholders = [];
+        foreach ($sourceFilter as $i => $v) { $k = ":source_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.source_id IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($paymentModeFilter)) {
+        $placeholders = [];
+        foreach ($paymentModeFilter as $i => $v) { $k = ":pm_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.payment_mode_id IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($paidToOfficeFilter)) {
+        $placeholders = [];
+        foreach ($paidToOfficeFilter as $i => $v) { $k = ":pto_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.paid_to_office IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($commissionPendingFilter)) {
+        $placeholders = [];
+        foreach ($commissionPendingFilter as $i => $v) { $k = ":cp_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.commission_pending IN (" . implode(',', $placeholders) . ")";
+    }
+    if (!empty($locationFilter)) {
+        $placeholders = [];
+        foreach ($locationFilter as $i => $v) { $k = ":loc_{$i}"; $placeholders[] = $k; $params[$k] = $v; }
+        $where .= " AND f.location IN (" . implode(',', $placeholders) . ")";
+    }
     if ($dateFrom) { $where .= " AND {$dateField} >= :dfrom"; $params[':dfrom'] = $dateFrom; }
     if ($dateTo) { $where .= " AND {$dateField} <= :dto"; $params[':dto'] = $dateTo; }
     if ($searchQuery !== '') {
@@ -1618,75 +1654,94 @@ include __DIR__ . '/_responsive.php';
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Payment Status</label>
-                        <select name="payment_status" class="form-select">
-                            <option value="">All</option>
-                            <option value="due" <?php echo $statusFilter === 'due' ? 'selected' : ''; ?>>Due</option>
-                            <option value="paid" <?php echo $statusFilter === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                            <option value="partially" <?php echo $statusFilter === 'partially' ? 'selected' : ''; ?>>Partial</option>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="payment_status[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($statusFilter) ? count($statusFilter) . ' selected' : 'All'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach (['due' => 'Due', 'paid' => 'Paid', 'partially' => 'Partial'] as $val => $label): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="payment_status[]" value="<?php echo $val; ?>" <?php echo in_array($val, $statusFilter) ? 'checked' : ''; ?>><span><?php echo $label; ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Bank</label>
-                        <select name="bank_id" class="form-select">
-                            <option value="">All Banks</option>
-                            <?php foreach ($banks as $b): ?>
-                                <option value="<?php echo $b['id']; ?>" <?php echo $bankFilter == $b['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($b['bank_name']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="bank_id[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($bankFilter) ? count($bankFilter) . ' selected' : 'All Banks'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach ($banks as $b): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="bank_id[]" value="<?php echo $b['id']; ?>" <?php echo in_array($b['id'], $bankFilter) ? 'checked' : ''; ?>><span><?php echo htmlspecialchars($b['bank_name']); ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Source</label>
-                        <select name="source_id" class="form-select">
-                            <option value="">All Sources</option>
-                            <?php foreach ($sources as $s): ?>
-                                <option value="<?php echo $s['id']; ?>" <?php echo $sourceFilter == $s['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($s['source_name']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="source_id[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($sourceFilter) ? count($sourceFilter) . ' selected' : 'All Sources'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach ($sources as $s): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="source_id[]" value="<?php echo $s['id']; ?>" <?php echo in_array($s['id'], $sourceFilter) ? 'checked' : ''; ?>><span><?php echo htmlspecialchars($s['source_name']); ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Report Status</label>
-                        <select name="report_status" class="form-select">
-                            <option value="">All</option>
-                            <option value="draft" <?php echo $reportStatusFilter === 'draft' ? 'selected' : ''; ?>>Draft</option>
-                            <option value="final_soft" <?php echo $reportStatusFilter === 'final_soft' ? 'selected' : ''; ?>>Final Soft Copy</option>
-                            <option value="final_hard" <?php echo $reportStatusFilter === 'final_hard' ? 'selected' : ''; ?>>Final Hard Copy</option>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="report_status[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($reportStatusFilter) ? count($reportStatusFilter) . ' selected' : 'All'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach (['draft' => 'Draft', 'final_soft' => 'Final Soft Copy', 'final_hard' => 'Final Hard Copy'] as $val => $label): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="report_status[]" value="<?php echo $val; ?>" <?php echo in_array($val, $reportStatusFilter) ? 'checked' : ''; ?>><span><?php echo $label; ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Payment Mode</label>
-                        <select name="payment_mode_id" class="form-select">
-                            <option value="">All Modes</option>
-                            <?php foreach ($paymentModes as $pm): ?>
-                                <option value="<?php echo $pm['id']; ?>" <?php echo $paymentModeFilter == $pm['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($pm['mode_name']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="payment_mode_id[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($paymentModeFilter) ? count($paymentModeFilter) . ' selected' : 'All Modes'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach ($paymentModes as $pm): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="payment_mode_id[]" value="<?php echo $pm['id']; ?>" <?php echo in_array($pm['id'], $paymentModeFilter) ? 'checked' : ''; ?>><span><?php echo htmlspecialchars($pm['mode_name']); ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Paid to Office</label>
-                        <select name="paid_to_office" class="form-select">
-                            <option value="">All</option>
-                            <option value="paid" <?php echo $paidToOfficeFilter === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                            <option value="due" <?php echo $paidToOfficeFilter === 'due' ? 'selected' : ''; ?>>Due</option>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="paid_to_office[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($paidToOfficeFilter) ? count($paidToOfficeFilter) . ' selected' : 'All'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach (['paid' => 'Paid', 'due' => 'Due'] as $val => $label): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="paid_to_office[]" value="<?php echo $val; ?>" <?php echo in_array($val, $paidToOfficeFilter) ? 'checked' : ''; ?>><span><?php echo $label; ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <?php if ($hasCommissionPendingColumn): ?>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Commission Pending</label>
-                        <select name="commission_pending" class="form-select">
-                            <option value="">All</option>
-                            <option value="yes" <?php echo $commissionPendingFilter === 'yes' ? 'selected' : ''; ?>>Yes</option>
-                            <option value="no" <?php echo $commissionPendingFilter === 'no' ? 'selected' : ''; ?>>No</option>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="commission_pending[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($commissionPendingFilter) ? count($commissionPendingFilter) . ' selected' : 'All'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach (['yes' => 'Yes', 'no' => 'No'] as $val => $label): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="commission_pending[]" value="<?php echo $val; ?>" <?php echo in_array($val, $commissionPendingFilter) ? 'checked' : ''; ?>><span><?php echo $label; ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                     <div class="col-lg-2 col-md-6">
                         <label class="form-label">Location</label>
-                        <select name="location" class="form-select">
-                            <option value="">All</option>
-                            <option value="kolkata" <?php echo $locationFilter === 'kolkata' ? 'selected' : ''; ?>>Kolkata</option>
-                            <option value="out_of_kolkata" <?php echo $locationFilter === 'out_of_kolkata' ? 'selected' : ''; ?>>Out of Kolkata</option>
-                        </select>
+                        <div class="multi-select-dropdown" data-name="location[]">
+                            <div class="multi-select-toggle form-select"><?php echo !empty($locationFilter) ? count($locationFilter) . ' selected' : 'All'; ?></div>
+                            <div class="multi-select-menu">
+                                <?php foreach (['kolkata' => 'Kolkata', 'out_of_kolkata' => 'Out of Kolkata'] as $val => $label): ?>
+                                <label class="multi-select-item"><input type="checkbox" name="location[]" value="<?php echo $val; ?>" <?php echo in_array($val, $locationFilter) ? 'checked' : ''; ?>><span><?php echo $label; ?></span></label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2595,7 +2650,63 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = url.toString();
         });
     }
+
+    // Multi-select dropdowns
+    document.querySelectorAll('.multi-select-dropdown').forEach(dropdown => {
+        const toggle = dropdown.querySelector('.multi-select-toggle');
+        const menu = dropdown.querySelector('.multi-select-menu');
+        const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+        const defaultLabel = toggle.textContent.trim();
+
+        function updateLabel() {
+            const checked = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            if (checked.length === 0) {
+                toggle.textContent = defaultLabel;
+                toggle.classList.remove('has-selection');
+            } else {
+                const names = Array.from(checked).map(cb => cb.closest('label').querySelector('span').textContent);
+                toggle.textContent = names.length <= 2 ? names.join(', ') : names.length + ' selected';
+                toggle.classList.add('has-selection');
+            }
+        }
+
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Close all other dropdowns
+            document.querySelectorAll('.multi-select-dropdown.open').forEach(other => {
+                if (other !== dropdown) other.classList.remove('open');
+            });
+            dropdown.classList.toggle('open');
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateLabel);
+        });
+
+        updateLabel();
+    });
+
+    // Close multi-select on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.multi-select-dropdown')) {
+            document.querySelectorAll('.multi-select-dropdown.open').forEach(d => d.classList.remove('open'));
+        }
+    });
 });
 </script>
+
+<style>
+.multi-select-dropdown { position: relative; }
+.multi-select-toggle { cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 2rem; }
+.multi-select-toggle.has-selection { color: var(--primary-color, #2563eb); font-weight: 500; }
+.multi-select-toggle::after { content: ''; display: inline-block; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #6c757d; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+.multi-select-dropdown.open .multi-select-toggle::after { border-top: none; border-bottom: 5px solid #6c757d; }
+.multi-select-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; background: #fff; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 6px 16px rgba(0,0,0,.12); max-height: 220px; overflow-y: auto; margin-top: 2px; padding: 4px 0; }
+.multi-select-dropdown.open .multi-select-menu { display: block; }
+.multi-select-item { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; margin: 0; font-weight: normal; font-size: 0.875rem; transition: background 0.15s; }
+.multi-select-item:hover { background: #f0f4ff; }
+.multi-select-item input[type="checkbox"] { margin: 0; flex-shrink: 0; accent-color: var(--primary-color, #2563eb); width: 16px; height: 16px; }
+.multi-select-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
