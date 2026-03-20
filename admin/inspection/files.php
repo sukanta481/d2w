@@ -572,31 +572,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'inspection-import-errors'
     exit;
 }
 
-if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export') {
-    $stmt = $db->query("SELECT
-            f.id, f.file_number, f.file_date, f.file_type, f.location, f.customer_name, f.customer_phone,
-            f.property_address, f.property_value, ib.bank_name, ibr.branch_name, isrc.source_name,
-            f.fees, f.report_status, " . (tableColumnExists($db, 'inspection_files', 'report_status_date') ? 'f.report_status_date,' : 'NULL AS report_status_date,') . "
-            ipm.mode_name AS payment_mode, f.payment_status, " . (tableColumnExists($db, 'inspection_files', 'payment_status_date') ? 'f.payment_status_date,' : 'NULL AS payment_status_date,') . "
-            f.amount, f.paid_to_office, " . ($hasPaidToOfficeDateColumn ? 'f.paid_to_office_date,' : 'NULL AS paid_to_office_date,') . " " . ($hasCommissionPendingColumn ? 'f.commission_pending,' : 'NULL AS commission_pending,') . " f.office_amount, f.commission, f.extra_amount, f.gross_amount,
-            ima.account_name AS received_account, f.notes, f.created_at, f.updated_at
-        FROM inspection_files f
-        LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
-        LEFT JOIN inspection_branches ibr ON f.branch_id = ibr.id
-        LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
-        LEFT JOIN inspection_payment_modes ipm ON f.payment_mode_id = ipm.id
-        LEFT JOIN inspection_my_accounts ima ON f.received_account_id = ima.id
-        ORDER BY f.file_date DESC, f.id DESC");
-    $rows = $stmt->fetchAll();
-    $headers = [
-        'id', 'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone',
-        'property_address', 'property_value', 'bank_name', 'branch_name', 'source_name', 'fees',
-        'report_status', 'report_status_date', 'payment_mode', 'payment_status', 'payment_status_date',
-        'amount', 'paid_to_office', 'commission_pending', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
-        'received_account', 'notes', 'created_at', 'updated_at'
-    ];
-    downloadCsvResponse('inspection_files_export.csv', $headers, $rows);
-}
+// Export moved below filters section to support filtered downloads
 
 $hasReportStatusDateColumn = tableColumnExists($db, 'inspection_files', 'report_status_date');
 $hasPaymentStatusDateColumn = tableColumnExists($db, 'inspection_files', 'payment_status_date');
@@ -1457,6 +1433,30 @@ try {
         }
     }
 
+    // ===== FILTERED CSV EXPORT =====
+    if (isset($_GET['download']) && $_GET['download'] === 'inspection-files-export') {
+        $exportStmt = $db->prepare("SELECT
+                f.id, f.file_number, f.file_date, f.file_type, f.location, f.customer_name, f.customer_phone,
+                f.property_address, f.property_value, ib.bank_name, ibr.branch_name, isrc.source_name,
+                f.fees, f.report_status, " . ($hasReportStatusDateColumn ? 'f.report_status_date,' : 'NULL AS report_status_date,') . "
+                ipm.mode_name AS payment_mode, f.payment_status, " . ($hasPaymentStatusDateColumn ? 'f.payment_status_date,' : 'NULL AS payment_status_date,') . "
+                f.amount, f.paid_to_office, " . ($hasPaidToOfficeDateColumn ? 'f.paid_to_office_date,' : 'NULL AS paid_to_office_date,') . " " . ($hasCommissionPendingColumn ? 'f.commission_pending,' : 'NULL AS commission_pending,') . " f.office_amount, f.commission, f.extra_amount, f.gross_amount,
+                ima.account_name AS received_account, f.notes, f.created_at, f.updated_at
+            {$fromSql}
+            {$where}
+            ORDER BY f.file_date DESC, f.id DESC");
+        $exportStmt->execute($params);
+        $rows = $exportStmt->fetchAll();
+        $headers = [
+            'id', 'file_number', 'file_date', 'file_type', 'location', 'customer_name', 'customer_phone',
+            'property_address', 'property_value', 'bank_name', 'branch_name', 'source_name', 'fees',
+            'report_status', 'report_status_date', 'payment_mode', 'payment_status', 'payment_status_date',
+            'amount', 'paid_to_office', 'paid_to_office_date', 'commission_pending', 'office_amount', 'commission', 'extra_amount', 'gross_amount',
+            'received_account', 'notes', 'created_at', 'updated_at'
+        ];
+        downloadCsvResponse('inspection_files_export.csv', $headers, $rows);
+    }
+
     $countStmt = $db->prepare("SELECT COUNT(*) as total {$fromSql} {$where}");
     $countStmt->execute($params);
     $totalFiles = $countStmt->fetch()['total'];
@@ -1537,7 +1537,12 @@ include __DIR__ . '/_responsive.php';
             <p class="page-subtitle">Manage property inspection cases</p>
         </div>
         <div class="inspection-toolbar">
-            <a href="files.php?download=inspection-files-export" class="btn btn-outline-secondary">
+            <?php
+            $downloadParams = $_GET;
+            $downloadParams['download'] = 'inspection-files-export';
+            unset($downloadParams['page']);
+            ?>
+            <a href="files.php?<?php echo htmlspecialchars(http_build_query($downloadParams)); ?>" class="btn btn-outline-secondary">
                 <i class="fas fa-download me-2"></i>Download Files
             </a>
             <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulkImportModal">
