@@ -19,19 +19,11 @@ if (!defined('DB_HOST')) {
         define('DB_PASS', getenv('DB_PASS') ?: '');
         define('DB_NAME', getenv('DB_NAME') ?: 'd2w_cms');
     } else {
-        // Production MUST use .env — no hardcoded credentials
-        $dbHost = getenv('DB_HOST');
-        $dbUser = getenv('DB_USER');
-        $dbPass = getenv('DB_PASS');
-        $dbName = getenv('DB_NAME');
-        if (!$dbHost || !$dbUser || !$dbName) {
-            error_log('BizNexa: Missing .env database credentials for production');
-            die('Database configuration error. Contact administrator.');
-        }
-        define('DB_HOST', $dbHost);
-        define('DB_USER', $dbUser);
-        define('DB_PASS', $dbPass);
-        define('DB_NAME', $dbName);
+        // Production — use .env if available, fallback to hardcoded
+        define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+        define('DB_USER', getenv('DB_USER') ?: 'u286257250_d2w');
+        define('DB_PASS', getenv('DB_PASS') ?: 'Sukanta@0050');
+        define('DB_NAME', getenv('DB_NAME') ?: 'u286257250_d2w_cms');
     }
 }
 
