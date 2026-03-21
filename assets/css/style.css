@@ -3196,6 +3196,44 @@ html {
     color: rgba(255, 255, 255, 0.6);
 }
 
+.footer-contact-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.footer-contact-heading {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.footer-contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-contact-list li {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.footer-contact-label {
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 6px;
+}
+
+.footer-contact-list a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-contact-list a:hover {
+    color: #0d6efd;
+}
+
 .footer-divider {
     border-color: rgba(255, 255, 255, 0.1);
     margin: 40px 0 20px;
@@ -3337,16 +3375,20 @@ html {
     }
 
     .navbar {
-        padding: 12px 0;
+        padding: 5px 0;
+    }
+
+    .navbar-brand img {
+        height: 40px !important;
     }
 
     .navbar-brand h3 {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     .navbar-toggler {
         border: 2px solid #e9ecef;
-        padding: 6px 10px;
+        padding: 4px 8px;
         border-radius: 6px;
     }
 

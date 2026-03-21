@@ -203,28 +203,28 @@ include 'includes/header.php';
                         <div class="stat-icon-home">
                             <i class="fas fa-briefcase"></i>
                         </div>
-                        <h3 class="stat-number" data-count="<?php echo $statYears; ?>">0</h3>
+                        <h3 class="stat-number" data-count="<?php echo $statYears; ?>"><?php echo htmlspecialchars($statYears); ?>+</h3>
                         <p>Years Experience</p>
                     </div>
                     <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="200">
                         <div class="stat-icon-home">
                             <i class="fas fa-project-diagram"></i>
                         </div>
-                        <h3 class="stat-number" data-count="<?php echo $statProjects; ?>">0</h3>
+                        <h3 class="stat-number" data-count="<?php echo $statProjects; ?>"><?php echo htmlspecialchars($statProjects); ?>+</h3>
                         <p>Projects Done</p>
                     </div>
                     <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="300">
                         <div class="stat-icon-home">
                             <i class="fas fa-smile"></i>
                         </div>
-                        <h3 class="stat-number" data-count="<?php echo $statClients; ?>">0</h3>
+                        <h3 class="stat-number" data-count="<?php echo $statClients; ?>"><?php echo htmlspecialchars($statClients); ?>+</h3>
                         <p>Happy Clients</p>
                     </div>
                     <div class="stat-item-home" data-aos="zoom-in" data-aos-delay="400">
                         <div class="stat-icon-home">
                             <i class="fas fa-globe"></i>
                         </div>
-                        <h3 class="stat-number" data-count="<?php echo $statCountries; ?>">0</h3>
+                        <h3 class="stat-number" data-count="<?php echo $statCountries; ?>"><?php echo htmlspecialchars($statCountries); ?>+</h3>
                         <p>Countries Served</p>
                     </div>
                 </div>

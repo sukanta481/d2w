@@ -6,6 +6,8 @@ $settings = getAllSettings();
 $contactEmail = $settings['site_email'] ?? 'info@biznexa.tech';
 $contactPhone = $settings['site_phone'] ?? '+91 94332 15443';
 $contactAddress = $settings['site_address'] ?? '123 Business Avenue, Suite 100, New York, NY 10001';
+$contactPhones = json_decode($settings['contact_phones'] ?? '[]', true) ?: [];
+$contactEmails = json_decode($settings['contact_emails'] ?? '[]', true) ?: [];
 
 $pageMeta = [
     'title' => 'Contact Us - Get a Free Consultation',
@@ -194,7 +196,8 @@ include 'includes/header.php';
                             <h4>Quick Connect</h4>
                         </div>
                         <div class="quick-connect-buttons">
-                            <a href="https://wa.me/919433215443" target="_blank" class="quick-btn whatsapp">
+                            <?php $waPhone = preg_replace('/[^0-9]/', '', $contactPhone); ?>
+                            <a href="https://wa.me/<?php echo $waPhone; ?>" target="_blank" class="quick-btn whatsapp">
                                 <i class="fab fa-whatsapp"></i> WhatsApp
                             </a>
                             <a href="skype:biznexa?chat" class="quick-btn skype">
@@ -202,6 +205,46 @@ include 'includes/header.php';
                             </a>
                         </div>
                     </div>
+
+                    <?php if (!empty($contactPhones)): ?>
+                    <!-- Department Phone Numbers -->
+                    <div class="info-card-animated mb-4">
+                        <div class="info-card-header">
+                            <i class="fas fa-phone-alt"></i>
+                            <h4>Phone Numbers</h4>
+                        </div>
+                        <ul class="department-contact-list">
+                            <?php foreach ($contactPhones as $phone): ?>
+                            <li>
+                                <span class="dept-label"><?php echo htmlspecialchars($phone['label']); ?></span>
+                                <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $phone['number']); ?>" class="dept-value">
+                                    <?php echo htmlspecialchars($phone['number']); ?>
+                                </a>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($contactEmails)): ?>
+                    <!-- Department Emails -->
+                    <div class="info-card-animated mb-4">
+                        <div class="info-card-header">
+                            <i class="fas fa-envelope"></i>
+                            <h4>Department Emails</h4>
+                        </div>
+                        <ul class="department-contact-list">
+                            <?php foreach ($contactEmails as $em): ?>
+                            <li>
+                                <span class="dept-label"><?php echo htmlspecialchars($em['department']); ?></span>
+                                <a href="mailto:<?php echo htmlspecialchars($em['email']); ?>" class="dept-value">
+                                    <?php echo htmlspecialchars($em['email']); ?>
+                                </a>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <?php endif; ?>
 
                     <!-- Remote Work Notice -->
                     <div class="info-card-animated notice-card">
@@ -448,6 +491,46 @@ textarea.form-control-animated {
 
 .hours-list .time.closed {
     color: #ef4444;
+}
+
+.department-contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.department-contact-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.department-contact-list li:last-child {
+    border-bottom: none;
+}
+
+.dept-label {
+    background: rgba(13, 110, 253, 0.15);
+    color: #60a5fa;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dept-value {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease-out;
+}
+
+.dept-value:hover {
+    color: #60a5fa;
 }
 
 .quick-connect-buttons {

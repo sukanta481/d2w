@@ -62,6 +62,40 @@ $instagram = $settings['instagram_url'] ?? '#';
                     </form>
                 </div>
             </div>
+            <?php
+            $contactPhones = json_decode($settings['contact_phones'] ?? '[]', true);
+            $contactEmails = json_decode($settings['contact_emails'] ?? '[]', true);
+            if (!empty($contactPhones) || !empty($contactEmails)):
+            ?>
+            <div class="row footer-contact-row mt-3 mb-3">
+                <?php if (!empty($contactPhones)): ?>
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <h6 class="footer-contact-heading"><i class="fas fa-phone-alt me-2"></i>Contact Numbers</h6>
+                    <ul class="footer-contact-list">
+                        <?php foreach ($contactPhones as $phone): ?>
+                        <li>
+                            <span class="footer-contact-label"><?php echo htmlspecialchars($phone['label'] ?? 'General'); ?>:</span>
+                            <a href="tel:<?php echo htmlspecialchars(preg_replace('/\s+/', '', $phone['number'] ?? '')); ?>"><?php echo htmlspecialchars($phone['number'] ?? ''); ?></a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($contactEmails)): ?>
+                <div class="col-md-6">
+                    <h6 class="footer-contact-heading"><i class="fas fa-envelope me-2"></i>Department Emails</h6>
+                    <ul class="footer-contact-list">
+                        <?php foreach ($contactEmails as $email): ?>
+                        <li>
+                            <span class="footer-contact-label"><?php echo htmlspecialchars($email['department'] ?? 'General'); ?>:</span>
+                            <a href="mailto:<?php echo htmlspecialchars($email['email'] ?? ''); ?>"><?php echo htmlspecialchars($email['email'] ?? ''); ?></a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
             <hr class="footer-divider">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start">
