@@ -7,15 +7,27 @@ $services = getServices();
 $technologies = getTechnologies();
 $settings = getAllSettings();
 
+$faqs = [
+    ['q' => 'How long does it take to build a website?', 'a' => 'A typical business website takes 2-4 weeks from design approval to launch. E-commerce sites and complex web applications may take 4-8 weeks depending on features and integrations required.'],
+    ['q' => 'What AI automation solutions do you offer?', 'a' => 'We build custom AI chatbots (powered by GPT-4, Claude, and Gemini), workflow automation using n8n and Zapier, lead qualification agents, content generation tools, and smart analytics dashboards tailored to your business needs.'],
+    ['q' => 'How does your digital marketing pricing work?', 'a' => 'We offer flexible engagement models — monthly retainers for ongoing SEO and social media management, project-based pricing for campaigns and ad setup, and performance-based models for PPC management. Contact us for a custom quote based on your goals.'],
+    ['q' => 'Do you provide ongoing support after launch?', 'a' => 'Yes. Every project includes 30 days of post-launch support. We also offer monthly maintenance plans covering security updates, content changes, performance monitoring, and priority bug fixes.'],
+    ['q' => 'Can you work with my existing website or do I need a new one?', 'a' => 'We work with both. We can redesign and optimize your existing website, add new features, improve performance, or build a completely new site from scratch depending on what makes the most sense for your business.'],
+    ['q' => 'What technologies do you use for web development?', 'a' => 'We use modern, industry-standard technologies including React, Next.js, and Vue.js for frontends; PHP, Node.js, and Python for backends; MySQL and MongoDB for databases; and AWS, Vercel, and Hostinger for hosting and deployment.'],
+    ['q' => 'How do I get started with your services?', 'a' => 'Simply fill out our contact form or reach us via WhatsApp, email, or phone. We\'ll schedule a free 30-minute discovery call to understand your requirements, after which we\'ll send you a detailed proposal with scope, timeline, and pricing.'],
+];
+
 $pageMeta = [
     'title' => 'Web Development, AI Automation & Digital Marketing Services',
     'description' => 'BizNexa offers custom web development, AI-powered automation, and results-driven digital marketing services for small businesses. Get a free consultation today.',
     'canonical' => '/services.php',
-    'schema' => 'Service',
+    'schema' => 'FAQService',
     'breadcrumbs' => [
         ['name' => 'Home', 'url' => '/'],
         ['name' => 'Services', 'url' => '/services.php'],
     ],
+    'faqs' => $faqs,
+    'ai_agents' => getAIAgents(),
 ];
 
 include 'includes/header.php';
@@ -366,6 +378,114 @@ include 'includes/header.php';
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Solutions Showcase -->
+<section class="section-light-animated ai-solutions-section" style="padding: 100px 0;">
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <div class="section-badge d-inline-flex" style="background: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.2);">
+                <i class="fas fa-robot" style="color: #0d6efd;"></i>
+                <span style="color: #0d6efd;">AI Solutions</span>
+            </div>
+            <h2 style="color: #1e293b; font-size: 2.5rem; font-weight: 800; margin-top: 15px;">Our AI <span style="color: #0d6efd;">Agents</span></h2>
+            <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 15px auto 0;">Intelligent AI agents built to automate, engage, and grow your business.</p>
+        </div>
+
+        <div class="row">
+            <?php
+            $aiAgents = getAIAgents();
+            if (empty($aiAgents)) {
+                $aiAgents = [
+                    [
+                        'name' => 'Customer Support Bot',
+                        'description' => 'AI-powered chatbot that handles customer queries 24/7 with natural conversation, ticket creation, and smart escalation.',
+                        'icon' => 'fas fa-headset',
+                        'features' => 'Multi-language,24/7 Availability,Smart Escalation,Ticket Integration',
+                        'pricing' => null,
+                        'demo_url' => null,
+                        'documentation_url' => null,
+                        'status' => 'active',
+                    ],
+                    [
+                        'name' => 'Lead Qualifier Agent',
+                        'description' => 'Automatically scores and qualifies incoming leads based on behavior, demographics, and engagement patterns.',
+                        'icon' => 'fas fa-filter',
+                        'features' => 'Lead Scoring,CRM Sync,Auto Follow-up,Analytics Dashboard',
+                        'pricing' => null,
+                        'demo_url' => null,
+                        'documentation_url' => null,
+                        'status' => 'active',
+                    ],
+                    [
+                        'name' => 'Content Generator',
+                        'description' => 'Generate SEO-optimized blog posts, social media content, and marketing copy tailored to your brand voice.',
+                        'icon' => 'fas fa-pen-fancy',
+                        'features' => 'SEO Optimized,Brand Voice,Multi-format,Batch Generation',
+                        'pricing' => null,
+                        'demo_url' => null,
+                        'documentation_url' => null,
+                        'status' => 'active',
+                    ],
+                ];
+            }
+
+            foreach ($aiAgents as $index => $agent):
+                $features = !empty($agent['features']) ? array_map('trim', explode(',', $agent['features'])) : [];
+                $isComingSoon = ($agent['status'] ?? '') === 'coming_soon';
+            ?>
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
+                <div class="ai-agent-card <?php echo $isComingSoon ? 'coming-soon' : ''; ?>">
+                    <?php if ($isComingSoon): ?>
+                    <span class="ai-agent-badge">Coming Soon</span>
+                    <?php endif; ?>
+
+                    <div class="ai-agent-icon">
+                        <i class="<?php echo htmlspecialchars($agent['icon'] ?? 'fas fa-robot'); ?>"></i>
+                    </div>
+
+                    <h3 class="ai-agent-name"><?php echo htmlspecialchars($agent['name']); ?></h3>
+
+                    <p class="ai-agent-desc"><?php echo htmlspecialchars(substr($agent['description'] ?? '', 0, 120)); ?><?php echo strlen($agent['description'] ?? '') > 120 ? '...' : ''; ?></p>
+
+                    <?php if (!empty($features)): ?>
+                    <div class="ai-agent-features">
+                        <?php foreach (array_slice($features, 0, 4) as $feature): ?>
+                        <span class="ai-feature-tag"><?php echo htmlspecialchars($feature); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($agent['pricing'])): ?>
+                    <div class="ai-agent-pricing">Starting at $<?php echo htmlspecialchars($agent['pricing']); ?></div>
+                    <?php endif; ?>
+
+                    <div class="ai-agent-actions">
+                        <?php if (!empty($agent['demo_url']) && !$isComingSoon): ?>
+                        <a href="<?php echo htmlspecialchars($agent['demo_url']); ?>" class="btn-agent-demo" target="_blank">
+                            <i class="fas fa-play"></i> Try Demo
+                        </a>
+                        <?php endif; ?>
+                        <?php if (!empty($agent['documentation_url'])): ?>
+                        <a href="<?php echo htmlspecialchars($agent['documentation_url']); ?>" class="btn-agent-docs" target="_blank">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <?php elseif (!$isComingSoon): ?>
+                        <a href="contact.php" class="btn-agent-docs">
+                            Get Started <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -751,6 +871,46 @@ include 'includes/header.php';
                     <a href="portfolio.php" class="btn-hero-secondary" style="padding: 16px 35px; font-size: 1.1rem;">
                         <span>View Our Work</span>
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="section-dark-animated faq-section" style="padding: 100px 0;">
+    <div class="section-bg-shapes">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <div class="section-badge d-inline-flex" style="background: rgba(13, 110, 253, 0.2); border-color: rgba(13, 110, 253, 0.3);">
+                <i class="fas fa-question-circle" style="color: #60a5fa;"></i>
+                <span style="color: #60a5fa;">FAQ</span>
+            </div>
+            <h2 style="color: #fff; font-size: 2.5rem; font-weight: 800; margin-top: 15px;">Frequently Asked <span class="text-gradient">Questions</span></h2>
+            <p style="color: #D1D5DB; font-size: 1.1rem; max-width: 600px; margin: 15px auto 0;">Common questions about our services, process, and pricing.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="100">
+                <div class="accordion faq-accordion" id="servicesFAQ">
+                    <?php foreach ($faqs as $i => $faq): ?>
+                    <div class="accordion-item faq-item">
+                        <h3 class="accordion-header" id="faqHead<?php echo $i; ?>">
+                            <button class="accordion-button <?php echo $i > 0 ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#faqBody<?php echo $i; ?>" aria-expanded="<?php echo $i === 0 ? 'true' : 'false'; ?>" aria-controls="faqBody<?php echo $i; ?>">
+                                <?php echo htmlspecialchars($faq['q']); ?>
+                            </button>
+                        </h3>
+                        <div id="faqBody<?php echo $i; ?>" class="accordion-collapse collapse <?php echo $i === 0 ? 'show' : ''; ?>" aria-labelledby="faqHead<?php echo $i; ?>" data-bs-parent="#servicesFAQ">
+                            <div class="accordion-body">
+                                <?php echo htmlspecialchars($faq['a']); ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

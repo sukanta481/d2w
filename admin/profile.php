@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
@@ -12,6 +13,11 @@ $user = $stmt->fetch();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['update_profile'])) {
             $stmt = $db->prepare("UPDATE admin_users SET full_name = :full_name, email = :email, avatar = :avatar WHERE id = :id");
@@ -356,7 +362,7 @@ include 'includes/header.php';
             <div class="content-card">
                 <h3 class="h5 mb-4"><i class="fas fa-user me-2 text-primary"></i>Profile Information</h3>
 
-                <form method="POST">
+                <form method="POST"><?php echo csrfField(); ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Username</label>
@@ -447,7 +453,7 @@ include 'includes/header.php';
                                 </div>
                                 <div class="method-actions">
                                     <?php if (!$bank['is_default']): ?>
-                                    <form method="POST" class="d-inline">
+                                    <form method="POST" class="d-inline"><?php echo csrfField(); ?>
                                         <input type="hidden" name="set_default" value="1">
                                         <input type="hidden" name="method_id" value="<?php echo $bank['id']; ?>">
                                         <input type="hidden" name="method_type" value="bank">
@@ -463,7 +469,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editBankModal<?php echo $bank['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="update_payment_method" value="1">
                                             <input type="hidden" name="method_id" value="<?php echo $bank['id']; ?>">
                                             <input type="hidden" name="method_type" value="bank">
@@ -514,7 +520,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="deleteBankModal<?php echo $bank['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="delete_payment_method" value="1">
                                             <input type="hidden" name="method_id" value="<?php echo $bank['id']; ?>">
                                             <div class="modal-header">
@@ -570,7 +576,7 @@ include 'includes/header.php';
                                 </div>
                                 <div class="method-actions">
                                     <?php if (!$upi['is_default']): ?>
-                                    <form method="POST" class="d-inline">
+                                    <form method="POST" class="d-inline"><?php echo csrfField(); ?>
                                         <input type="hidden" name="set_default" value="1">
                                         <input type="hidden" name="method_id" value="<?php echo $upi['id']; ?>">
                                         <input type="hidden" name="method_type" value="upi">
@@ -586,7 +592,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editUpiModal<?php echo $upi['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST" enctype="multipart/form-data">
+                                        <form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
                                             <input type="hidden" name="update_payment_method" value="1">
                                             <input type="hidden" name="method_id" value="<?php echo $upi['id']; ?>">
                                             <input type="hidden" name="method_type" value="upi">
@@ -631,7 +637,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="deleteUpiModal<?php echo $upi['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="delete_payment_method" value="1">
                                             <input type="hidden" name="method_id" value="<?php echo $upi['id']; ?>">
                                             <div class="modal-header">
@@ -659,7 +665,7 @@ include 'includes/header.php';
             <div class="content-card mt-4">
                 <h3 class="h5 mb-4"><i class="fas fa-lock me-2 text-primary"></i>Change Password</h3>
 
-                <form method="POST">
+                <form method="POST"><?php echo csrfField(); ?>
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <label class="form-label">Current Password *</label>
@@ -736,7 +742,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addBankModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST">
+            <form method="POST"><?php echo csrfField(); ?>
                 <input type="hidden" name="add_bank" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-university me-2"></i>Add Bank Account</h5>
@@ -786,7 +792,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addUpiModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
                 <input type="hidden" name="add_upi" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-qrcode me-2"></i>Add UPI Payment</h5>

@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
@@ -24,6 +25,11 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_testimonial'])) {
             if ($hasProjectColumn) {
@@ -148,7 +154,7 @@ include 'includes/header.php';
 
                 <!-- Edit Modal -->
                 <div class="modal fade" id="editTestimonialModal<?php echo $testimonial['id']; ?>" tabindex="-1">
-                    <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                    <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                         <div class="modal-header"><h5 class="modal-title">Edit Testimonial</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                         <div class="modal-body">
                             <input type="hidden" name="testimonial_id" value="<?php echo $testimonial['id']; ?>">
@@ -179,7 +185,7 @@ include 'includes/header.php';
 
                 <!-- Delete Modal -->
                 <div class="modal fade" id="deleteTestimonialModal<?php echo $testimonial['id']; ?>" tabindex="-1">
-                    <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                    <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                         <div class="modal-header"><h5 class="modal-title">Delete Testimonial</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                         <div class="modal-body"><input type="hidden" name="testimonial_id" value="<?php echo $testimonial['id']; ?>"><p>Delete testimonial from <strong><?php echo htmlspecialchars($testimonial['client_name']); ?></strong>?</p></div>
                         <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" name="delete_testimonial" class="btn btn-danger">Delete</button></div>
@@ -191,7 +197,7 @@ include 'includes/header.php';
 </div>
 
 <!-- Add Testimonial Modal -->
-<div class="modal fade" id="addTestimonialModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="POST">
+<div class="modal fade" id="addTestimonialModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
     <div class="modal-header"><h5 class="modal-title">Add New Testimonial</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
         <div class="mb-3"><label class="form-label">Client Name *</label><input type="text" name="client_name" class="form-control" required></div>

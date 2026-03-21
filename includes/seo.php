@@ -264,6 +264,66 @@ function renderJsonLd($pageMeta = [], $settings = []) {
                 ],
             ];
             break;
+
+        case 'FAQService':
+            // Service schemas
+            $services = [
+                ['name' => 'Web Development', 'description' => 'Custom website design and development, e-commerce solutions, responsive web applications, and CMS development.'],
+                ['name' => 'AI & Automation', 'description' => 'AI chatbots, workflow automation, intelligent integrations, and smart analytics for business growth.'],
+                ['name' => 'Digital Marketing', 'description' => 'SEO optimization, social media marketing, content strategy, and PPC campaign management.'],
+            ];
+            foreach ($services as $service) {
+                $schemas[] = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Service',
+                    'serviceType' => $service['name'],
+                    'name' => $service['name'],
+                    'description' => $service['description'],
+                    'provider' => ['@type' => 'Organization', 'name' => 'BizNexa', 'url' => $siteUrl],
+                ];
+            }
+            // FAQPage schema
+            if (!empty($pageMeta['faqs'])) {
+                $faqItems = [];
+                foreach ($pageMeta['faqs'] as $faq) {
+                    $faqItems[] = [
+                        '@type' => 'Question',
+                        'name' => $faq['q'],
+                        'acceptedAnswer' => [
+                            '@type' => 'Answer',
+                            'text' => $faq['a'],
+                        ],
+                    ];
+                }
+                $schemas[] = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'FAQPage',
+                    'mainEntity' => $faqItems,
+                ];
+            }
+            // AI Agent Product schemas
+            if (!empty($pageMeta['ai_agents'])) {
+                foreach ($pageMeta['ai_agents'] as $agent) {
+                    $productSchema = [
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Product',
+                        'name' => $agent['name'],
+                        'description' => $agent['description'] ?? '',
+                        'brand' => ['@type' => 'Brand', 'name' => 'BizNexa'],
+                        'category' => 'AI Software',
+                    ];
+                    if (!empty($agent['pricing'])) {
+                        $productSchema['offers'] = [
+                            '@type' => 'Offer',
+                            'price' => $agent['pricing'],
+                            'priceCurrency' => 'USD',
+                            'availability' => ($agent['status'] === 'active') ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+                        ];
+                    }
+                    $schemas[] = $productSchema;
+                }
+            }
+            break;
     }
 
     $output = '';

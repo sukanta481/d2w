@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 
 require_once 'config/database.php';
 $database = new Database();
@@ -8,6 +9,11 @@ $db = $database->connect();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_agent'])) {
             $stmt = $db->prepare("INSERT INTO ai_agents (name, description, category, features, pricing, icon, demo_url, documentation_url, status, created_by)
@@ -143,7 +149,7 @@ include 'includes/header.php';
                     <div class="modal fade" id="editAgentModal<?php echo $agent['id']; ?>" tabindex="-1">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-                                <form method="POST">
+                                <form method="POST"><?php echo csrfField(); ?>
                                     <div class="modal-header">
                                         <h5 class="modal-title">Edit AI Agent</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -214,7 +220,7 @@ include 'includes/header.php';
                     <div class="modal fade" id="deleteAgentModal<?php echo $agent['id']; ?>" tabindex="-1">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <form method="POST">
+                                <form method="POST"><?php echo csrfField(); ?>
                                     <div class="modal-header">
                                         <h5 class="modal-title">Delete AI Agent</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -253,7 +259,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addAgentModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST">
+            <form method="POST"><?php echo csrfField(); ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Add New AI Agent</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

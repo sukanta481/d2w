@@ -2,27 +2,37 @@
 /**
  * Frontend Database Configuration
  * BizNexa Website
- *
- * Automatically detects environment (local vs production)
  */
+
+require_once __DIR__ . '/../config.env.php';
 
 // Check if we're on local or production server
 $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1'])
            || strpos($_SERVER['SERVER_NAME'] ?? '', '.local') !== false
-           || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] === '127.0.0.1');
+           || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] === '127.0.0.1')
+           || php_sapi_name() === 'cli';
 
-if ($isLocal) {
-    // Local Development (XAMPP)
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('DB_NAME', 'd2w_cms');
-} else {
-    // Production Server (Hostinger)
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'u286257250_d2w');
-    define('DB_PASS', 'Sukanta@0050');
-    define('DB_NAME', 'u286257250_d2w_cms');
+if (!defined('DB_HOST')) {
+    if ($isLocal) {
+        define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+        define('DB_USER', getenv('DB_USER') ?: 'root');
+        define('DB_PASS', getenv('DB_PASS') ?: '');
+        define('DB_NAME', getenv('DB_NAME') ?: 'd2w_cms');
+    } else {
+        // Production MUST use .env — no hardcoded credentials
+        $dbHost = getenv('DB_HOST');
+        $dbUser = getenv('DB_USER');
+        $dbPass = getenv('DB_PASS');
+        $dbName = getenv('DB_NAME');
+        if (!$dbHost || !$dbUser || !$dbName) {
+            error_log('BizNexa: Missing .env database credentials for production');
+            die('Database configuration error. Contact administrator.');
+        }
+        define('DB_HOST', $dbHost);
+        define('DB_USER', $dbUser);
+        define('DB_PASS', $dbPass);
+        define('DB_NAME', $dbName);
+    }
 }
 
 function getDBConnection() {
@@ -126,7 +136,7 @@ function getAIAgents() {
     if (!$db) return [];
 
     try {
-        $stmt = $db->query("SELECT * FROM ai_agents WHERE status = 'active' ORDER BY display_order ASC, id ASC");
+        $stmt = $db->query("SELECT * FROM ai_agents WHERE status IN ('active', 'coming_soon') ORDER BY display_order ASC, id ASC");
         return $stmt->fetchAll();
     } catch(PDOException $e) {
         return [];
@@ -297,6 +307,35 @@ function saveLead($data) {
         return true;
     } catch(PDOException $e) {
         return false;
+    }
+}
+
+// Rate limiting
+function checkRateLimit($ip, $action, $maxAttempts = 5, $windowMinutes = 60) {
+    $db = getDBConnection();
+    if (!$db) return true; // Allow if DB unavailable
+
+    try {
+        // Clean up old records
+        $cleanup = $db->prepare("DELETE FROM rate_limits WHERE created_at < DATE_SUB(NOW(), INTERVAL :window MINUTE)");
+        $cleanup->execute([':window' => $windowMinutes]);
+
+        // Count recent attempts
+        $stmt = $db->prepare("SELECT COUNT(*) as attempts FROM rate_limits WHERE ip_address = :ip AND action = :action AND created_at > DATE_SUB(NOW(), INTERVAL :window MINUTE)");
+        $stmt->execute([':ip' => $ip, ':action' => $action, ':window' => $windowMinutes]);
+        $result = $stmt->fetch();
+
+        if ($result['attempts'] >= $maxAttempts) {
+            return false; // Rate limited
+        }
+
+        // Record this attempt
+        $insert = $db->prepare("INSERT INTO rate_limits (ip_address, action) VALUES (:ip, :action)");
+        $insert->execute([':ip' => $ip, ':action' => $action]);
+
+        return true; // Allowed
+    } catch (PDOException $e) {
+        return true; // Allow on error
     }
 }
 ?>

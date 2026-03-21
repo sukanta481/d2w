@@ -1,11 +1,17 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_service'])) {
             $stmt = $db->prepare("INSERT INTO services (title, short_description, full_description, icon, features, pricing_info, display_order, status, created_by)
@@ -96,7 +102,7 @@ include 'includes/header.php';
 
                         <!-- Edit Modal -->
                         <div class="modal fade" id="editServiceModal<?php echo $service['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog modal-lg"><div class="modal-content"><form method="POST">
+                            <div class="modal-dialog modal-lg"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                                 <div class="modal-header"><h5 class="modal-title">Edit Service</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                 <div class="modal-body">
                                     <input type="hidden" name="service_id" value="<?php echo $service['id']; ?>">
@@ -117,7 +123,7 @@ include 'includes/header.php';
 
                         <!-- Delete Modal -->
                         <div class="modal fade" id="deleteServiceModal<?php echo $service['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                            <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                                 <div class="modal-header"><h5 class="modal-title">Delete Service</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                 <div class="modal-body">
                                     <input type="hidden" name="service_id" value="<?php echo $service['id']; ?>">
@@ -134,7 +140,7 @@ include 'includes/header.php';
 </div>
 
 <!-- Add Service Modal -->
-<div class="modal fade" id="addServiceModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form method="POST">
+<div class="modal fade" id="addServiceModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
     <div class="modal-header"><h5 class="modal-title">Add New Service</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body"><div class="row">
         <div class="col-md-8 mb-3"><label class="form-label">Title *</label><input type="text" name="title" class="form-control" required></div>
@@ -182,7 +188,7 @@ include 'includes/header.php';
 
             <!-- Edit Tech Modal -->
             <div class="modal fade" id="editTechModal<?php echo $tech['id']; ?>" tabindex="-1">
-                <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                     <div class="modal-header"><h5 class="modal-title">Edit Technology</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
                         <input type="hidden" name="tech_id" value="<?php echo $tech['id']; ?>">
@@ -229,7 +235,7 @@ include 'includes/header.php';
 
             <!-- Delete Tech Modal -->
             <div class="modal fade" id="deleteTechModal<?php echo $tech['id']; ?>" tabindex="-1">
-                <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                     <div class="modal-header"><h5 class="modal-title">Delete Technology</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
                         <input type="hidden" name="tech_id" value="<?php echo $tech['id']; ?>">
@@ -249,7 +255,7 @@ include 'includes/header.php';
 
 <!-- Add Technology Modal -->
 <div class="modal fade" id="addTechModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content"><form method="POST">
+    <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
         <div class="modal-header"><h5 class="modal-title">Add New Technology</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="mb-3">

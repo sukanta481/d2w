@@ -4,8 +4,24 @@ header('Content-Type: application/json');
 // Include database helper
 include_once __DIR__ . '/../includes/db_config.php';
 
+// Start session and validate CSRF
+session_start();
+require_once __DIR__ . '/../includes/csrf.php';
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    echo json_encode(['success' => false, 'message' => 'Invalid form submission. Please refresh and try again.']);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+    exit;
+}
+
+// Rate limiting — max 5 submissions per IP per hour
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+if (!checkRateLimit($clientIp, 'contact_form', 5, 60)) {
+    echo json_encode(['success' => false, 'message' => 'Too many submissions. Please wait before trying again.']);
     exit;
 }
 
@@ -62,7 +78,7 @@ try {
 
 // Get admin email from settings
 $settings = getAllSettings();
-$to = $settings['contact_email'] ?? 'info@biznexa.tech';
+$to = $settings['site_email'] ?? 'info@biznexa.tech';
 
 $subject = 'New Contact Form Submission from ' . $name;
 $email_content = "Name: $name\n";

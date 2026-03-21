@@ -3,8 +3,17 @@
  * Database Installation Script
  * BizNexa CMS
  *
- * Run this file once to set up the database
+ * Run this file once to set up the database.
+ * Requires ALLOW_INSTALL=true in .env to run.
  */
+
+require_once __DIR__ . '/../config.env.php';
+
+if (getenv('ALLOW_INSTALL') !== 'true') {
+    http_response_code(404);
+    echo '<!DOCTYPE html><html><body><h1>404 Not Found</h1></body></html>';
+    exit;
+}
 
 // Database configuration
 $host = 'localhost';

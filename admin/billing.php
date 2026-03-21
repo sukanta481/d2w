@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 
 require_once 'config/database.php';
 $database = new Database();
@@ -37,6 +38,11 @@ function generateBillNumber($db, $prefix) {
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_bill'])) {
             $billNumber = generateBillNumber($db, $billPrefix);
@@ -685,7 +691,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editBillModal<?php echo $bill['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-xl">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="update_bill" value="1">
                                             <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
                                             <div class="modal-header">
@@ -863,7 +869,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="deleteBillModal<?php echo $bill['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="delete_bill" value="1">
                                             <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
                                             <div class="modal-header">
@@ -889,7 +895,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="markPaidModal<?php echo $bill['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="record_payment" value="1">
                                             <input type="hidden" name="bill_id" value="<?php echo $bill['id']; ?>">
                                             <div class="modal-header bg-success text-white">
@@ -1007,7 +1013,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addBillModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <form method="POST" id="addBillForm">
+            <form method="POST" id="addBillForm"><?php echo csrfField(); ?>
                 <input type="hidden" name="add_bill" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title">Create New Bill</h5>

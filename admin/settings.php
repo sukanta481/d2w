@@ -1,11 +1,17 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         $settingMeta = [
             'site_name' => ['type' => 'text', 'description' => 'Website name'],
@@ -66,7 +72,7 @@ include 'includes/header.php';
         <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle me-2"></i><?php echo $successMessage; ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST"><?php echo csrfField(); ?>
         <div class="row">
             <!-- General Settings -->
             <div class="col-lg-6 mb-4">

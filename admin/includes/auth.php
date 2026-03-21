@@ -33,6 +33,9 @@ class Auth {
                 $user = $stmt->fetch();
 
                 if (password_verify($password, $user['password'])) {
+                    // Regenerate session ID to prevent fixation
+                    session_regenerate_id(true);
+
                     // Set session variables
                     $_SESSION['admin_logged_in'] = true;
                     $_SESSION['admin_id'] = $user['id'];
@@ -41,6 +44,10 @@ class Auth {
                     $_SESSION['admin_full_name'] = $user['full_name'];
                     $_SESSION['admin_role'] = $user['role'];
                     $_SESSION['admin_avatar'] = $user['avatar'];
+
+                    // Store session security data
+                    $_SESSION['last_activity'] = time();
+                    $_SESSION['user_agent_hash'] = md5($_SERVER['HTTP_USER_AGENT'] ?? '');
 
                     // Update last login
                     $updateQuery = "UPDATE admin_users SET last_login = NOW() WHERE id = :id";
@@ -75,6 +82,22 @@ class Auth {
     // Require login
     public function requireLogin() {
         if (!$this->isLoggedIn()) {
+            header('Location: login.php');
+            exit();
+        }
+
+        // 30-minute idle timeout
+        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > 1800) {
+            $this->logout();
+            header('Location: login.php?timeout=1');
+            exit();
+        }
+        $_SESSION['last_activity'] = time();
+
+        // User-agent consistency check
+        $currentUA = md5($_SERVER['HTTP_USER_AGENT'] ?? '');
+        if (isset($_SESSION['user_agent_hash']) && $_SESSION['user_agent_hash'] !== $currentUA) {
+            $this->logout();
             header('Location: login.php');
             exit();
         }

@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once __DIR__ . '/../includes/csrf.php';
 
 // If already logged in, redirect to dashboard
 if ($auth->isLoggedIn()) {
@@ -14,7 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (empty($username) || empty($password)) {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid form submission. Please refresh and try again.';
+    } else if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password.';
     } else {
         if ($auth->login($username, $password)) {
@@ -53,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="" class="login-form">
+                <?php echo csrfField(); ?>
                 <div class="form-group mb-3">
                     <label for="username" class="form-label">
                         <i class="fas fa-user me-2"></i>Username

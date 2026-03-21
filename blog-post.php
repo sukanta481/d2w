@@ -142,6 +142,7 @@ include 'includes/header.php';
                         <a href="https://twitter.com/intent/tweet?url=<?php echo urlencode((isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']); ?>&text=<?php echo urlencode($post['title']); ?>" target="_blank" class="share-btn twitter"><i class="fab fa-twitter"></i></a>
                         <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?php echo urlencode((isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']); ?>&title=<?php echo urlencode($post['title']); ?>" target="_blank" class="share-btn linkedin"><i class="fab fa-linkedin-in"></i></a>
                         <a href="https://wa.me/?text=<?php echo urlencode($post['title'] . ' - ' . (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']); ?>" target="_blank" class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+                        <button onclick="copyPostLink(this)" class="share-btn copy-link" title="Copy link"><i class="fas fa-link"></i></button>
                     </div>
                 </div>
             </div>
@@ -341,6 +342,15 @@ include 'includes/header.php';
 .share-btn.twitter { background: #1da1f2; }
 .share-btn.linkedin { background: #0077b5; }
 .share-btn.whatsapp { background: #25d366; }
+.share-btn.copy-link {
+    background: #6b7280;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-out, background 0.2s ease-out;
+}
+.share-btn.copy-link:hover {
+    transform: translateY(-3px);
+}
 
 .related-posts-section h2 {
     color: var(--dark-color);
@@ -360,5 +370,19 @@ include 'includes/header.php';
     }
 }
 </style>
+
+<script>
+function copyPostLink(btn) {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+        var icon = btn.querySelector('i');
+        icon.className = 'fas fa-check';
+        btn.style.background = '#10B981';
+        setTimeout(function() {
+            icon.className = 'fas fa-link';
+            btn.style.background = '#6b7280';
+        }, 2000);
+    });
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

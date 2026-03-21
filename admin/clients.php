@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 
 require_once 'config/database.php';
 $database = new Database();
@@ -8,6 +9,11 @@ $db = $database->connect();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_client'])) {
             $stmt = $db->prepare("INSERT INTO clients (name, email, phone, company, address, gst_number, status, created_by)
@@ -230,7 +236,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editClientModal<?php echo $client['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="update_client" value="1">
                                             <input type="hidden" name="client_id" value="<?php echo $client['id']; ?>">
                                             <div class="modal-header">
@@ -295,7 +301,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="deleteClientModal<?php echo $client['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <input type="hidden" name="delete_client" value="1">
                                             <input type="hidden" name="client_id" value="<?php echo $client['id']; ?>">
                                             <div class="modal-header">
@@ -335,7 +341,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addClientModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST">
+            <form method="POST"><?php echo csrfField(); ?>
                 <input type="hidden" name="add_client" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title">Add New Client</h5>

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/csrf.php';
 // Get settings for footer if not already loaded
 if (!isset($settings)) {
     include_once __DIR__ . '/db_config.php';
@@ -52,6 +53,7 @@ $instagram = $settings['instagram_url'] ?? '#';
                     <h5 class="footer-title">Newsletter</h5>
                     <p class="footer-text">Subscribe to get the latest updates and news.</p>
                     <form class="newsletter-form" id="newsletterForm">
+                        <?php echo csrfField(); ?>
                         <div class="input-group">
                             <label for="newsletter-email" class="visually-hidden">Email address</label>
                             <input type="email" class="form-control" id="newsletter-email" placeholder="Your Email" required>
@@ -75,10 +77,10 @@ $instagram = $settings['instagram_url'] ?? '#';
 
     <!-- Floating Side Contact Box -->
     <div class="side-contact-box" id="sideContactBox">
-        <a href="mailto:info@biznexa.tech" class="side-contact-item" aria-label="Email us">
+        <a href="mailto:<?php echo htmlspecialchars($settings['site_email'] ?? 'info@biznexa.tech'); ?>" class="side-contact-item" aria-label="Email us">
             <i class="fas fa-envelope"></i>
         </a>
-        <a href="tel:+919433215443" class="side-contact-item" aria-label="Call us">
+        <a href="tel:<?php echo htmlspecialchars(preg_replace('/\s+/', '', $settings['site_phone'] ?? '+919433215443')); ?>" class="side-contact-item" aria-label="Call us">
             <i class="fas fa-phone"></i>
         </a>
         <a href="skype:live:biznexa?chat" class="side-contact-item" aria-label="Chat on Skype">
@@ -90,7 +92,8 @@ $instagram = $settings['instagram_url'] ?? '#';
     </div>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919433215443?text=Hi%20BizNexa!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
+    <?php $waPhone = preg_replace('/[^0-9]/', '', $settings['site_phone'] ?? '919433215443'); ?>
+    <a href="https://wa.me/<?php echo $waPhone; ?>?text=Hi%20BizNexa!%20I%20need%20assistance." target="_blank" class="whatsapp-float" id="whatsappFloat" aria-label="Chat on WhatsApp">
         <div class="whatsapp-pulse"></div>
         <div class="whatsapp-icon">
             <i class="fab fa-whatsapp"></i>

@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 
 require_once 'config/database.php';
 $database = new Database();
@@ -8,6 +9,11 @@ $db = $database->connect();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         if (isset($_POST['add_project'])) {
             // Handle banner upload
@@ -266,7 +272,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="editProjectModal<?php echo $project['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <form method="POST" enctype="multipart/form-data">
+                                        <form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Edit Project</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -365,7 +371,7 @@ include 'includes/header.php';
                             <div class="modal fade" id="deleteProjectModal<?php echo $project['id']; ?>" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form method="POST">
+                                        <form method="POST"><?php echo csrfField(); ?>
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Delete Project</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -403,7 +409,7 @@ include 'includes/header.php';
 <div class="modal fade" id="addProjectModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Add New Project</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

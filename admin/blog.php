@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/auth.php';
 $auth->requireLogin();
+require_once __DIR__ . '/../includes/csrf.php';
 require_once 'config/database.php';
 $database = new Database();
 $db = $database->connect();
@@ -32,6 +33,11 @@ function handleImageUpload() {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = 'Invalid form submission. Please refresh and try again.';
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
     try {
         $uploadedImage = handleImageUpload();
 
@@ -161,7 +167,7 @@ include 'includes/header.php';
 
                         <!-- Edit Modal -->
                         <div class="modal fade" id="editPostModal<?php echo $post['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" enctype="multipart/form-data">
+                            <div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
                                 <div class="modal-header"><h5 class="modal-title">Edit Blog Post</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                 <div class="modal-body">
                                     <input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
@@ -206,7 +212,7 @@ include 'includes/header.php';
 
                         <!-- Delete Modal -->
                         <div class="modal fade" id="deletePostModal<?php echo $post['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog"><div class="modal-content"><form method="POST">
+                            <div class="modal-dialog"><div class="modal-content"><form method="POST"><?php echo csrfField(); ?>
                                 <div class="modal-header"><h5 class="modal-title">Delete Post</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                                 <div class="modal-body"><input type="hidden" name="post_id" value="<?php echo $post['id']; ?>"><p>Delete <strong><?php echo htmlspecialchars($post['title']); ?></strong>?</p></div>
                                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" name="delete_post" class="btn btn-danger">Delete</button></div>
@@ -220,7 +226,7 @@ include 'includes/header.php';
 </div>
 
 <!-- Add Post Modal -->
-<div class="modal fade" id="addPostModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" enctype="multipart/form-data">
+<div class="modal fade" id="addPostModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><form method="POST" enctype="multipart/form-data"><?php echo csrfField(); ?>
     <div class="modal-header"><h5 class="modal-title">Add New Blog Post</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body"><div class="row">
         <div class="col-md-8 mb-3"><label class="form-label">Title *</label><input type="text" name="title" class="form-control" required></div>

@@ -1,6 +1,7 @@
 <?php
 $currentPage = 'contact';
 include_once 'includes/db_config.php';
+require_once 'includes/csrf.php';
 $settings = getAllSettings();
 $contactEmail = $settings['site_email'] ?? 'info@biznexa.tech';
 $contactPhone = $settings['site_phone'] ?? '+91 94332 15443';
@@ -110,6 +111,7 @@ include 'includes/header.php';
                     <p style="color: #94a3b8; margin-bottom: 30px;">Feel free to ask for details, don't save any questions!</p>
 
                     <form id="contactForm" action="php/contact-form-handler.php" method="POST">
+                    <?php echo csrfField(); ?>
                         <div class="row">
                             <div class="col-md-6 mb-4">
                                 <div class="form-group-animated">

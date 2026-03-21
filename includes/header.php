@@ -1,4 +1,12 @@
 <?php
+// Start session early (before any output) for CSRF and other session needs
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Include CSRF helper (session already started above)
+include_once __DIR__ . '/csrf.php';
+
 // Include SEO helper
 include_once __DIR__ . '/seo.php';
 
@@ -38,8 +46,8 @@ if (!isset($settings)) {
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="top-info">
-                        <a href="mailto:info@biznexa.tech" class="top-info-link"><i class="fas fa-envelope"></i> info@biznexa.tech</a>
-                        <span class="ms-4"><a href="tel:+919433215443" class="top-info-link"><i class="fas fa-phone"></i> Call: +91 94332 15443</a></span>
+                        <a href="mailto:<?php echo htmlspecialchars($settings['site_email'] ?? 'info@biznexa.tech'); ?>" class="top-info-link"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($settings['site_email'] ?? 'info@biznexa.tech'); ?></a>
+                        <span class="ms-4"><a href="tel:<?php echo htmlspecialchars(preg_replace('/\s+/', '', $settings['site_phone'] ?? '+919433215443')); ?>" class="top-info-link"><i class="fas fa-phone"></i> Call: <?php echo htmlspecialchars($settings['site_phone'] ?? '+91 94332 15443'); ?></a></span>
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
@@ -148,8 +156,8 @@ if (!isset($settings)) {
 
             <!-- Contact Info -->
             <div class="mobile-menu-contact">
-                <p><i class="fas fa-envelope"></i> info@biznexa.tech</p>
-                <p><i class="fas fa-phone"></i> +91 94332 15443</p>
+                <p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($settings['site_email'] ?? 'info@biznexa.tech'); ?></p>
+                <p><i class="fas fa-phone"></i> <?php echo htmlspecialchars($settings['site_phone'] ?? '+91 94332 15443'); ?></p>
             </div>
         </div>
     </div>
