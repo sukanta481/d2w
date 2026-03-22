@@ -27,7 +27,7 @@
                 <div class="menu-section-title">Main</div>
                 <ul>
                     <li class="menu-item">
-                        <a href="<?php echo $basePath; ?>index.php" class="menu-link <?php echo (basename($_SERVER['PHP_SELF']) === 'index.php' && strpos($_SERVER['PHP_SELF'], 'inspection/') === false) ? 'active' : ''; ?>">
+                        <a href="<?php echo $basePath; ?>dashboard.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : ''; ?>">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
@@ -72,6 +72,12 @@
                                 }
                             } catch(Exception $e) {}
                             ?>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="<?php echo $basePath; ?>expenses.php" class="menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'expenses.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-receipt"></i>
+                            <span>Expenses</span>
                         </a>
                     </li>
                 </ul>

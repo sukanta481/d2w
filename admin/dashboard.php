@@ -1,0 +1,658 @@
+<?php
+require_once 'includes/auth.php';
+$auth->requireLogin();
+
+require_once 'config/database.php';
+$database = new Database();
+$db = $database->connect();
+
+// ==========================================
+// TAB 1: MAIN DASHBOARD DATA
+// ==========================================
+$mainData = [
+    'billing_earned' => 0,
+    'inspection_earned' => 0,
+    'total_earnings' => 0,
+    'total_expenses' => 0,
+    'net_profit' => 0,
+    'pending_payments' => 0,
+    'monthly_earnings' => [],
+    'monthly_expenses' => [],
+    'recent_expenses' => []
+];
+
+try {
+    // Billing: total paid amount
+    $stmt = $db->query("SELECT COALESCE(SUM(paid_amount), 0) as total FROM bills WHERE payment_status IN ('paid', 'partial')");
+    $mainData['billing_earned'] = $stmt->fetch()['total'];
+
+    // Inspection: total gross_amount
+    $stmt = $db->query("SELECT COALESCE(SUM(gross_amount), 0) as total FROM inspection_files");
+    $mainData['inspection_earned'] = $stmt->fetch()['total'];
+
+    $mainData['total_earnings'] = $mainData['billing_earned'] + $mainData['inspection_earned'];
+
+    // Total expenses (all)
+    $stmt = $db->query("SELECT COALESCE(SUM(amount), 0) as total FROM expenses");
+    $mainData['total_expenses'] = $stmt->fetch()['total'];
+
+    $mainData['net_profit'] = $mainData['total_earnings'] - $mainData['total_expenses'];
+
+    // Pending payments (unpaid bills + inspection pending)
+    $stmt = $db->query("SELECT COALESCE(SUM(total_amount - paid_amount), 0) as total FROM bills WHERE payment_status IN ('unpaid', 'partial')");
+    $pendingBills = $stmt->fetch()['total'];
+
+    $stmt = $db->query("SELECT COALESCE(SUM(COALESCE(fees, 0) - COALESCE(amount, 0)), 0) as total FROM inspection_files WHERE file_type = 'self' AND payment_status IN ('due', 'partially')");
+    $pendingInspection = $stmt->fetch()['total'];
+
+    $mainData['pending_payments'] = $pendingBills + $pendingInspection;
+
+    // Monthly earnings (last 6 months) - billing
+    $stmt = $db->query("SELECT DATE_FORMAT(payment_date, '%Y-%m') as month, SUM(paid_amount) as total
+        FROM bills WHERE payment_date IS NOT NULL AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY month ORDER BY month");
+    $billingMonthly = [];
+    while ($row = $stmt->fetch()) { $billingMonthly[$row['month']] = floatval($row['total']); }
+
+    // Monthly earnings (last 6 months) - inspection
+    $stmt = $db->query("SELECT DATE_FORMAT(file_date, '%Y-%m') as month, SUM(gross_amount) as total
+        FROM inspection_files WHERE file_date IS NOT NULL AND file_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY month ORDER BY month");
+    $inspectionMonthly = [];
+    while ($row = $stmt->fetch()) { $inspectionMonthly[$row['month']] = floatval($row['total']); }
+
+    // Monthly expenses (last 6 months)
+    $stmt = $db->query("SELECT DATE_FORMAT(expense_date, '%Y-%m') as month, SUM(amount) as total
+        FROM expenses WHERE expense_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY month ORDER BY month");
+    $expensesMonthly = [];
+    while ($row = $stmt->fetch()) { $expensesMonthly[$row['month']] = floatval($row['total']); }
+
+    // Build 6-month labels
+    $months = [];
+    for ($i = 5; $i >= 0; $i--) {
+        $months[] = date('Y-m', strtotime("-{$i} months"));
+    }
+    foreach ($months as $m) {
+        $mainData['monthly_earnings'][] = ($billingMonthly[$m] ?? 0) + ($inspectionMonthly[$m] ?? 0);
+        $mainData['monthly_expenses'][] = $expensesMonthly[$m] ?? 0;
+    }
+
+    // Recent 5 expenses
+    $stmt = $db->query("SELECT * FROM expenses ORDER BY expense_date DESC, id DESC LIMIT 5");
+    $mainData['recent_expenses'] = $stmt->fetchAll();
+
+} catch(PDOException $e) {
+    error_log("Dashboard Main Error: " . $e->getMessage());
+}
+
+// ==========================================
+// TAB 2: BIZNEXA DATA
+// ==========================================
+$biznexaData = [
+    'total_billed' => 0,
+    'paid_amount' => 0,
+    'unpaid_amount' => 0,
+    'total_bills' => 0,
+    'total_expenses' => 0,
+    'net_profit' => 0,
+    'recent_bills' => []
+];
+
+try {
+    $stmt = $db->query("SELECT COUNT(*) as cnt, COALESCE(SUM(total_amount),0) as billed, COALESCE(SUM(paid_amount),0) as paid FROM bills");
+    $row = $stmt->fetch();
+    $biznexaData['total_bills'] = $row['cnt'];
+    $biznexaData['total_billed'] = $row['billed'];
+    $biznexaData['paid_amount'] = $row['paid'];
+    $biznexaData['unpaid_amount'] = $row['billed'] - $row['paid'];
+
+    // BizNexa expenses
+    $stmt = $db->query("SELECT COALESCE(SUM(amount),0) as total FROM expenses WHERE category = 'biznexa'");
+    $biznexaData['total_expenses'] = $stmt->fetch()['total'];
+    $biznexaData['net_profit'] = $biznexaData['paid_amount'] - $biznexaData['total_expenses'];
+
+    // Recent 5 bills
+    $stmt = $db->query("SELECT b.*, c.name as client_name FROM bills b LEFT JOIN clients c ON b.client_id = c.id ORDER BY b.created_at DESC LIMIT 5");
+    $biznexaData['recent_bills'] = $stmt->fetchAll();
+
+} catch(PDOException $e) {
+    error_log("Dashboard BizNexa Error: " . $e->getMessage());
+}
+
+// ==========================================
+// TAB 3: INSPECTION DATA
+// ==========================================
+$inspData = [
+    'total_fees' => 0,
+    'total_earnings' => 0,
+    'pending_amount' => 0,
+    'total_files' => 0,
+    'total_expenses' => 0,
+    'net_profit' => 0,
+    'recent_files' => []
+];
+
+try {
+    $stmt = $db->query("SELECT COUNT(*) as cnt, COALESCE(SUM(fees),0) as fees, COALESCE(SUM(gross_amount),0) as earnings FROM inspection_files");
+    $row = $stmt->fetch();
+    $inspData['total_files'] = $row['cnt'];
+    $inspData['total_fees'] = $row['fees'];
+    $inspData['total_earnings'] = $row['earnings'];
+
+    $stmt = $db->query("SELECT COALESCE(SUM(COALESCE(fees,0) - COALESCE(amount,0)), 0) as total FROM inspection_files WHERE file_type = 'self' AND payment_status IN ('due', 'partially')");
+    $inspData['pending_amount'] = $stmt->fetch()['total'];
+
+    // Inspection expenses
+    $stmt = $db->query("SELECT COALESCE(SUM(amount),0) as total FROM expenses WHERE category = 'inspection'");
+    $inspData['total_expenses'] = $stmt->fetch()['total'];
+    $inspData['net_profit'] = $inspData['total_earnings'] - $inspData['total_expenses'];
+
+    // Recent 5 files
+    $stmt = $db->query("SELECT f.*, ib.bank_name, isrc.source_name
+        FROM inspection_files f
+        LEFT JOIN inspection_banks ib ON f.bank_id = ib.id
+        LEFT JOIN inspection_sources isrc ON f.source_id = isrc.id
+        ORDER BY f.file_date DESC, f.id DESC LIMIT 5");
+    $inspData['recent_files'] = $stmt->fetchAll();
+
+} catch(PDOException $e) {
+    error_log("Dashboard Inspection Error: " . $e->getMessage());
+}
+
+$monthLabels = [];
+for ($i = 5; $i >= 0; $i--) {
+    $monthLabels[] = date('M Y', strtotime("-{$i} months"));
+}
+
+$pageTitle = 'Dashboard';
+include 'includes/header.php';
+?>
+
+<div class="admin-content">
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Welcome back, <?php echo htmlspecialchars($_SESSION['admin_full_name']); ?>!</p>
+    </div>
+
+    <!-- Dashboard Tabs -->
+    <div class="dashboard-tabs">
+        <button class="tab-btn active" data-tab="main" onclick="switchTab('main')">
+            <i class="fas fa-chart-pie me-2"></i>Main Dashboard
+        </button>
+        <button class="tab-btn" data-tab="biznexa" onclick="switchTab('biznexa')">
+            <i class="fas fa-building me-2"></i>BizNexa Agency
+        </button>
+        <button class="tab-btn" data-tab="inspection" onclick="switchTab('inspection')">
+            <i class="fas fa-search-location me-2"></i>Inspection
+        </button>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 1: MAIN DASHBOARD                        -->
+    <!-- ============================================ -->
+    <div class="tab-panel active" id="tab-main">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($mainData['total_earnings'], 0); ?></div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-icon success"><i class="fas fa-rupee-sign"></i></div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>All time revenue</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($mainData['total_expenses'], 0); ?></div>
+                        <div class="stat-label">Total Expenses</div>
+                    </div>
+                    <div class="stat-icon danger"><i class="fas fa-receipt"></i></div>
+                </div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>All expenditure</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value" style="color: <?php echo $mainData['net_profit'] >= 0 ? 'var(--success)' : 'var(--danger)'; ?>">
+                            ₹<?php echo number_format($mainData['net_profit'], 0); ?>
+                        </div>
+                        <div class="stat-label">Net Profit</div>
+                    </div>
+                    <div class="stat-icon" style="background: <?php echo $mainData['net_profit'] >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(220,53,69,0.1)'; ?>; color: <?php echo $mainData['net_profit'] >= 0 ? 'var(--success)' : 'var(--danger)'; ?>">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="stat-change <?php echo $mainData['net_profit'] >= 0 ? 'positive' : 'negative'; ?>">
+                    <i class="fas fa-<?php echo $mainData['net_profit'] >= 0 ? 'arrow-up' : 'arrow-down'; ?>"></i>
+                    <span>Earnings - Expenses</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($mainData['pending_payments'], 0); ?></div>
+                        <div class="stat-label">Pending Payments</div>
+                    </div>
+                    <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="stat-change">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Bills + Inspection due</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart + Recent Expenses -->
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h2 class="card-title">Earnings vs Expenses (6 Months)</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h2 class="card-title">Recent Expenses</h2>
+                        <a href="expenses.php" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <?php if (!empty($mainData['recent_expenses'])): ?>
+                        <?php foreach ($mainData['recent_expenses'] as $exp): ?>
+                            <div class="recent-expense-item">
+                                <div class="recent-expense-info">
+                                    <strong><?php echo htmlspecialchars($exp['title']); ?></strong>
+                                    <small><?php echo date('M d', strtotime($exp['expense_date'])); ?> · <span class="badge category-badge-<?php echo $exp['category']; ?>" style="font-size:0.65rem;padding:2px 6px;"><?php echo $exp['category'] === 'biznexa' ? 'BizNexa' : 'Inspection'; ?></span></small>
+                                </div>
+                                <div class="recent-expense-amount text-danger">-₹<?php echo number_format($exp['amount'], 0); ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-muted text-center">No expenses yet</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Breakdown -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h2 class="card-title">Earnings Breakdown</h2>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label"><i class="fas fa-building text-primary me-2"></i>BizNexa Agency</div>
+                        <div class="breakdown-value">₹<?php echo number_format($mainData['billing_earned'], 0); ?></div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label"><i class="fas fa-search-location text-warning me-2"></i>Inspection</div>
+                        <div class="breakdown-value">₹<?php echo number_format($mainData['inspection_earned'], 0); ?></div>
+                    </div>
+                    <div class="breakdown-item total">
+                        <div class="breakdown-label"><strong>Total</strong></div>
+                        <div class="breakdown-value"><strong>₹<?php echo number_format($mainData['total_earnings'], 0); ?></strong></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h2 class="card-title">Expense Breakdown</h2>
+                    </div>
+                    <?php
+                    try {
+                        $stmt = $db->query("SELECT COALESCE(SUM(amount),0) as total FROM expenses WHERE category = 'biznexa'");
+                        $biznexaExp = $stmt->fetch()['total'];
+                        $stmt = $db->query("SELECT COALESCE(SUM(amount),0) as total FROM expenses WHERE category = 'inspection'");
+                        $inspectionExp = $stmt->fetch()['total'];
+                    } catch(PDOException $e) { $biznexaExp = $inspectionExp = 0; }
+                    ?>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label"><i class="fas fa-building text-primary me-2"></i>BizNexa</div>
+                        <div class="breakdown-value text-danger">₹<?php echo number_format($biznexaExp, 0); ?></div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label"><i class="fas fa-search-location text-warning me-2"></i>Inspection</div>
+                        <div class="breakdown-value text-danger">₹<?php echo number_format($inspectionExp, 0); ?></div>
+                    </div>
+                    <div class="breakdown-item total">
+                        <div class="breakdown-label"><strong>Total</strong></div>
+                        <div class="breakdown-value text-danger"><strong>₹<?php echo number_format($mainData['total_expenses'], 0); ?></strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 2: BIZNEXA AGENCY                        -->
+    <!-- ============================================ -->
+    <div class="tab-panel" id="tab-biznexa">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($biznexaData['total_billed'], 0); ?></div>
+                        <div class="stat-label">Total Billed</div>
+                    </div>
+                    <div class="stat-icon primary"><i class="fas fa-file-invoice-dollar"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($biznexaData['paid_amount'], 0); ?></div>
+                        <div class="stat-label">Paid Amount</div>
+                    </div>
+                    <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($biznexaData['unpaid_amount'], 0); ?></div>
+                        <div class="stat-label">Unpaid Amount</div>
+                    </div>
+                    <div class="stat-icon danger"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value"><?php echo $biznexaData['total_bills']; ?></div>
+                        <div class="stat-label">Total Bills</div>
+                    </div>
+                    <div class="stat-icon" style="background:#e0f2fe;color:#0284c7;"><i class="fas fa-file-alt"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BizNexa Profit Card -->
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="content-card" style="background: linear-gradient(135deg, #0d6efd, #0056b3); color: white;">
+                    <h5 style="opacity:0.85; margin-bottom:5px;"><i class="fas fa-chart-line me-2"></i>BizNexa Profit</h5>
+                    <div style="font-size:2rem; font-weight:700;">₹<?php echo number_format($biznexaData['net_profit'], 0); ?></div>
+                    <small style="opacity:0.8;">Paid ₹<?php echo number_format($biznexaData['paid_amount'], 0); ?> − Expenses ₹<?php echo number_format($biznexaData['total_expenses'], 0); ?></small>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex"><h2 class="card-title">BizNexa Expenses</h2></div>
+                    <div style="font-size:1.75rem; font-weight:700; color:var(--danger);">₹<?php echo number_format($biznexaData['total_expenses'], 0); ?></div>
+                    <a href="expenses.php?category=biznexa" class="btn btn-sm btn-outline-primary mt-2">View All</a>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex"><h2 class="card-title">Quick Actions</h2></div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="billing.php?action=new" class="btn btn-sm btn-primary"><i class="fas fa-plus me-2"></i>New Bill</a>
+                        <a href="clients.php" class="btn btn-sm btn-outline-primary"><i class="fas fa-users me-2"></i>Manage Clients</a>
+                        <a href="expenses.php" class="btn btn-sm btn-outline-danger"><i class="fas fa-receipt me-2"></i>Add Expense</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bills -->
+        <div class="content-card">
+            <div class="card-header-flex">
+                <h2 class="card-title">Recent Bills</h2>
+                <a href="billing.php" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($biznexaData['recent_bills'])): ?>
+                            <?php foreach ($biznexaData['recent_bills'] as $bill): ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($bill['bill_number']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($bill['client_name']); ?></td>
+                                    <td><strong>₹<?php echo number_format($bill['total_amount'], 2); ?></strong></td>
+                                    <td><span class="badge bg-<?php echo $bill['status'] === 'paid' ? 'success' : ($bill['status'] === 'sent' ? 'info' : 'secondary'); ?>"><?php echo ucfirst($bill['status']); ?></span></td>
+                                    <td><span class="badge bg-<?php echo $bill['payment_status'] === 'paid' ? 'success' : ($bill['payment_status'] === 'partial' ? 'warning' : 'danger'); ?>"><?php echo ucfirst($bill['payment_status']); ?></span></td>
+                                    <td><?php echo date('M d, Y', strtotime($bill['bill_date'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6" class="text-center text-muted">No bills yet</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 3: INSPECTION                            -->
+    <!-- ============================================ -->
+    <div class="tab-panel" id="tab-inspection">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($inspData['total_fees'], 0); ?></div>
+                        <div class="stat-label">Total Fees Worked</div>
+                    </div>
+                    <div class="stat-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-file-invoice-dollar"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($inspData['total_earnings'], 0); ?></div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-icon success"><i class="fas fa-rupee-sign"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value">₹<?php echo number_format($inspData['pending_amount'], 0); ?></div>
+                        <div class="stat-label">Pending Amount</div>
+                    </div>
+                    <div class="stat-icon danger"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value"><?php echo $inspData['total_files']; ?></div>
+                        <div class="stat-label">Total Files</div>
+                    </div>
+                    <div class="stat-icon primary"><i class="fas fa-folder-open"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inspection Profit Card -->
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="content-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                    <h5 style="opacity:0.85; margin-bottom:5px;"><i class="fas fa-chart-line me-2"></i>Inspection Profit</h5>
+                    <div style="font-size:2rem; font-weight:700;">₹<?php echo number_format($inspData['net_profit'], 0); ?></div>
+                    <small style="opacity:0.8;">Earned ₹<?php echo number_format($inspData['total_earnings'], 0); ?> − Expenses ₹<?php echo number_format($inspData['total_expenses'], 0); ?></small>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex"><h2 class="card-title">Inspection Expenses</h2></div>
+                    <div style="font-size:1.75rem; font-weight:700; color:var(--danger);">₹<?php echo number_format($inspData['total_expenses'], 0); ?></div>
+                    <a href="expenses.php?category=inspection" class="btn btn-sm btn-outline-primary mt-2">View All</a>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="content-card">
+                    <div class="card-header-flex"><h2 class="card-title">Quick Actions</h2></div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="inspection/files.php" class="btn btn-sm btn-warning"><i class="fas fa-plus me-2"></i>New File</a>
+                        <a href="inspection/index.php" class="btn btn-sm btn-outline-warning"><i class="fas fa-chart-line me-2"></i>Full Dashboard</a>
+                        <a href="expenses.php" class="btn btn-sm btn-outline-danger"><i class="fas fa-receipt me-2"></i>Add Expense</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Files -->
+        <div class="content-card">
+            <div class="card-header-flex">
+                <h2 class="card-title">Recent Inspection Files</h2>
+                <a href="inspection/files.php" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>File #</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Bank</th>
+                            <th>Type</th>
+                            <th>Commission</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($inspData['recent_files'])): ?>
+                            <?php foreach ($inspData['recent_files'] as $file): ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($file['file_number']); ?></strong></td>
+                                    <td><?php echo $file['file_date'] ? date('d M', strtotime($file['file_date'])) : '-'; ?></td>
+                                    <td><?php echo htmlspecialchars($file['customer_name'] ?? '-'); ?></td>
+                                    <td><small><?php echo htmlspecialchars($file['bank_name'] ?? '-'); ?></small></td>
+                                    <td><span class="badge bg-<?php echo ($file['file_type'] ?? '') === 'office' ? 'info' : 'primary'; ?>"><?php echo ucfirst($file['file_type'] ?? '-'); ?></span></td>
+                                    <td>₹<?php echo number_format($file['commission'] ?? 0, 0); ?></td>
+                                    <td><?php
+                                        if (($file['file_type'] ?? '') === 'office') {
+                                            echo '<span class="text-muted">NA</span>';
+                                        } else {
+                                            $colors = ['due' => 'danger', 'paid' => 'success', 'partially' => 'warning'];
+                                            echo '<span class="badge bg-' . ($colors[$file['payment_status'] ?? ''] ?? 'secondary') . '">' . ucfirst($file['payment_status'] ?? '-') . '</span>';
+                                        }
+                                    ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="7" class="text-center text-muted">No files yet</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+// Tab switching
+function switchTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
+
+    // Update panels
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+
+    // Update hash
+    window.location.hash = tabName;
+
+    // Render chart only when main tab is active
+    if (tabName === 'main' && !window.mainChartRendered) {
+        renderMainChart();
+    }
+}
+
+// Handle hash on load
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (['main', 'biznexa', 'inspection'].includes(hash)) {
+        switchTab(hash);
+    } else {
+        renderMainChart();
+    }
+});
+
+function renderMainChart() {
+    const ctx = document.getElementById('mainChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?php echo json_encode($monthLabels); ?>,
+            datasets: [
+                {
+                    label: 'Earnings',
+                    data: <?php echo json_encode($mainData['monthly_earnings']); ?>,
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                },
+                {
+                    label: 'Expenses',
+                    data: <?php echo json_encode($mainData['monthly_expenses']); ?>,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, padding: 20 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            }
+        }
+    });
+    window.mainChartRendered = true;
+}
+</script>
+
+<?php include 'includes/footer.php'; ?>
