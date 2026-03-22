@@ -169,6 +169,32 @@ $pageTitle = 'Dashboard';
 include 'includes/header.php';
 ?>
 
+<style>
+/* Dashboard Tab Styles (inline for cache-safety) */
+.dashboard-tabs { display:flex; gap:4px; background:#fff; border-radius:14px; padding:6px; margin-bottom:25px; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+.tab-btn { flex:1; padding:12px 20px; border:none; background:transparent; border-radius:10px; font-weight:600; font-size:.9rem; color:#6c757d; cursor:pointer; transition:all .3s ease; font-family:'Inter',sans-serif; }
+.tab-btn:hover { background:#f8f9fa; color:#2C3E50; }
+.tab-btn.active { background:linear-gradient(135deg,#0d6efd,#0056b3); color:#fff; box-shadow:0 4px 12px rgba(13,110,253,.3); }
+.tab-panel { display:none; animation:fadeInTab .4s ease; }
+.tab-panel.active { display:block; }
+@keyframes fadeInTab { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.chart-container { position:relative; height:320px; width:100%; }
+.breakdown-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0; }
+.breakdown-item:last-child { border-bottom:none; }
+.breakdown-item.total { border-top:2px solid #e9ecef; border-bottom:none; padding-top:15px; margin-top:5px; }
+.breakdown-label { font-size:.95rem; color:#2C3E50; }
+.breakdown-value { font-size:1.1rem; font-weight:700; color:#2C3E50; }
+.recent-expense-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+.recent-expense-item:last-child { border-bottom:none; }
+.recent-expense-info { display:flex; flex-direction:column; gap:2px; }
+.recent-expense-info strong { font-size:.9rem; color:#2C3E50; }
+.recent-expense-info small { color:#6c757d; font-size:.75rem; }
+.recent-expense-amount { font-weight:700; font-size:.95rem; }
+.category-badge-biznexa { background:#0d6efd; color:#fff; }
+.category-badge-inspection { background:#ffc107; color:#212529; }
+@media(max-width:576px){ .dashboard-tabs{flex-direction:column} .tab-btn{width:100%;text-align:center} }
+</style>
+
 <div class="admin-content">
     <div class="page-header">
         <h1 class="page-title">Dashboard</h1>
