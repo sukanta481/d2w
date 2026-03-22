@@ -170,8 +170,34 @@ include 'includes/header.php';
 .type-badge-income { background: #10b981; color: #fff; }
 .type-badge-expense { background: #dc3545; color: #fff; }
 
+/* Tablet */
 @media (max-width: 768px) {
     .filter-group { min-width: 100%; }
+    .expense-stats { grid-template-columns: repeat(2, 1fr); }
+    .expense-stat-card .stat-value { font-size: 1.2rem; }
+    .expense-stat-card { padding: 1rem; }
+    .page-title { font-size: 1.5rem !important; }
+    .page-subtitle { font-size: .85rem !important; }
+    .data-table { font-size: .8rem; }
+    .data-table th, .data-table td { padding: 8px 6px !important; white-space: nowrap; }
+    .content-card { padding: 12px !important; }
+}
+/* Mobile */
+@media (max-width: 576px) {
+    .expense-stats { grid-template-columns: 1fr; }
+    .expense-stat-card .stat-value { font-size: 1.3rem; }
+    .filter-section { padding: 1rem; }
+    .filter-row { gap: .75rem; }
+    .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px; }
+    .btn { font-size: .85rem; }
+}
+/* Small Mobile */
+@media (max-width: 480px) {
+    .page-title { font-size: 1.3rem !important; }
+    .data-table { font-size: .75rem; }
+    .data-table th, .data-table td { padding: 6px 4px !important; }
+    .btn-sm { font-size: .75rem; padding: 4px 8px; }
+    .modal-dialog { margin: 10px; }
 }
 </style>
 

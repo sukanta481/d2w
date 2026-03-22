@@ -237,7 +237,46 @@ include 'includes/header.php';
 .category-badge-general { background:#8b5cf6; color:#fff; }
 .type-badge-income { background:#10b981; color:#fff; }
 .type-badge-expense { background:#dc3545; color:#fff; }
-@media(max-width:576px){ .dashboard-tabs{flex-direction:column} .tab-btn{width:100%;text-align:center} }
+/* Tablet */
+@media(max-width:992px){
+    .dashboard-tabs { flex-wrap:wrap; }
+    .tab-btn { flex:1 1 45%; font-size:.8rem; padding:10px 14px; }
+    .stats-grid { grid-template-columns:repeat(2,1fr) !important; }
+    .stat-value { font-size:1.4rem !important; }
+    .chart-container { height:260px; }
+}
+/* Mobile */
+@media(max-width:768px){
+    .dashboard-tabs { flex-direction:column; gap:6px; padding:8px; }
+    .tab-btn { width:100%; text-align:center; padding:10px 16px; font-size:.85rem; }
+    .stats-grid { grid-template-columns:1fr 1fr !important; gap:.75rem !important; }
+    .stat-card { padding:12px !important; }
+    .stat-value { font-size:1.15rem !important; }
+    .stat-label { font-size:.75rem !important; }
+    .stat-icon { width:36px!important; height:36px!important; font-size:.8rem!important; }
+    .chart-container { height:220px; }
+    .content-card { padding:15px !important; }
+    .card-title { font-size:1rem !important; }
+    .breakdown-label { font-size:.85rem; }
+    .breakdown-value { font-size:.95rem; }
+    .recent-expense-info strong { font-size:.8rem; }
+    .recent-expense-amount { font-size:.85rem; }
+    .page-title { font-size:1.5rem !important; }
+    .page-subtitle { font-size:.85rem !important; }
+    .data-table { font-size:.8rem; }
+    .data-table th, .data-table td { padding:8px 6px !important; }
+    [style*="font-size:2rem"] { font-size:1.5rem !important; }
+    [style*="font-size:1.75rem"] { font-size:1.25rem !important; }
+}
+/* Small Mobile */
+@media(max-width:480px){
+    .stats-grid { grid-template-columns:1fr !important; }
+    .stat-value { font-size:1.3rem !important; }
+    .chart-container { height:180px; }
+    .page-header { flex-direction:column; align-items:flex-start !important; gap:10px; }
+    .row > [class*="col-"] { padding-left:8px; padding-right:8px; }
+    .btn-sm { font-size:.75rem; padding:4px 8px; }
+}
 </style>
 
 <div class="admin-content">
