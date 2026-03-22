@@ -16,40 +16,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     try {
         if (isset($_POST['add_expense'])) {
-            $stmt = $db->prepare("INSERT INTO expenses (category, title, description, amount, expense_date, created_by)
-                VALUES (:category, :title, :description, :amount, :expense_date, :created_by)");
+            $stmt = $db->prepare("INSERT INTO expenses (category, type, title, description, amount, expense_date, created_by)
+                VALUES (:category, :type, :title, :description, :amount, :expense_date, :created_by)");
             $stmt->execute([
                 ':category' => $_POST['category'],
+                ':type' => $_POST['type'],
                 ':title' => $_POST['title'],
                 ':description' => $_POST['description'] ?: null,
                 ':amount' => floatval($_POST['amount']),
                 ':expense_date' => $_POST['expense_date'],
                 ':created_by' => $auth->getUserId()
             ]);
-            $auth->logActivity($auth->getUserId(), 'create', 'expenses', $db->lastInsertId(), 'Added expense: ' . $_POST['title']);
-            $successMessage = "Expense added successfully!";
+            $auth->logActivity($auth->getUserId(), 'create', 'expenses', $db->lastInsertId(), 'Added ' . $_POST['type'] . ': ' . $_POST['title']);
+            $successMessage = ucfirst($_POST['type']) . " added successfully!";
         }
 
         if (isset($_POST['update_expense'])) {
-            $stmt = $db->prepare("UPDATE expenses SET category = :category, title = :title, description = :description,
+            $stmt = $db->prepare("UPDATE expenses SET category = :category, type = :type, title = :title, description = :description,
                 amount = :amount, expense_date = :expense_date WHERE id = :id");
             $stmt->execute([
                 ':id' => $_POST['expense_id'],
                 ':category' => $_POST['category'],
+                ':type' => $_POST['type'],
                 ':title' => $_POST['title'],
                 ':description' => $_POST['description'] ?: null,
                 ':amount' => floatval($_POST['amount']),
                 ':expense_date' => $_POST['expense_date']
             ]);
-            $auth->logActivity($auth->getUserId(), 'update', 'expenses', $_POST['expense_id'], 'Updated expense');
-            $successMessage = "Expense updated successfully!";
+            $auth->logActivity($auth->getUserId(), 'update', 'expenses', $_POST['expense_id'], 'Updated record');
+            $successMessage = "Record updated successfully!";
         }
 
         if (isset($_POST['delete_expense'])) {
             $stmt = $db->prepare("DELETE FROM expenses WHERE id = :id");
             $stmt->execute([':id' => $_POST['expense_id']]);
-            $auth->logActivity($auth->getUserId(), 'delete', 'expenses', $_POST['expense_id'], 'Deleted expense');
-            $successMessage = "Expense deleted successfully!";
+            $auth->logActivity($auth->getUserId(), 'delete', 'expenses', $_POST['expense_id'], 'Deleted record');
+            $successMessage = "Record deleted successfully!";
         }
 
     } catch(PDOException $e) {
@@ -59,11 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Filters
 $categoryFilter = $_GET['category'] ?? '';
+$typeFilter = $_GET['type'] ?? '';
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
 $searchQuery = $_GET['search'] ?? '';
 
-// Fetch expenses
+// Fetch records
 try {
     $query = "SELECT e.*, au.full_name as created_by_name FROM expenses e
               LEFT JOIN admin_users au ON e.created_by = au.id WHERE 1=1";
@@ -72,6 +75,10 @@ try {
     if ($categoryFilter) {
         $query .= " AND e.category = :category";
         $params[':category'] = $categoryFilter;
+    }
+    if ($typeFilter) {
+        $query .= " AND e.type = :type";
+        $params[':type'] = $typeFilter;
     }
     if ($dateFrom) {
         $query .= " AND e.expense_date >= :date_from";
@@ -92,29 +99,39 @@ try {
     $expenses = $stmt->fetchAll();
 
     // Summary stats
-    $totalExpenses = array_sum(array_column($expenses, 'amount'));
-
+    $totalIncome = 0;
+    $totalExpenseAmt = 0;
     $biznexaTotal = 0;
     $inspectionTotal = 0;
+    $generalIncome = 0;
+    $generalExpense = 0;
+
     foreach ($expenses as $exp) {
-        if ($exp['category'] === 'biznexa') $biznexaTotal += $exp['amount'];
-        else $inspectionTotal += $exp['amount'];
+        if ($exp['type'] === 'income') {
+            $totalIncome += $exp['amount'];
+            if ($exp['category'] === 'general') $generalIncome += $exp['amount'];
+        } else {
+            $totalExpenseAmt += $exp['amount'];
+            if ($exp['category'] === 'biznexa') $biznexaTotal += $exp['amount'];
+            elseif ($exp['category'] === 'inspection') $inspectionTotal += $exp['amount'];
+            elseif ($exp['category'] === 'general') $generalExpense += $exp['amount'];
+        }
     }
 
 } catch(PDOException $e) {
     $expenses = [];
-    $totalExpenses = $biznexaTotal = $inspectionTotal = 0;
+    $totalIncome = $totalExpenseAmt = $biznexaTotal = $inspectionTotal = $generalIncome = $generalExpense = 0;
     error_log("Expenses Error: " . $e->getMessage());
 }
 
-$pageTitle = 'Expenses';
+$pageTitle = 'Expenses & Income';
 include 'includes/header.php';
 ?>
 
 <style>
 .expense-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -125,11 +142,15 @@ include 'includes/header.php';
     border: 1px solid #e9ecef;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.expense-stat-card.total { border-left: 4px solid #dc3545; }
+.expense-stat-card.total-expense { border-left: 4px solid #dc3545; }
+.expense-stat-card.total-income { border-left: 4px solid #10b981; }
 .expense-stat-card.biznexa { border-left: 4px solid #0d6efd; }
 .expense-stat-card.inspection { border-left: 4px solid #ffc107; }
+.expense-stat-card.general { border-left: 4px solid #8b5cf6; }
 .expense-stat-card .stat-label { font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem; }
 .expense-stat-card .stat-value { font-size: 1.5rem; font-weight: 700; color: #2C3E50; }
+.expense-stat-card .stat-value.income-val { color: #10b981; }
+.expense-stat-card .stat-value.expense-val { color: #dc3545; }
 
 .filter-section {
     background: white;
@@ -139,12 +160,15 @@ include 'includes/header.php';
     border: 1px solid #e9ecef;
 }
 .filter-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
-.filter-group { flex: 1; min-width: 150px; }
+.filter-group { flex: 1; min-width: 130px; }
 .filter-group label { font-size: 0.85rem; color: #6c757d; margin-bottom: 0.25rem; display: block; }
 .filter-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .category-badge-biznexa { background: #0d6efd; color: #fff; }
 .category-badge-inspection { background: #ffc107; color: #212529; }
+.category-badge-general { background: #8b5cf6; color: #fff; }
+.type-badge-income { background: #10b981; color: #fff; }
+.type-badge-expense { background: #dc3545; color: #fff; }
 
 @media (max-width: 768px) {
     .filter-group { min-width: 100%; }
@@ -154,12 +178,12 @@ include 'includes/header.php';
 <div class="admin-content">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="page-title">Expenses</h1>
-            <p class="page-subtitle">Track expenses for BizNexa Agency & Inspection</p>
+            <h1 class="page-title">Expenses & Income</h1>
+            <p class="page-subtitle">Track all income and expenses — BizNexa, Inspection & General</p>
         </div>
         <div>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-                <i class="fas fa-plus me-2"></i>Add Expense
+                <i class="fas fa-plus me-2"></i>Add Record
             </button>
         </div>
     </div>
@@ -180,9 +204,13 @@ include 'includes/header.php';
 
     <!-- Stats -->
     <div class="expense-stats">
-        <div class="expense-stat-card total">
+        <div class="expense-stat-card total-income">
+            <div class="stat-label">Total Income</div>
+            <div class="stat-value income-val">₹<?php echo number_format($totalIncome, 2); ?></div>
+        </div>
+        <div class="expense-stat-card total-expense">
             <div class="stat-label">Total Expenses</div>
-            <div class="stat-value">₹<?php echo number_format($totalExpenses, 2); ?></div>
+            <div class="stat-value expense-val">₹<?php echo number_format($totalExpenseAmt, 2); ?></div>
         </div>
         <div class="expense-stat-card biznexa">
             <div class="stat-label">BizNexa Expenses</div>
@@ -192,6 +220,10 @@ include 'includes/header.php';
             <div class="stat-label">Inspection Expenses</div>
             <div class="stat-value">₹<?php echo number_format($inspectionTotal, 2); ?></div>
         </div>
+        <div class="expense-stat-card general">
+            <div class="stat-label">General (Inc / Exp)</div>
+            <div class="stat-value"><span class="income-val" style="font-size:1.1rem;">₹<?php echo number_format($generalIncome, 0); ?></span> / <span class="expense-val" style="font-size:1.1rem;">₹<?php echo number_format($generalExpense, 0); ?></span></div>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -200,7 +232,7 @@ include 'includes/header.php';
             <div class="filter-row">
                 <div class="filter-group" style="flex: 2;">
                     <label>Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Expense title..."
+                    <input type="text" name="search" class="form-control" placeholder="Title..."
                            value="<?php echo htmlspecialchars($searchQuery); ?>">
                 </div>
                 <div class="filter-group">
@@ -209,6 +241,15 @@ include 'includes/header.php';
                         <option value="">All</option>
                         <option value="biznexa" <?php echo $categoryFilter === 'biznexa' ? 'selected' : ''; ?>>BizNexa</option>
                         <option value="inspection" <?php echo $categoryFilter === 'inspection' ? 'selected' : ''; ?>>Inspection</option>
+                        <option value="general" <?php echo $categoryFilter === 'general' ? 'selected' : ''; ?>>General</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">All</option>
+                        <option value="income" <?php echo $typeFilter === 'income' ? 'selected' : ''; ?>>Income</option>
+                        <option value="expense" <?php echo $typeFilter === 'expense' ? 'selected' : ''; ?>>Expense</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -227,7 +268,7 @@ include 'includes/header.php';
         </form>
     </div>
 
-    <!-- Expenses Table -->
+    <!-- Records Table -->
     <div class="content-card">
         <div class="table-responsive">
             <table class="data-table">
@@ -235,6 +276,7 @@ include 'includes/header.php';
                     <tr>
                         <th>Date</th>
                         <th>Title</th>
+                        <th>Type</th>
                         <th>Category</th>
                         <th>Amount</th>
                         <th>Description</th>
@@ -248,11 +290,23 @@ include 'includes/header.php';
                                 <td><?php echo date('M d, Y', strtotime($expense['expense_date'])); ?></td>
                                 <td><strong><?php echo htmlspecialchars($expense['title']); ?></strong></td>
                                 <td>
-                                    <span class="badge category-badge-<?php echo $expense['category']; ?>">
-                                        <?php echo $expense['category'] === 'biznexa' ? 'BizNexa' : 'Inspection'; ?>
+                                    <span class="badge type-badge-<?php echo $expense['type']; ?>">
+                                        <?php echo ucfirst($expense['type']); ?>
                                     </span>
                                 </td>
-                                <td><strong>₹<?php echo number_format($expense['amount'], 2); ?></strong></td>
+                                <td>
+                                    <span class="badge category-badge-<?php echo $expense['category']; ?>">
+                                        <?php
+                                            $catLabels = ['biznexa' => 'BizNexa', 'inspection' => 'Inspection', 'general' => 'General'];
+                                            echo $catLabels[$expense['category']] ?? $expense['category'];
+                                        ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="<?php echo $expense['type'] === 'income' ? 'text-success' : 'text-danger'; ?>">
+                                        <?php echo $expense['type'] === 'income' ? '+' : '-'; ?>₹<?php echo number_format($expense['amount'], 2); ?>
+                                    </strong>
+                                </td>
                                 <td><small class="text-muted"><?php echo htmlspecialchars($expense['description'] ?? '-'); ?></small></td>
                                 <td>
                                     <div class="d-flex gap-1">
@@ -276,16 +330,26 @@ include 'includes/header.php';
                                             <input type="hidden" name="update_expense" value="1">
                                             <input type="hidden" name="expense_id" value="<?php echo $expense['id']; ?>">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Edit Expense</h5>
+                                                <h5 class="modal-title">Edit Record</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Category *</label>
-                                                    <select class="form-select" name="category" required>
-                                                        <option value="biznexa" <?php echo $expense['category'] === 'biznexa' ? 'selected' : ''; ?>>BizNexa</option>
-                                                        <option value="inspection" <?php echo $expense['category'] === 'inspection' ? 'selected' : ''; ?>>Inspection</option>
-                                                    </select>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Type *</label>
+                                                        <select class="form-select" name="type" required>
+                                                            <option value="expense" <?php echo $expense['type'] === 'expense' ? 'selected' : ''; ?>>Expense</option>
+                                                            <option value="income" <?php echo $expense['type'] === 'income' ? 'selected' : ''; ?>>Income</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Category *</label>
+                                                        <select class="form-select" name="category" required>
+                                                            <option value="biznexa" <?php echo $expense['category'] === 'biznexa' ? 'selected' : ''; ?>>BizNexa</option>
+                                                            <option value="inspection" <?php echo $expense['category'] === 'inspection' ? 'selected' : ''; ?>>Inspection</option>
+                                                            <option value="general" <?php echo $expense['category'] === 'general' ? 'selected' : ''; ?>>General</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Title *</label>
@@ -311,7 +375,7 @@ include 'includes/header.php';
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-primary">Update Expense</button>
+                                                <button type="submit" class="btn btn-primary">Update</button>
                                             </div>
                                         </form>
                                     </div>
@@ -326,7 +390,7 @@ include 'includes/header.php';
                                             <input type="hidden" name="delete_expense" value="1">
                                             <input type="hidden" name="expense_id" value="<?php echo $expense['id']; ?>">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Delete Expense</h5>
+                                                <h5 class="modal-title">Delete Record</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
@@ -343,7 +407,7 @@ include 'includes/header.php';
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="6" class="text-center text-muted">No expenses recorded yet</td>
+                            <td colspan="7" class="text-center text-muted">No records yet</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -352,28 +416,38 @@ include 'includes/header.php';
     </div>
 </div>
 
-<!-- Add Expense Modal -->
+<!-- Add Record Modal -->
 <div class="modal fade" id="addExpenseModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST"><?php echo csrfField(); ?>
                 <input type="hidden" name="add_expense" value="1">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Expense</h5>
+                    <h5 class="modal-title">Add Record</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Category *</label>
-                        <select class="form-select" name="category" required>
-                            <option value="">Select Category</option>
-                            <option value="biznexa">BizNexa</option>
-                            <option value="inspection">Inspection</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type *</label>
+                            <select class="form-select" name="type" required>
+                                <option value="expense">Expense</option>
+                                <option value="income">Income</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Category *</label>
+                            <select class="form-select" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="biznexa">BizNexa</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="general">General</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Title *</label>
-                        <input type="text" class="form-control" name="title" required placeholder="e.g. Domain Renewal, Fuel Cost">
+                        <input type="text" class="form-control" name="title" required placeholder="e.g. Freelance Payment, Fuel Cost">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -392,7 +466,7 @@ include 'includes/header.php';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                    <button type="submit" class="btn btn-primary">Add Record</button>
                 </div>
             </form>
         </div>
